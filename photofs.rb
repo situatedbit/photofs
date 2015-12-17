@@ -1,6 +1,6 @@
-require 'rfusefs'
+require 'rfuse'
 
-class PhotoDir
+class PhotoFS
   attr_reader :root
 
   def initialize(options)
@@ -18,31 +18,21 @@ class PhotoDir
     @root = File.realpath(value)
   end
 
-  def unmount(message=nil)
-    puts "#{message}\n" if message
-
-    FuseFS.umount(@mountpoint)
-  end
-
   public
-  def contents(path)
-    log "contents #{path}"
-    Dir.entries(@root)
+  def readdir(ctx, path, filler, offset, ffi)
+    log "readdir: #{path}"
+    full_path = @root + path
+
+    raise Errno::ENOTDIR.new(full_path) unless File.directory? full_path
+
+    Dir.entries(full_path).each do |entry|
+      filler.push(entry, File.stat(full_path), 0)
+    end
   end
 
-  def directory?(path)
-    log "directory? #{path}"
-    File.directory?("#{@root}#{path}")
-  end
-
-  def file?(path)
-    log "file? #{path}"
-    File.exist? "#{@root}#{path}"
-  end
-
-  def read_file(path)
-    log "read_file #{path}"
-    ""
+  def getattr(ctx, path)
+    log "stat: #{path}"
+    File.stat(@root + path)
   end
 
   def log(s)
@@ -54,6 +44,6 @@ MY_OPTIONS = [:root]
 OPTION_USAGE = " -o root=path/to/photos/"
 
 # Usage: #{$0} mountpoint [mount_options] -o root=/path/to/photos
-FuseFS.main(ARGV, MY_OPTIONS, OPTION_USAGE, nil, $0) do |options| 
-  PhotoDir.new options
+RFuse.main(ARGV, MY_OPTIONS, OPTION_USAGE, nil, $0) do |options| 
+  PhotoFS.new options
 end
