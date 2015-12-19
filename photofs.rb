@@ -1,7 +1,7 @@
 require 'rfuse'
 
 class VirtualStat < RFuse::Stat
-  DEFAULT_PERMISSIONS = 0400
+  DEFAULT_PERMISSIONS = 0000400 # read only by owner
 
   def initialize(real_file_abs_path)
     real_file_stat = File.stat(real_file_abs_path)
