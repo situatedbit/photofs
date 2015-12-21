@@ -1,4 +1,26 @@
 require 'rfuse'
+require 'lib/node'
+
+=begin
+class Fuse
+  readdir
+    node = find(path)
+    if node.directory?
+      node.entries.each { ... entry.name, entry.stat, ... }
+
+  readlink
+    node = top_level_dir(path).find(path)
+    if node.link?
+      node.target
+end
+
+# file < node
+  # target
+
+# mirror-dir < dir
+# categories-dir < dir
+
+=end
 
 class VirtualStat < RFuse::Stat
   DEFAULT_PERMISSIONS = 0000400 # read only by owner
@@ -40,6 +62,7 @@ class PhotoFS
     self.root = options[:root]
 
     @mountpoint = options[:mountpoint]
+    @top_nodes = { :o -> MirrorDir.new('o', self.root) }
   end
 
   private
@@ -47,6 +70,10 @@ class PhotoFS
     raise RFuse::Error, "Root is not a directory (#{value})" unless File.directory?(value)
 
     @root = File.realpath(value)
+  end
+
+  def find(path)
+    
   end
 
   public
