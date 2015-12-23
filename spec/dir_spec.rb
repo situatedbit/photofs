@@ -1,9 +1,9 @@
 require 'spec_helper'
-require 'photo_dir'
+require 'dir'
 
-describe PhotoDir do
+describe PhotoFS::Dir do
   let(:name) { 'iidabashi' }
-  let(:dir) { PhotoDir.new name }
+  let(:dir) { PhotoFS::Dir.new name }
 
   describe 'top-level instance' do
     it 'should have a name' do
@@ -28,7 +28,7 @@ describe PhotoDir do
 
     context 'when a child node is added' do
       let(:subdir_name) { 'kamiyacho' }
-      let(:subdir) { PhotoDir.new subdir_name }
+      let(:subdir) { PhotoFS::Dir.new subdir_name }
 
       before(:each) do
         dir.add_node(subdir)
@@ -49,7 +49,7 @@ describe PhotoDir do
 
     context 'when several child nodes are added' do
       let(:names) { ['shinjuku', 'shibuya', 'ikebukuro'] }
-      let(:subdirs) { names.map { |name| PhotoDir.new(name, dir) } }
+      let(:subdirs) { names.map { |name| PhotoFS::Dir.new(name, dir) } }
 
       before(:each) do
         subdirs.each { |subdir| dir.add_node(subdir) }
@@ -58,7 +58,7 @@ describe PhotoDir do
       describe 'add_node method' do
         context 'duplicate adds' do
           let(:original_node) { subdirs[0] }
-          let(:duplicate_node) { PhotoDir.new(original_node.name, dir) }
+          let(:duplicate_node) { PhotoFS::Dir.new(original_node.name, dir) }
 
           before(:each) do
             dir.add_node(duplicate_node)

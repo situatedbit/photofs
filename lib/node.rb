@@ -1,25 +1,29 @@
-class Node
-  attr_accessor :parent
-  attr_accessor :name
+module PhotoFS
+  class Node
+    attr_accessor :parent
+    attr_accessor :name
 
-  def initialize(name, parent = nil)
-    raise ArgumentError.new('node parent must be a directory') unless (parent.nil? || parent.directory?)
+    def initialize(name, parent = nil)
+      raise ArgumentError.new('node parent must be a directory') unless (parent.nil? || parent.directory?)
 
-    @name = name
-    @parent = parent
-  end
+      raise ArgumentError.new('node name cannot be empty') if (name.nil? || name.empty?)
 
-  def directory?
-    false
-  end
+      @name = name
+      @parent = parent
+    end
 
-  def path
-    return File::SEPARATOR + name if parent.nil?
+    def directory?
+      false
+    end
 
-    parent.path + File::SEPARATOR + name
-  end
+    def path
+      return File::SEPARATOR + name if parent.nil?
 
-  def stat
-    nil
+      parent.path + File::SEPARATOR + name
+    end
+
+    def stat
+      nil
+    end
   end
 end
