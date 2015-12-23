@@ -17,9 +17,9 @@ module PhotoFS
     end
 
     def path
-      return File::SEPARATOR + name if parent.nil?
+      return ::File::SEPARATOR + name if parent.nil?
 
-      parent.path + File::SEPARATOR + name
+      parent.path + ::File::SEPARATOR + name
     end
 
     def stat

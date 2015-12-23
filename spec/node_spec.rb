@@ -1,16 +1,22 @@
 require 'spec_helper'
 require 'node'
 
-describe Node do
+describe PhotoFS::Node do
   it 'should reject a parent that is not a directory' do
     parent = double("non-directory parent")
     allow(parent).to receive(:directory?) { false }
-    expect { Node.new('onarimon', parent) }.to raise_error(ArgumentError)
+    expect { PhotoFS::Node.new('onarimon', parent) }.to raise_error(ArgumentError)
+  end
+
+  describe 'initialize method' do
+    it 'should require non-empty name' do
+      expect { PhotoFS::Node.new('') }.to raise_error(ArgumentError)
+    end
   end
 
   describe 'top-level instance' do
     let(:name) { 'otemachi' }
-    let(:node) { Node.new name }
+    let(:node) { PhotoFS::Node.new name }
 
     it 'should have no parent' do
       expect(node.parent).to be nil
@@ -34,7 +40,7 @@ describe Node do
 
     describe 'and second-level instance' do
       let(:second_name) { 'tokyo' }
-      let(:second_node) { Node.new(second_name, node) }
+      let(:second_node) { PhotoFS::Node.new(second_name, node) }
 
       before(:each) do
         allow(node).to receive(:directory?) { true }

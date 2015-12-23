@@ -1,7 +1,5 @@
 require 'spec_helper'
 require 'mirrored_dir'
-require 'rfuse'
-require 'stat'
 
 describe PhotoFS::MirroredDir do
   let(:absolute_path) { '/tmp/garbage' }
@@ -23,7 +21,7 @@ describe PhotoFS::MirroredDir do
 
     before(:each) do
       allow(PhotoFS::Stat).to receive(:stat_hash).and_return({})
-      allow(File).to receive(:stat).and_return(nil)
+      allow(File).to receive(:stat).and_return({})
     end
 
     it "should return read-only" do
@@ -36,12 +34,10 @@ describe PhotoFS::MirroredDir do
   end
 
   describe "nodes method" do
-    it "should return file nodes for each real file in target directory" do
-    end
+    it "should return file nodes for each real file in target directory"
   end
 
   describe "add_node" do
-    it "should not be callable, but rather protected" do
-    end
+    it "should not be callable, but rather protected"
   end
 end

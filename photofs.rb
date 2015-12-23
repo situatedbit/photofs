@@ -1,5 +1,6 @@
 require 'rfuse'
 require 'lib/node'
+require 'lib/stat'
 
 =begin
 class Fuse
@@ -26,18 +27,7 @@ class VirtualStat < RFuse::Stat
   DEFAULT_PERMISSIONS = 0000400 # read only by owner
 
   def initialize(real_file_abs_path)
-    real_file_stat = File.stat(real_file_abs_path)
-
-    # list of attributes
-    attributes = [ :atime, :blksize, :blocks, :ctime, :dev, 
-                   :gid, :ino, :mode, :mtime, :nlink, :rdev, 
-                   :size, :uid ]
-
-    attr_hash = {}
-
-    attributes.map do | attribute |
-      attr_hash[attribute] = real_file_stat.send attribute
-    end
+    attr_hash = PhotoFS::Stat.stat_hash(File.stat(real_file_abs_path))
 
     if File.directory? real_file_abs_path
       type = RFuse::Stat::S_IFDIR
@@ -53,62 +43,66 @@ class VirtualStat < RFuse::Stat
   end
 end
 
-class PhotoFS
-  attr_reader :root
+module PhotoFS
 
-  def initialize(options)
-    raise RFuse::Error, "Missing root option (-o root=path)" unless options[:root]
+  class PhotoFS
+    attr_reader :root
 
-    self.root = options[:root]
+    def initialize(options)
+      raise RFuse::Error, "Missing root option (-o root=path)" unless options[:root]
 
-    @mountpoint = options[:mountpoint]
-    @top_nodes = { :o -> MirrorDir.new('o', self.root) }
-  end
+      self.root = options[:root]
 
-  private
-  def root=(value)
-    raise RFuse::Error, "Root is not a directory (#{value})" unless File.directory?(value)
+      @mountpoint = options[:mountpoint]
+      @top_nodes = { :o -> MirrorDir.new('o', self.root) }
+    end
 
-    @root = File.realpath(value)
-  end
+    private
+    def root=(value)
+      raise RFuse::Error, "Root is not a directory (#{value})" unless File.directory?(value)
 
-  def find(path)
-    
-  end
+      @root = File.realpath(value)
+    end
 
-  public
-  def readdir(context, path, filler, offset, ffi)
-    log "readdir: #{path}"
-    full_path = File.absolute_path(@root + path)
+    def find(path)
+      
+    end
 
-    raise Errno::ENOTDIR.new(full_path) unless File.directory? full_path
+    public
+    def readdir(context, path, filler, offset, ffi)
+      log "readdir: #{path}"
+      full_path = File.absolute_path(@root + path)
 
-    Dir.entries(full_path).each do |entry|
-      filler.push(entry, VirtualStat.new(full_path), 0)
+      raise Errno::ENOTDIR.new(full_path) unless File.directory? full_path
+
+      Dir.entries(full_path).each do |entry|
+        filler.push(entry, VirtualStat.new(full_path), 0)
+      end
+    end
+
+    def getattr(context, path)
+      log "stat: #{path}"
+
+      VirtualStat.new(File.absolute_path(@root + path))
+    end
+
+    def readlink(context, path, size)
+      log "readlink: #{path}, #{size.to_s}"
+
+      File.absolute_path(@root + path)[0, size]
+    end
+
+    def log(s)
+      puts s
     end
   end
 
-  def getattr(context, path)
-    log "stat: #{path}"
-
-    VirtualStat.new(File.absolute_path(@root + path))
-  end
-
-  def readlink(context, path, size)
-    log "readlink: #{path}, #{size.to_s}"
-
-    File.absolute_path(@root + path)[0, size]
-  end
-
-  def log(s)
-    puts s
-  end
-end
+end # module
 
 MY_OPTIONS = [:root]
 OPTION_USAGE = " -o root=path/to/photos/"
 
 # Usage: #{$0} mountpoint [mount_options] -o root=/path/to/photos
 RFuse.main(ARGV, MY_OPTIONS, OPTION_USAGE, nil, $0) do |options| 
-  PhotoFS.new options
+  PhotoFS::PhotoFS.new options
 end
