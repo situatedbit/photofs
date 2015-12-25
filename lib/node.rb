@@ -1,7 +1,7 @@
 module PhotoFS
   class Node
     attr_accessor :parent
-    attr_accessor :name
+    attr_reader :name
 
     def initialize(name, parent = nil)
       raise ArgumentError.new('node parent must be a directory') unless (parent.nil? || parent.directory?)
@@ -10,6 +10,10 @@ module PhotoFS
 
       @name = name
       @parent = parent
+    end
+
+    def ==(other)
+      self.equal?(other) || (other.respond_to?(:path) && self.path == other.path)
     end
 
     def directory?

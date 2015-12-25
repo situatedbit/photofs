@@ -14,6 +14,41 @@ describe PhotoFS::Node do
     end
   end
 
+  describe '== method' do
+    let(:common_name) { 'a common path' }
+    let(:this) { PhotoFS::Node.new(common_name) }
+    let(:that) { PhotoFS::Node.new(common_name) }
+
+    before(:each) do
+      allow(this).to receive(:path).and_return(common_name)
+      allow(that).to receive(:path).and_return(common_name)
+    end
+
+    context 'when two nodes have the same path' do
+      it 'should return true' do
+        expect(this == that).to be true
+      end
+    end
+
+    context 'when other is not a node' do
+      let(:a_string) { 'a string' }
+
+      it 'should return false' do
+        expect(this == a_string).to be false
+      end
+    end
+
+    context 'when other has a different path' do
+      before(:each) do
+        allow(that).to receive(:path).and_return(common_name * 2)
+      end
+
+      it 'should return false' do
+        expect(this == that).to be false
+      end
+    end
+  end # == method
+
   describe 'top-level instance' do
     let(:name) { 'otemachi' }
     let(:node) { PhotoFS::Node.new name }

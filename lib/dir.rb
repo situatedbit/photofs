@@ -8,12 +8,6 @@ module PhotoFS
       super(name, parent)
     end
 
-    def add_node(node)
-      @nodes[node.name] = node
-
-      node
-    end
-
     def directory?
       true
     end

@@ -34,7 +34,19 @@ describe PhotoFS::MirroredDir do
   end
 
   describe "nodes method" do
-    it "should return file nodes for each real file in target directory"
+    let(:dir) { PhotoFS::MirroredDir.new('test', path) }
+
+    context "when there are no files" do
+      it "should return an empty collection" do
+        allow(Dir).to receive(:entries).with(absolute_path).and_return([])
+        expect(dir.nodes).to be_empty
+      end
+    end
+
+    context "when there are files and dirs in target dir" do
+      it "should return a mirrored dir for each dir, and a file for each file"
+      # note: this test will require a comparison operator for nodes; see node spec
+    end
   end
 
   describe "add_node" do
