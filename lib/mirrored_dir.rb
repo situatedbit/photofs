@@ -21,7 +21,7 @@ module PhotoFS
     end
 
     def nodes
-      nodes_hash.values
+      Hash[entries.map { |e| [e, new_node(e)] }].values
     end
 
     private
@@ -34,10 +34,6 @@ module PhotoFS
       path = [source_path, entry].join(::File::SEPARATOR)
 
       ::File.directory?(path) ? MirroredDir.new(entry, path, self) : File.new(entry, path, self)
-    end
-
-    def nodes_hash
-      @nodes = @nodes || Hash[entries.map { |e| [e, new_node(e)] }]
     end
   end
 end
