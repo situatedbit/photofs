@@ -3,7 +3,7 @@ require 'node'
 module PhotoFS
   class Dir < PhotoFS::Node
     def initialize(name, parent = nil)
-      @nodes = {}
+      @nodes = nil
 
       super(name, parent)
     end
@@ -12,16 +12,12 @@ module PhotoFS
       true
     end
 
-  #  def find(path); end
-
     def nodes
-      @nodes.values
+      @nodes.nil? ? [] : @nodes.values
     end
 
     def node_names
-      @nodes.keys
+      @nodes.nil? ? [] : @nodes.keys
     end
-
-  #  def stat; end
   end
 end

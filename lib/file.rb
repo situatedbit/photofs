@@ -4,7 +4,7 @@ require 'rfuse'
 
 module PhotoFS
   class File < PhotoFS::Node
-    attr_accessor :target_path
+    attr_reader :target_path
 
     def initialize(name, target_path, parent = nil)
       @target_path = ::File.absolute_path target_path

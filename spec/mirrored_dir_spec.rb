@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'mirrored_dir'
+require 'file'
 
 describe PhotoFS::MirroredDir do
   let(:absolute_path) { '/tmp/garbage' }
@@ -35,21 +36,39 @@ describe PhotoFS::MirroredDir do
 
   describe "nodes method" do
     let(:dir) { PhotoFS::MirroredDir.new('test', path) }
+    let(:file_name) { 'a-file' }
+    let(:dir_name) { 'a-dir' }
 
     context "when there are no files" do
+      before(:each) do
+        allow(Dir).to receive(:entries).and_return(['.', '..'])
+      end
+
       it "should return an empty collection" do
-        allow(Dir).to receive(:entries).with(absolute_path).and_return([])
         expect(dir.nodes).to be_empty
       end
     end
 
-    context "when there are files and dirs in target dir" do
-      it "should return a mirrored dir for each dir, and a file for each file"
-      # note: this test will require a comparison operator for nodes; see node spec
-    end
-  end
+    context "when there is a file in the target dir" do
+      before(:each) do
+        allow(Dir).to receive(:entries).and_return(['.', '..', file_name])
+        allow(File).to receive(:directory?).and_return(false)
+      end
 
-  describe "add_node" do
-    it "should not be callable, but rather protected"
-  end
+      it "should return a file node representing that file" do
+        expect(dir.nodes).to contain_exactly(PhotoFS::File.new(file_name, [path, file_name].join(File::SEPARATOR), dir))
+      end
+    end
+
+    context "when there are files and dirs in target dir" do
+      before(:each) do
+        allow(Dir).to receive(:entries).and_return(['.', '..', file_name, dir_name])
+        allow(File).to receive(:directory?).and_return(false, true)
+      end
+
+      it "should return a mirrored dir for each dir, and a file for each file" do
+        expect(dir.nodes).to contain_exactly(PhotoFS::File.new(file_name, [path, file_name].join(File::SEPARATOR), dir), PhotoFS::MirroredDir.new(dir_name, [path, dir_name].join(File::SEPARATOR), dir))
+      end
+    end
+  end # nodes method
 end
