@@ -17,10 +17,6 @@ module PhotoFS
       node_hash.values
     end
 
-    def node_names
-      node_hash.keys
-    end
-
     # expect search to be an array of path compontents
     def search(path)
       return self if path.empty?

@@ -21,10 +21,6 @@ describe PhotoFS::Dir do
     it 'should not have any nodes' do
       expect(dir.nodes).to be_empty
     end
-
-    it 'should not have any node names' do
-      expect(dir.node_names).to be_empty
-    end
   end # top level instance
 
   describe 'search method' do
