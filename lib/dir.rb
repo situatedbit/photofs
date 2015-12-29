@@ -2,6 +2,7 @@ require 'node'
 
 module PhotoFS
   class Dir < PhotoFS::Node
+
     def initialize(name, parent = nil)
       @nodes = nil
 
@@ -13,11 +14,32 @@ module PhotoFS
     end
 
     def nodes
-      @nodes.nil? ? [] : @nodes.values
+      node_hash.values
     end
 
     def node_names
-      @nodes.nil? ? [] : @nodes.keys
+      node_hash.keys
     end
+
+    # expect search to be an array of path compontents
+    def search(path)
+      return self if path.empty?
+
+      node = node_hash[path.first]
+
+      if node
+        node.directory? ? node.search(path.slice(1, path.size)) : node
+      else
+        nil
+      end
+    end
+
+    protected
+
+    # implement this in subclass to support memoization
+    def node_hash
+      @nodes.nil? ? {} : @nodes
+    end
+
   end
 end

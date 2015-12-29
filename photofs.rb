@@ -44,8 +44,7 @@ class VirtualStat < RFuse::Stat
 end
 
 module PhotoFS
-
-  class PhotoFS
+  class Fuse
     attr_reader :root
 
     def initialize(options)
@@ -59,23 +58,26 @@ module PhotoFS
 
     private
     def root=(value)
-      raise RFuse::Error, "Root is not a directory (#{value})" unless File.directory?(value)
+      raise RFuse::Error, "Root is not a directory (#{value})" unless ::File.directory?(value)
 
       @root = File.realpath(value)
     end
 
-    def find(path)
+    def search(path)
       
     end
 
     public
     def readdir(context, path, filler, offset, ffi)
       log "readdir: #{path}"
-      full_path = File.absolute_path(@root + path)
 
-      raise Errno::ENOTDIR.new(full_path) unless File.directory? full_path
+      #dir = search(path)      
 
-      Dir.entries(full_path).each do |entry|
+      full_path = ::File.absolute_path(@root + path)
+
+      raise Errno::ENOTDIR.new(full_path) unless ::File.directory? full_path
+
+      ::Dir.entries(full_path).each do |entry|
         filler.push(entry, VirtualStat.new(full_path), 0)
       end
     end
@@ -83,13 +85,13 @@ module PhotoFS
     def getattr(context, path)
       log "stat: #{path}"
 
-      VirtualStat.new(File.absolute_path(@root + path))
+      VirtualStat.new(::File.absolute_path(@root + path))
     end
 
     def readlink(context, path, size)
       log "readlink: #{path}, #{size.to_s}"
 
-      File.absolute_path(@root + path)[0, size]
+      ::File.absolute_path(@root + path)[0, size]
     end
 
     def log(s)
@@ -104,5 +106,5 @@ OPTION_USAGE = " -o root=path/to/photos/"
 
 # Usage: #{$0} mountpoint [mount_options] -o root=/path/to/photos
 RFuse.main(ARGV, MY_OPTIONS, OPTION_USAGE, nil, $0) do |options| 
-  PhotoFS::PhotoFS.new options
+  PhotoFS::Fuse.new options
 end

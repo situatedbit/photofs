@@ -20,8 +20,10 @@ module PhotoFS
       RFuse::Stat.directory(PhotoFS::Stat::MODE_READ_ONLY, stat_hash)
     end
 
-    def nodes
-      Hash[entries.map { |e| [e, new_node(e)] }].values
+    protected
+
+    def node_hash
+      Hash[entries.map { |e| [e, new_node(e)] }]
     end
 
     private
