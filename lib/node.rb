@@ -6,8 +6,6 @@ module PhotoFS
     def initialize(name, parent = nil)
       raise ArgumentError.new('node parent must be a directory') unless (parent.nil? || parent.directory?)
 
-      raise ArgumentError.new('node name cannot be empty') if (name.nil? || name.empty?)
-
       @name = name
       @parent = parent
     end

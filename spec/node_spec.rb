@@ -8,12 +8,6 @@ describe PhotoFS::Node do
     expect { PhotoFS::Node.new('onarimon', parent) }.to raise_error(ArgumentError)
   end
 
-  describe 'initialize method' do
-    it 'should require non-empty name' do
-      expect { PhotoFS::Node.new('') }.to raise_error(ArgumentError)
-    end
-  end
-
   describe '== method' do
     let(:common_name) { 'a common path' }
     let(:this) { PhotoFS::Node.new(common_name) }
