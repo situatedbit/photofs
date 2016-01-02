@@ -21,7 +21,27 @@ describe PhotoFS::Dir do
     it 'should not have any nodes' do
       expect(dir.nodes).to be_empty
     end
+
+    describe 'stat method' do
+      it "should return read-only" do
+        expect(dir.stat.mode & PhotoFS::Stat::MODE_MASK).to eq(PhotoFS::Stat::MODE_READ_ONLY)
+      end
+
+      it "should return real directory" do
+        expect(dir.stat.mode & RFuse::Stat::S_IFMT).to eq(RFuse::Stat::S_IFDIR)
+      end
+    end
   end # top level instance
+
+  describe "add method" do
+    let(:node) { PhotoFS::Node.new('test', nil) }
+
+    it 'should set the parent on the node' do
+      expect(node).to receive(:parent=).with(dir)
+
+      dir.add(node)
+    end
+  end
 
   describe 'search method' do
     context 'when path is empty' do

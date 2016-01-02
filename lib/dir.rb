@@ -1,4 +1,4 @@
-require 'node'
+require_relative 'node'
 
 module PhotoFS
   class Dir < PhotoFS::Node
@@ -7,6 +7,15 @@ module PhotoFS
       @nodes = nil
 
       super(name, parent)
+    end
+
+    def add(node)
+      @nodes ||= {}
+
+      @nodes[node.name] = node
+      node.parent = self
+
+      node
     end
 
     def directory?
@@ -28,6 +37,10 @@ module PhotoFS
       else
         nil
       end
+    end
+
+    def stat
+      RFuse::Stat.directory(PhotoFS::Stat::MODE_READ_ONLY, {})
     end
 
     protected

@@ -1,5 +1,5 @@
-require 'dir'
-require 'stat'
+require_relative 'dir'
+require_relative 'stat'
 require 'rfuse'
 
 module PhotoFS

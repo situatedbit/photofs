@@ -1,6 +1,6 @@
 require 'rfuse'
-require 'lib/node'
-require 'lib/stat'
+
+require_relative 'lib/mirrored_dir'
 
 =begin
 class Fuse
@@ -22,7 +22,7 @@ end
 # categories-dir < dir
 
 =end
-
+=begin
 class VirtualStat < RFuse::Stat
   DEFAULT_PERMISSIONS = 0000400 # read only by owner
 
@@ -42,56 +42,63 @@ class VirtualStat < RFuse::Stat
     super(type, DEFAULT_PERMISSIONS, attr_hash)
   end
 end
-
+=end
 module PhotoFS
   class Fuse
-    attr_reader :root
+    attr_reader :source_path
 
     def initialize(options)
-      raise RFuse::Error, "Missing root option (-o root=path)" unless options[:root]
+      raise RFuse::Error, "Missing source option (-o source=path)" unless options[:source]
 
-      self.root = options[:root]
-
+      @source_path = options[:source]
       @mountpoint = options[:mountpoint]
-      @top_nodes = { :o -> MirrorDir.new('o', self.root) }
+
+      @root = Dir.new('', nil)
+      @root.add MirroredDir.new('o', @source_path)
     end
 
     private
-    def root=(value)
-      raise RFuse::Error, "Root is not a directory (#{value})" unless ::File.directory?(value)
+    def source_path=(value)
+      raise RFuse::Error, "Source is not a directory (#{value})" unless ::File.directory?(value)
 
-      @root = File.realpath(value)
+      @source_path = File.realpath(value)
     end
 
     def search(path)
+      log("search: #{path}")
+      path_components = path.split ::File::SEPARATOR
       
+      node = @root.search(path_components.slice(1, path_components.size) || [])
+
+      raise Errno::ENOENT.new(path) if node.nil?
+
+      node
     end
 
     public
     def readdir(context, path, filler, offset, ffi)
       log "readdir: #{path}"
 
-      #dir = search(path)      
+      dir = search path
 
-      full_path = ::File.absolute_path(@root + path)
+      raise Errno::ENOTDIR.new(path) unless dir.directory?
 
-      raise Errno::ENOTDIR.new(full_path) unless ::File.directory? full_path
-
-      ::Dir.entries(full_path).each do |entry|
-        filler.push(entry, VirtualStat.new(full_path), 0)
+      dir.nodes.each do |n| 
+        puts n.name, n.stat
+        filler.push(n.name, n.stat, 0)
       end
     end
 
     def getattr(context, path)
       log "stat: #{path}"
 
-      VirtualStat.new(::File.absolute_path(@root + path))
+      search(path).stat
     end
 
     def readlink(context, path, size)
       log "readlink: #{path}, #{size.to_s}"
 
-      ::File.absolute_path(@root + path)[0, size]
+      search(path).target_path
     end
 
     def log(s)
@@ -101,10 +108,10 @@ module PhotoFS
 
 end # module
 
-MY_OPTIONS = [:root]
-OPTION_USAGE = " -o root=path/to/photos/"
+MY_OPTIONS = [:source]
+OPTION_USAGE = " -o source=path/to/photos/"
 
-# Usage: #{$0} mountpoint [mount_options] -o root=/path/to/photos
+# Usage: #{$0} mountpoint [mount_options] -o source=/path/to/photos
 RFuse.main(ARGV, MY_OPTIONS, OPTION_USAGE, nil, $0) do |options| 
   PhotoFS::Fuse.new options
 end
