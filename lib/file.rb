@@ -1,5 +1,5 @@
-require 'node'
-require 'stat'
+require_relative 'node'
+require_relative 'stat'
 require 'rfuse'
 
 module PhotoFS
@@ -9,7 +9,7 @@ module PhotoFS
     def initialize(name, target_path, parent = nil)
       @target_path = ::File.absolute_path target_path
 
-      raise ArgumentError, 'Target path must be a file' unless ::File.exist?(@target_path)
+      raise ArgumentError.new('Target path must be a file') unless ::File.exist?(@target_path)
 
       super(name, parent)
     end

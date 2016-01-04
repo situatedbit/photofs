@@ -1,5 +1,6 @@
 require_relative 'dir'
 require_relative 'stat'
+require_relative 'file'
 require 'rfuse'
 
 module PhotoFS
@@ -9,7 +10,7 @@ module PhotoFS
     def initialize(name, source_path, parent = nil)
       @source_path = ::File.absolute_path(source_path)
 
-      raise ArgumentError, 'Source directory must be a directory' unless ::File.exist?(@source_path) || ::File.directory?(@source_path)
+      raise ArgumentError.new('Source directory must be a directory') unless ::File.exist?(@source_path) || ::File.directory?(@source_path)
 
       super(name, parent)
     end
@@ -37,5 +38,6 @@ module PhotoFS
 
       ::File.directory?(path) ? MirroredDir.new(entry, path, self) : File.new(entry, path, self)
     end
+
   end
 end
