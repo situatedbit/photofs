@@ -20,4 +20,35 @@ describe PhotoFS::Image do
       expect(left.id).not_to eq(right.id)
     end
   end
+  describe "== method" do
+    let(:left) { PhotoFS::Image.new(path) }
+
+    context "other is not an image" do
+      let(:right) { 'an other' }
+
+      it "should be false" do
+        expect(left == right).to be false
+      end
+    end
+
+    context "other does not have the same id" do
+      let(:right) { PhotoFS::Image.new(left.id * 2) }
+
+      it "should be false" do
+        expect(left == right).to be false
+      end
+    end
+
+    context "other is an image with same id" do
+      let(:right) { PhotoFS::Image.new('') }
+
+      before(:each) do
+        allow(right).to receive(:id).and_return(left.id)
+      end
+
+      it "should be true" do
+        expect(left == right). to be true
+      end
+    end
+  end
 end
