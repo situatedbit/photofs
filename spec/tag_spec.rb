@@ -11,22 +11,19 @@ describe PhotoFS::Tag do
 
   describe "#intersection" do
     let(:left) { PhotoFS::Tag.new('left') }
-    let(:right) { PhotoFS::Tag.new('right') }
     let(:a) { PhotoFS::Image.new('a') }
     let(:b) { PhotoFS::Image.new('b') }
     let(:b2) { PhotoFS::Image.new('b') }
     let(:c) { PhotoFS::Image.new('c') }
+    let(:right) { [b2, c] }
 
     before(:each) do
       allow(left).to receive(:images).and_return([a])
-      allow(right).to receive(:images).and_return([b])
     end
 
     context "the parameter set is empty" do
-      before(:each) { allow(right).to receive(:images).and_return([]) }
-
       it "should return an empty set" do
-        expect(left.intersection right).to be_empty
+        expect(left.intersection []).to be_empty
       end
     end
 
@@ -47,7 +44,6 @@ describe PhotoFS::Tag do
     context "the intersection is non-empty" do
       before(:each) do
         allow(left).to receive(:images).and_return([a, b])
-        allow(right).to receive(:images).and_return([b2, c])
       end
 
       it "should return a set of the intersection" do
