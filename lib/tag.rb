@@ -16,5 +16,11 @@ module PhotoFS
     def images
       @images.values
     end
+
+    def intersection(other)
+      return [] if images.empty? || other.images.empty?
+
+      images.select { |image| other.images.include? image }
+    end
   end
 end
