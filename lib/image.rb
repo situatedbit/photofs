@@ -10,6 +10,10 @@ module PhotoFS
       path.hash
     end
 
+    def name
+      path.gsub ::File::SEPARATOR, '-'
+    end
+
     def ==(other)
       other.is_a?(Image) && (hash == other.hash)
     end

@@ -32,10 +32,29 @@ module PhotoFS
       tag_set[1..-1].reduce(tag_set.first.images) { |images, tag| tag.intersection(images) }
     end
 
+    def from(images)
+      images = [images].flatten # normalize as array
+
+      hash = image_tags_hash
+
+      images.map { |image| hash[image] || [] }.flatten.uniq
+    end
+
     private
 
     def tags
       @tags
     end
+
+    def image_tags_hash
+      hash = {}
+
+      tags.values.each do |tag|
+        tag.images.each { |i| hash[i] = hash.fetch(i, []) + [tag] }
+      end
+
+      hash
+    end
+
   end
 end

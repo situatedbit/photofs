@@ -7,10 +7,16 @@ module PhotoFS
       @images = []
     end
 
-    public
+    def ==(other)
+      other.is_a?(Tag) && (hash == other.hash)
+    end
 
     def add(image)
       @images << image
+    end
+
+    def hash
+      name.hash
     end
 
     def images
@@ -23,5 +29,6 @@ module PhotoFS
       images & other_images
     end
 
+    alias_method :eql?, :==
   end
 end

@@ -66,6 +66,46 @@ describe PhotoFS::TagSet do
     end
   end
 
+  describe "#from" do
+    let(:image) { PhotoFS::Image.new 'ちよだ' }
+    let(:tag) { PhotoFS::Tag.new 'タグ' }
+
+    context "when there are no tags" do
+      before(:each) do
+        allow(tags).to receive(:image_tags_hash).and_return({})
+      end
+
+      it "should return an empty collection" do
+        expect(tags.from image).to be_empty
+      end
+    end
+
+    context "when passed a single image" do
+      before(:each) do
+        allow(tags).to receive(:image_tags_hash).and_return({ image => [tag] })
+      end
+
+      it "should return the tags for that image" do
+        expect(tags.from image).to contain_exactly(tag)
+      end
+    end
+
+    context "when there are multiple images" do
+      let(:image2) { 'image2' }
+      let(:tag2) { 'tag2' }
+      let(:tag3) { 'tag3' }
+
+      before(:each) do
+        hash = { image => [tag, tag2], image2 => [tag2, tag3] }
+        allow(tags).to receive(:image_tags_hash).and_return(hash)
+      end
+
+      it "should return the union of tags from those images" do
+        expect(tags.from [image, image2]).to contain_exactly(tag, tag2, tag3)
+      end
+    end
+  end
+
   describe "#find_intersection" do
     let(:tags_hash) { Hash.new }
     let(:first) { PhotoFS::Tag.new('first') }
@@ -101,5 +141,60 @@ describe PhotoFS::TagSet do
 
       expect(tags.find_intersection [first.name, second.name]).to contain_exactly(PhotoFS::Image.new('3'))
     end
+  end
+
+  describe "#image_tags_hash" do
+    context "when there are no images" do
+      let :tags_hash do
+        Hash[ ['a', 'b', 'c'].map { |n| [n, PhotoFS::Tag.new(n)] } ]
+      end
+
+      before(:each) do
+        allow(tags).to receive(:tags).and_return(tags_hash)
+      end
+
+      it "should be empty" do
+        expect(tags.send :image_tags_hash).to be_empty
+      end
+    end
+
+    context "when there are no tags" do
+      before(:each) do
+        allow(tags).to receive(:tags).and_return({})
+      end
+
+      it "should be empty" do
+        expect(tags.send :image_tags_hash).to be_empty
+      end
+    end
+
+    context "when there are images with multiple tags" do
+      let(:tag1) { PhotoFS::Tag.new('a') }
+      let(:tag2) { PhotoFS::Tag.new('b') }
+      let(:tag3) { PhotoFS::Tag.new('c') }
+
+      let(:image1) { PhotoFS::Image.new('1') }
+      let(:image2) { PhotoFS::Image.new('2') }
+      let(:image3) { PhotoFS::Image.new('3') }
+
+      let(:tags_hash) do
+        { tag1.name => tag1, tag2.name => tag2, tag3.name => tag3 }
+      end
+
+      before(:each) do
+        allow(tag1).to receive(:images).and_return([image1, image2])
+        allow(tag2).to receive(:images).and_return([image2, image3])
+        allow(tag3).to receive(:images).and_return([image3])
+
+        allow(tags).to receive(:tags).and_return(tags_hash)
+      end
+
+      it "should flip keys and values" do
+        expect((tags.send :image_tags_hash)[image1]).to contain_exactly(tag1)
+        expect((tags.send :image_tags_hash)[image2]).to contain_exactly(tag1, tag2)
+        expect((tags.send :image_tags_hash)[image3]).to contain_exactly(tag2, tag3)
+      end
+    end
+
   end
 end
