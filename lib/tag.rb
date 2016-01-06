@@ -4,23 +4,24 @@ module PhotoFS
 
     def initialize(name)
       @name = name
-      @images = {}
+      @images = []
     end
 
     public
 
     def add(image)
-      @images[image.id] = image
+      @images << image
     end
 
     def images
-      @images.values
+      @images
     end
 
     def intersection(other_images)
       return [] if images.empty? || other_images.empty?
 
-      images.select { |image| other_images.include? image }
+      images & other_images
     end
+
   end
 end
