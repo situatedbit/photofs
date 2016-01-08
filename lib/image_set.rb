@@ -1,37 +1,39 @@
 module PhotoFS
   class ImageSet
-    attr_reader
+    def initialize(enum=nil)
+      @set = Set.new
 
-    def initialize()
-      @images_hash = {}
+      enum.each { |image| @set << image } if enum
     end
 
     def add(image)
-      @images_hash[image.name] = image
+      @set << image
     end
 
     def all
-      @images_hash.values
+      @set.to_a
     end
 
+    # new image set from cumulative intersection between this set and image_sets
+    # takes either image set or an array of image sets
     def &(image_sets)
-      image_sets = [image_sets].flatten
+      image_sets = [image_sets].flatten #normalize to array
 
-      result_image_set = ImageSet.new
+      return ImageSet.new if image_sets.empty?
 
-      unless @images_hash.empty? || image_sets.empty?
-        intersection = image_sets.reduce(images.to_set) do |memo, tag| 
-          memo & tag.images.to_set
-        end
-
-        intersection.each { |image| result_image_set << image }
+      intersection = image_sets.reduce(@set) do |memo, image_set|
+        memo & image_set.to_set
       end
 
-      result_image_set
+      ImageSet.new intersection
     end
 
     def empty?
-      @images_hash.empty?
+      @set.empty?
+    end
+
+    def to_set
+      Set.new @set
     end
 
     alias_method :intersection, :&

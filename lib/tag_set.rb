@@ -28,9 +28,13 @@ module PhotoFS
     def find_intersection(tag_names)
       tag_set = find(tag_names)
 
-      return [] if tag_set.nil? || tag_set.empty?
-
-      tag_set[1..-1].reduce(tag_set.first.images) { |images, tag| tag.intersection(images) }
+      if tag_set.nil? || tag_set.empty?
+        []
+      elsif tag_set.length == 1
+        tag_set.first.images
+      else
+        (tag_set.first & tag_set[1..-1]).images
+      end
     end
 
     def from(images)

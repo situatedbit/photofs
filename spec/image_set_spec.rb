@@ -76,8 +76,4 @@ describe PhotoFS::ImageSet do
     end
   end
 
-  describe '#tagged' do
-    it 'should return inclusive set filtered by tags'
-  end
-
 end
