@@ -1,6 +1,7 @@
 module PhotoFS
   class Image
-    attr_reader :path
+    # modifying path would break hashed storage based on path/name
+    attr_reader :path 
 
     def initialize(path)
       @path = path

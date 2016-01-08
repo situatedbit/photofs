@@ -8,7 +8,22 @@ describe PhotoFS::Tag do
   it "should include a name" do
     expect(PhotoFS::Tag.new(name).name).to eq(name)
   end
+=begin
+  describe '#add' do
+    let(:tag) { PhotoFS::Tag.new name }
+    let(:images) { [] }
 
+    context 'when an image is added twice' do
+      before(:example) do
+        images.each { |i| tag.add(i
+# workline!
+      end
+
+      it 'should only keep the last copy' do
+      end
+    end
+  end
+=end
   describe "#hash" do
     let(:left) { PhotoFS::Tag.new name }
     let(:right) { PhotoFS::Tag.new(name * 2) }

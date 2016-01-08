@@ -24,6 +24,7 @@ module PhotoFS
       end
     end
 
+    # returns images
     def find_intersection(tag_names)
       tag_set = find(tag_names)
 
