@@ -32,6 +32,10 @@ module PhotoFS
       @set.empty?
     end
 
+    def subtract(images)
+      @set.subtract image_set.to_set
+    end
+
     def to_set
       Set.new @set
     end

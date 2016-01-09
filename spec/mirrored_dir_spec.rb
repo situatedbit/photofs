@@ -24,6 +24,14 @@ describe PhotoFS::MirroredDir do
       expect { dir.mkdir 'なにか' }.to raise_error(Errno::EPERM)
     end
   end
+
+  describe '#rmdir' do
+    let(:dir) { PhotoFS::MirroredDir.new('test', path) }
+
+    it 'should just say no' do
+      expect { dir.rmdir 'なにか' }.to raise_error(Errno::EPERM)
+    end
+  end
   
   describe "stat method" do
     let(:dir) { PhotoFS::MirroredDir.new('test', path) }

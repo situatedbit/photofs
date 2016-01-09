@@ -15,6 +15,10 @@ module PhotoFS
       raise NotImplementedError
     end
 
+    def rmdir(name)
+      raise NotImplementedError
+    end
+
     def nodes
       node_hash.values
     end

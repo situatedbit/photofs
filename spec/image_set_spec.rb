@@ -89,5 +89,4 @@ describe PhotoFS::ImageSet do
       end
     end
   end
-
 end

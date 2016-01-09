@@ -30,4 +30,10 @@ describe PhotoFS::RootDir do
       expect { root.mkdir 'anything' }.to raise_error(Errno::EPERM)
     end
   end
+
+  describe '#rmdir' do
+    it 'should just say no' do
+      expect { root.mkdir 'anything' }.to raise_error(Errno::EPERM)
+    end
+  end
 end

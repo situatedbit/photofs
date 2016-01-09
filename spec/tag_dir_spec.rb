@@ -49,6 +49,61 @@ describe PhotoFS::TagDir do
     end
   end
 
+  describe '#rmdir' do
+    let(:tags) { PhotoFS::TagSet.new }
+    let(:dir) { PhotoFS::TagDir.new('t', tags) }
+    let(:dir_tags) { [] }
+    let(:tag_name) { 'ほっかいど' }
+    let(:tag) { PhotoFS::Tag.new tag_name }
+
+    context 'when the tag does not exist' do
+      before(:example) do
+        allow(dir).to receive(:dir_tags).and_return(dir_tags)
+        allow(dir_tags).to receive(:include?).with(tag).and_return(false)
+      end
+
+      it 'should throw an error' do
+        expect { dir.rmdir tag_name }.to raise_error(Errno::ENOENT)
+      end
+    end
+
+    context 'when the tag does exist' do
+      before(:example) do
+        allow(dir.instance_variable_get(:@tags)).to receive(:find_by_name).with(tag_name).and_return(tag)
+        allow(dir).to receive(:dir_tags).and_return(dir_tags)
+        allow(dir_tags).to receive(:include?).with(tag).and_return(true)
+      end
+
+      context 'when the tag is at the top level' do
+        before(:example) do
+          allow(dir).to receive(:is_tags_root?).and_return(true)
+        end
+
+        it 'should remove the tag from the tag set' do
+          expect(tags).to receive(:delete).with(tag)
+
+          dir.rmdir tag_name
+        end
+      end
+
+      context 'when the tag is not at the top level' do
+        let(:images) { PhotoFS::ImageSet.new }
+
+        before(:example) do
+          allow(dir).to receive(:is_tags_root?).and_return(false)
+          allow(dir).to receive(:images).and_return(images)
+        end
+
+        it 'should remove that tag from any images that are in the current directory' do
+          expect(tag).to receive(:subtract).with(images)
+
+          dir.rmdir tag_name
+        end
+      end
+    end # rmdir
+
+  end
+
   describe '#stat' do
     let(:tag_dir) { PhotoFS::TagDir.new('nihonbashi', PhotoFS::TagSet.new) }
     let(:size) { 687 }

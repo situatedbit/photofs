@@ -186,6 +186,15 @@ describe PhotoFS::TagSet do
         expect((tags.send :image_tags_hash)[image3]).to contain_exactly(tag2, tag3)
       end
     end
+  end
 
+  describe '#delete' do
+    let(:tag) { PhotoFS::Tag.new 'test' }
+
+    it 'proxies the delete call to internal hash storage' do
+      expect(tags.instance_variable_get(:@tags)).to receive(:delete).with(tag.name)
+
+      tags.delete tag
+    end
   end
 end

@@ -16,6 +16,18 @@ module PhotoFS
       @tags.find_or_create(tag_name)
     end
 
+    def rmdir(tag_name)
+      tag = @tags.find_by_name tag_name
+
+      raise Errno::ENOENT.new(tag_name) unless tag && dir_tags.include?(tag)
+
+      if is_tags_root?
+        @tags.delete tag
+      else
+        tag.subtract images
+      end
+    end
+
     def stat
       stat_hash = { :atime => Time.now,
                     :ctime => Time.now,
@@ -45,16 +57,16 @@ module PhotoFS
       if is_tags_root?
         @tags.all
       else
-        @tags.find_by_image(file_images) - query_tags
+        @tags.find_by_image(images.all) - query_tags
       end
     end
 
     def files
-      file_images.map { |image| File.new(image.name, image.path, self) }
+      images.all.map { |image| File.new(image.name, image.path, self) }
     end
 
-    def file_images
-      TagSet.intersection(query_tags).images
+    def images
+      TagSet.intersection(query_tags)
     end
 
     def is_tags_root?

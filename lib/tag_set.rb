@@ -24,6 +24,10 @@ module PhotoFS
       @tags.values
     end
 
+    def delete(tag)
+      @tags.delete tag.name
+    end
+
     def find_or_create(tag_name)
       tag = find_by_name(tag_name) || Tag.new(tag_name)
 

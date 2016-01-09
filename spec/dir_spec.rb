@@ -35,6 +35,12 @@ describe PhotoFS::Dir do
     end
   end
 
+  describe '#rmdir' do
+    it 'should not be implemented' do
+      expect{ dir.rmdir 'anything' }.to raise_error(NotImplementedError)
+    end
+  end
+
   describe 'search method' do
     context 'when path is empty' do
       it 'should return itself' do

@@ -68,6 +68,14 @@ module PhotoFS
       search(path_components[0..-2].join(::File::SEPARATOR)).mkdir(path_components.last)
     end
 
+    def rmdir(context, path)
+      log "rmdir: #{path}"
+
+      path_components = path.split ::File::SEPARATOR
+
+      search(path_components[0..-2].join(::File::SEPARATOR)).rmdir(path_components.last)
+    end
+
     def log(s)
       puts s
     end
