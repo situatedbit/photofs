@@ -60,17 +60,14 @@ describe PhotoFS::TagDir do
     context 'there is a dir_tag' do
       let(:tag_class) { Struct.new(:name) }
       let(:dir_tags) { [tag_class.new('c'), tag_class.new('d')] }
-      let(:query_tags) { ['a', 'b'] }
+      let(:query_tag_names) { ['a', 'b'] }
       let(:tags) { PhotoFS::TagSet.new }
 
-      let(:dirs) do
-        
-      end
-
       before(:example) do
+        tag_dir.instance_variable_set(:@tags, tags)
+        tag_dir.instance_variable_set(:@query_tag_names, query_tag_names)
+
         allow(tag_dir).to receive(:dir_tags).and_return(dir_tags)
-        allow(tag_dir).to receive(:tags).and_return(tags)
-        allow(tag_dir).to receive(:query_tags).and_return(query_tags)
       end
 
       it 'should return a new collection with a tag_dir with combined query tags' do

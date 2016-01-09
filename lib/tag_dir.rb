@@ -2,11 +2,9 @@ require_relative 'dir'
 
 module PhotoFS
   class TagDir < PhotoFS::Dir
-    attr_reader :query_tags
-
-    def initialize(name, tags, query_tags=[])
+    def initialize(name, tags, query_tag_names=[])
       @tags = tags
-      @query_tags = query_tags
+      @query_tag_names = query_tag_names
 
       super(name, parent)
     end
@@ -23,26 +21,26 @@ module PhotoFS
 
     private
 
-    def tags
-      @tags
+    def dirs
+      dir_tags.map do |tag|
+        TagDir.new(tag.name, @tags, @query_tag_names + [tag.name])
+      end
+    end
+
+    def dir_tags
+      @tags.find_by_image(file_images) - query_tags
     end
 
     def files
       file_images.map { |image| File.new(image.name, image.path, self) }
     end
 
-    def dirs
-      dir_tags.map do |tag|
-        TagDir.new(tag.name, tags, query_tags + [tag.name])
-      end
-    end
-
-    def dir_tags
-      tags.from(file_images) - query_tags
-    end
-
     def file_images
-      tags.find_intersection(query_tags)
+      @tags.intersection(query_tags).images
+    end
+
+    def query_tags
+      @tags.find_by_name(@query_tag_names)
     end
 
   end

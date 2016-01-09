@@ -6,6 +6,20 @@ require 'tag'
 describe PhotoFS::ImageSet do
   let(:set) { PhotoFS::ImageSet.new }
 
+  describe '#initialize' do
+    let(:other_set) { PhotoFS::ImageSet.new }
+
+    context 'when passed another collection' do
+      before(:example) do
+        other_set.add(PhotoFS::Image.new 'test')
+      end
+
+      it 'adopts the collection set as its own' do
+        expect(PhotoFS::ImageSet.new(other_set).images).to contain_exactly(*other_set.images)
+      end
+    end
+  end
+
   describe '#add' do
     let(:image) { PhotoFS::Image.new 'test' }
 

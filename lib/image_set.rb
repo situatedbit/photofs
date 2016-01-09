@@ -1,9 +1,7 @@
 module PhotoFS
   class ImageSet
-    def initialize(enum=nil)
-      @set = Set.new
-
-      enum.each { |image| @set << image } if enum
+    def initialize(image_set=nil)
+      @set = image_set ? image_set.to_set : Set.new
     end
 
     def add(image)

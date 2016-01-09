@@ -21,34 +21,34 @@ describe PhotoFS::TagSet do
     end
   end
 
-  describe "#find" do
+  describe "#find_by_name" do
     let(:tag) { PhotoFS::Tag.new name }
 
     context "passed a non-matching string" do
       it "it should return nil" do
-        expect(tags.find 'garbage').to be nil
+        expect(tags.find_by_name 'garbage').to be nil
       end
     end
 
     context "passed a matching string" do
       before(:each) do
-        allow(tags).to receive(:tags).and_return({tag.name => tag})
+        tags.instance_variable_set(:@tags, {tag.name => tag})
       end
 
       it "should return a tag" do
-        expect(tags.find tag.name).to eq(tag)
+        expect(tags.find_by_name tag.name).to eq(tag)
       end
     end
 
     context "passed an empty array" do
       it "should return an empty array" do
-        expect(tags.find []).to be_empty
+        expect(tags.find_by_name []).to be_empty
       end
     end
 
     context "do passed an array of non-matching strings" do
       it "should return an empty array" do
-        expect(tags.find ['garbage', 'trash']).to be_empty
+        expect(tags.find_by_name ['garbage', 'trash']).to be_empty
       end
     end
 
@@ -57,16 +57,16 @@ describe PhotoFS::TagSet do
       let(:search_tags) { [tag.name, tag2.name] }
 
       before(:each) do
-        allow(tags).to receive(:tags).and_return({tag.name => tag, tag2.name => tag2})
+        tags.instance_variable_set(:@tags, {tag.name => tag, tag2.name => tag2})
       end
 
       it "should return an array of matching tags" do
-        expect(tags.find search_tags).to contain_exactly(tag, tag2)
+        expect(tags.find_by_name search_tags).to contain_exactly(tag, tag2)
       end
     end
   end
 
-  describe "#from" do
+  describe "#find_by_image" do
     let(:image) { PhotoFS::Image.new 'ちよだ' }
     let(:tag) { PhotoFS::Tag.new 'タグ' }
 
@@ -76,7 +76,7 @@ describe PhotoFS::TagSet do
       end
 
       it "should return an empty collection" do
-        expect(tags.from image).to be_empty
+        expect(tags.find_by_image image).to be_empty
       end
     end
 
@@ -86,7 +86,7 @@ describe PhotoFS::TagSet do
       end
 
       it "should return the tags for that image" do
-        expect(tags.from image).to contain_exactly(tag)
+        expect(tags.find_by_image image).to contain_exactly(tag)
       end
     end
 
@@ -101,13 +101,12 @@ describe PhotoFS::TagSet do
       end
 
       it "should return the union of tags from those images" do
-        expect(tags.from [image, image2]).to contain_exactly(tag, tag2, tag3)
+        expect(tags.find_by_image [image, image2]).to contain_exactly(tag, tag2, tag3)
       end
     end
   end
 
-  describe "#find_intersection" do
-    let(:tags_hash) { Hash.new }
+  describe "#intersection" do
     let(:first) { PhotoFS::Tag.new('first') }
     let(:second) { PhotoFS::Tag.new('second') }
     let(:first_images) { [1, 2, 3].map { |i| PhotoFS::Image.new(i.to_s) } }
@@ -119,27 +118,19 @@ describe PhotoFS::TagSet do
     end
 
     it "should respond to an empty array with an empty set" do
-      allow(tags).to receive(:find).with([]).and_return([])
-
-      expect(tags.find_intersection([])).to be_empty
+      expect(PhotoFS::TagSet.intersection([]).all).to be_empty
     end
 
     it "should return an empty set for tags that don't exist" do
-      allow(tags).to receive(:find).with(['garbage']).and_return([])
-
-      expect(tags.find_intersection ['garbage']).to be_empty
+      expect(PhotoFS::TagSet.intersection([PhotoFS::Tag.new('garbage')]).all).to be_empty
     end
 
     it "should do a simple find for an array of size one" do
-      allow(tags).to receive(:find).with([first.name]).and_return([first])
-
-      expect(tags.find_intersection([first.name])).to contain_exactly(*first_images)
+      expect(PhotoFS::TagSet.intersection([first]).all).to contain_exactly(*first_images)
     end
 
     it "should create an intersection set from the tags that are returned" do
-      allow(tags).to receive(:find).with([first.name, second.name]).and_return([first, second])
-
-      expect(tags.find_intersection [first.name, second.name]).to contain_exactly(PhotoFS::Image.new('3'))
+      expect(PhotoFS::TagSet.intersection([first, second]).all).to contain_exactly(PhotoFS::Image.new('3'))
     end
   end
 
@@ -150,7 +141,7 @@ describe PhotoFS::TagSet do
       end
 
       before(:each) do
-        allow(tags).to receive(:tags).and_return(tags_hash)
+        tags.instance_variable_set(:@tags, tags_hash)
       end
 
       it "should be empty" do
@@ -160,7 +151,7 @@ describe PhotoFS::TagSet do
 
     context "when there are no tags" do
       before(:each) do
-        allow(tags).to receive(:tags).and_return({})
+        tags.instance_variable_set(:@tags, {})
       end
 
       it "should be empty" do
@@ -186,7 +177,7 @@ describe PhotoFS::TagSet do
         allow(tag2).to receive(:images).and_return([image2, image3])
         allow(tag3).to receive(:images).and_return([image3])
 
-        allow(tags).to receive(:tags).and_return(tags_hash)
+        tags.instance_variable_set(:@tags, tags_hash)
       end
 
       it "should flip keys and values" do
