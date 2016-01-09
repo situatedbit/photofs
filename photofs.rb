@@ -1,5 +1,7 @@
 require 'rfuse'
 require_relative 'lib/mirrored_dir'
+require_relative 'lib/tag_dir'
+require_relative 'lib/tag_set'
 
 module PhotoFS
   class Fuse
@@ -13,6 +15,7 @@ module PhotoFS
 
       @root = Dir.new('', nil)
       @root.add MirroredDir.new('o', @source_path)
+      @root.add TagDir.new('t', TagSet.new)
     end
 
     private

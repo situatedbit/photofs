@@ -7,6 +7,10 @@ describe PhotoFS::TagDir do
     it 'should be implemented'
   end
 
+  describe '#stat' do
+    it 'should be implemented'
+  end
+
   describe '#node_hash' do
     let(:tag_dir) { PhotoFS::TagDir.new('nihonbashi', PhotoFS::TagSet.new) }
 

@@ -10,7 +10,7 @@ module PhotoFS
     end
 
     def add(node)
-      raise "Not yet implemented"
+      raise NotImplementedError
     end
 
     protected
