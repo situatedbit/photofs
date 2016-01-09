@@ -22,6 +22,12 @@ module PhotoFS
       true
     end
 
+    def mkdir(name)
+      raise Errno::EEXIST.new(name) if node_hash.has_key?(name)
+
+      add Dir.new(name)
+    end
+
     def nodes
       node_hash.values
     end

@@ -43,6 +43,34 @@ describe PhotoFS::Dir do
     end
   end
 
+  describe '#mkdir' do
+    let(:name) { 'sombre reptiles' }
+
+    context 'when the node already exists' do
+      let(:node_hash) { {name => nil} }
+
+      before(:example) do
+        allow(dir).to receive(:node_hash).and_return(node_hash)
+      end
+
+      it 'should throw an error' do
+        expect { dir.mkdir name }.to raise_error(Errno::EEXIST)
+      end
+    end
+
+    context 'when the node does not yet exist' do
+      before(:example) do
+        allow(dir).to receive(:node_hash).and_return(Hash.new)
+      end
+
+      it 'should create a new directory and add the node' do
+        expect(dir).to receive(:add)
+
+        dir.mkdir name
+      end
+    end
+  end
+
   describe 'search method' do
     context 'when path is empty' do
       it 'should return itself' do
