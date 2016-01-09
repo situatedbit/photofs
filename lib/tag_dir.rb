@@ -9,8 +9,11 @@ module PhotoFS
       super(name, parent)
     end
 
-    def add(node)
-      raise NotImplementedError
+    def mkdir(tag_name)
+      raise Errno::EPERM.new(tag_name) unless is_tags_root?
+      raise Errno::EEXIST.new(tag_name) if node_hash.has_key?(tag_name)
+
+      @tags.find_or_create(tag_name)
     end
 
     def stat
@@ -39,7 +42,11 @@ module PhotoFS
     end
 
     def dir_tags
-      @tags.find_by_image(file_images) - query_tags
+      if is_tags_root?
+        @tags.all
+      else
+        @tags.find_by_image(file_images) - query_tags
+      end
     end
 
     def files
@@ -48,6 +55,10 @@ module PhotoFS
 
     def file_images
       TagSet.intersection(query_tags).images
+    end
+
+    def is_tags_root?
+      @query_tag_names.empty?
     end
 
     def size

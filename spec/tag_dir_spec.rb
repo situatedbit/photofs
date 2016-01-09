@@ -3,8 +3,50 @@ require 'tag_dir'
 require 'tag_set'
 
 describe PhotoFS::TagDir do
-  describe '#add' do
-    it 'should be implemented'
+  describe '#mkdir' do
+    let(:tags) { PhotoFS::TagSet.new }
+    let(:dir) { PhotoFS::TagDir.new('t', tags) }
+    let(:tag_name) { 'おさか' }
+
+    context 'when dir is the top-most tag directory' do
+      before(:example) do
+        allow(dir).to receive(:is_tags_root?).and_return(true)
+      end
+
+      context 'when the tag does not exist' do
+        before(:example) do
+          allow(dir).to receive(:dir_tags).and_return([])
+        end
+
+        it 'should create a new tag' do
+          expect(tags).to receive(:find_or_create).with(tag_name)
+
+          dir.mkdir(tag_name)
+        end
+      end
+
+      context 'when the tag exists' do
+        let(:dir_tags) { [PhotoFS::Tag.new(tag_name)] }
+
+        before(:example) do
+          allow(dir).to receive(:dir_tags).and_return(dir_tags)
+        end
+
+        it 'should throw an error' do
+          expect { dir.mkdir tag_name }.to raise_error(Errno::EEXIST)
+        end
+      end
+    end
+
+    context 'when the dir is not the top-most tag directory' do
+      before(:example) do
+        allow(dir).to receive(:is_tags_root?).and_return(false)
+      end
+
+      it 'should throw an error' do
+        expect { dir.mkdir tag_name }.to raise_error(Errno::EPERM)
+      end
+    end
   end
 
   describe '#stat' do

@@ -4,18 +4,7 @@ module PhotoFS
   class Dir < PhotoFS::Node
 
     def initialize(name, parent = nil)
-      @nodes = nil
-
       super(name, parent)
-    end
-
-    def add(node)
-      @nodes ||= {}
-
-      @nodes[node.name] = node
-      node.parent = self
-
-      node
     end
 
     def directory?
@@ -23,9 +12,7 @@ module PhotoFS
     end
 
     def mkdir(name)
-      raise Errno::EEXIST.new(name) if node_hash.has_key?(name)
-
-      add Dir.new(name)
+      raise NotImplementedError
     end
 
     def nodes
@@ -53,7 +40,7 @@ module PhotoFS
 
     # implement this in subclass to support memoization
     def node_hash
-      @nodes.nil? ? {} : @nodes
+      raise NotImplementedError
     end
 
   end

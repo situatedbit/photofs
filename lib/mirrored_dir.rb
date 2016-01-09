@@ -15,6 +15,10 @@ module PhotoFS
       super(name, parent)
     end
 
+    def mkdir(name)
+      raise Errno::EPERM
+    end
+
     def stat
       stat_hash = PhotoFS::Stat.stat_hash(::File.stat(@source_path))
 

@@ -18,10 +18,6 @@ describe PhotoFS::Dir do
       expect(dir.directory?).to be true
     end
 
-    it 'should not have any nodes' do
-      expect(dir.nodes).to be_empty
-    end
-
     describe 'stat method' do
       it "should return read-only" do
         expect(dir.stat.mode & PhotoFS::Stat::MODE_MASK).to eq(PhotoFS::Stat::MODE_READ_ONLY)
@@ -33,41 +29,9 @@ describe PhotoFS::Dir do
     end
   end # top level instance
 
-  describe "add method" do
-    let(:node) { PhotoFS::Node.new('test', nil) }
-
-    it 'should set the parent on the node' do
-      expect(node).to receive(:parent=).with(dir)
-
-      dir.add(node)
-    end
-  end
-
   describe '#mkdir' do
-    let(:name) { 'sombre reptiles' }
-
-    context 'when the node already exists' do
-      let(:node_hash) { {name => nil} }
-
-      before(:example) do
-        allow(dir).to receive(:node_hash).and_return(node_hash)
-      end
-
-      it 'should throw an error' do
-        expect { dir.mkdir name }.to raise_error(Errno::EEXIST)
-      end
-    end
-
-    context 'when the node does not yet exist' do
-      before(:example) do
-        allow(dir).to receive(:node_hash).and_return(Hash.new)
-      end
-
-      it 'should create a new directory and add the node' do
-        expect(dir).to receive(:add)
-
-        dir.mkdir name
-      end
+    it 'should not be implemented' do
+      expect{ dir.mkdir 'anything' }.to raise_error(NotImplementedError)
     end
   end
 
@@ -108,6 +72,10 @@ describe PhotoFS::Dir do
     end
 
     context 'when there is no match' do
+      before(:each) do
+        allow(dir).to receive(:node_hash).and_return( {} )
+      end
+
       it 'should return nil' do
         expect(dir.search(['garbage'])).to be nil
       end

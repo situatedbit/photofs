@@ -1,4 +1,5 @@
 require 'rfuse'
+require_relative 'lib/root_dir'
 require_relative 'lib/mirrored_dir'
 require_relative 'lib/tag_dir'
 require_relative 'lib/tag_set'
@@ -13,14 +14,14 @@ module PhotoFS
       @source_path = options[:source]
       @mountpoint = options[:mountpoint]
 
-      @root = Dir.new('', nil)
+      @root = RootDir.new
       @root.add MirroredDir.new('o', @source_path)
       @root.add TagDir.new('t', TagSet.new)
     end
 
     private
     def source_path=(value)
-      raise RFuse::Error, "Source is not a directory (#{value})" unless ::File.directory?(value)
+      raise RFuse::Error.new("Source is not a directory (#{value})") unless ::File.directory?(value)
 
       @source_path = File.realpath(value)
     end
