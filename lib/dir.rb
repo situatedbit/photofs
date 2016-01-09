@@ -40,7 +40,7 @@ module PhotoFS
     end
 
     def stat
-      RFuse::Stat.directory(PhotoFS::Stat::MODE_READ_ONLY, {})
+      RFuse::Stat.directory(Stat::MODE_READ_ONLY, {})
     end
 
     protected

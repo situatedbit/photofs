@@ -8,7 +8,20 @@ describe PhotoFS::TagDir do
   end
 
   describe '#stat' do
-    it 'should be implemented'
+    let(:tag_dir) { PhotoFS::TagDir.new('nihonbashi', PhotoFS::TagSet.new) }
+    let(:size) { 687 }
+
+    before(:example) do
+      allow(tag_dir).to receive(:size).and_return(size)
+    end
+
+    it 'should return writable by owner' do
+      expect(tag_dir.stat.mode & PhotoFS::Stat::MODE_MASK & PhotoFS::Stat::PERM_USER_WRITE).to be PhotoFS::Stat::PERM_USER_WRITE
+    end
+
+    it 'should include size' do
+      expect(tag_dir.stat.size).to be size
+    end
   end
 
   describe '#node_hash' do
@@ -79,6 +92,39 @@ describe PhotoFS::TagDir do
         expect(PhotoFS::TagDir).to receive(:new).with('d', tags, ['a', 'b', 'd'])
 
         tag_dir.send :dirs
+      end
+    end
+  end
+
+  describe '#size' do
+    let(:tag_dir) { PhotoFS::TagDir.new('nihonbashi', PhotoFS::TagSet.new) }
+    let(:file_name) { 'ぎんざ' }
+    let(:dir_name) { 'おだいば' }
+
+    context 'when the directory is empty' do
+      before(:example) do
+        allow(tag_dir).to receive(:node_hash).and_return({})
+      end
+
+      it 'should return 0' do
+        expect(tag_dir.send :size).to be 0
+      end
+    end
+
+    context 'when there are directory contents' do
+      let(:size) { (file_name + dir_name).length }
+
+      let(:node_hash) do
+        { file_name => PhotoFS::Node.new(file_name),
+          dir_name => PhotoFS::Node.new(dir_name) }
+      end
+
+      before(:example) do
+        allow(tag_dir).to receive(:node_hash).and_return(node_hash)
+      end
+
+      it 'should return the sum of the node names' do
+        expect(tag_dir.send :size).to be(size)
       end
     end
   end

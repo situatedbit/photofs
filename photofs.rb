@@ -50,7 +50,7 @@ module PhotoFS
     def getattr(context, path)
       log "stat: #{path}"
 
-      search(path).stat
+      Stat.new({:gid => context.gid, :uid => context.uid}, search(path).stat)
     end
 
     def readlink(context, path, size)

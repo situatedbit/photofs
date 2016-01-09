@@ -1,3 +1,5 @@
+require 'set'
+
 module PhotoFS
   class ImageSet
     def initialize(image_set=nil)

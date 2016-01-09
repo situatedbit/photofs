@@ -13,6 +13,17 @@ module PhotoFS
       raise NotImplementedError
     end
 
+    def stat
+      stat_hash = { :atime => Time.now,
+                    :ctime => Time.now,
+                    :mtime => Time.now,
+                    :size => size }
+
+      mode = Stat.add Stat::MODE_READ_ONLY, Stat::PERM_USER_WRITE
+
+      RFuse::Stat.directory(mode, stat_hash)
+    end
+
     protected
 
     def node_hash
@@ -36,7 +47,11 @@ module PhotoFS
     end
 
     def file_images
-      @tags.intersection(query_tags).images
+      TagSet.intersection(query_tags).images
+    end
+
+    def size
+      node_hash.values.reduce(0) { |size, node| size + node.name.length }
     end
 
     def query_tags
