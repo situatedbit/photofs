@@ -7,17 +7,39 @@ describe PhotoFS::TagSet do
   let(:name) { 'ほっかいど' }
   let(:tags) { PhotoFS::TagSet.new }
 
-  describe "find_or_create method" do
-    it "should create a new tag object if non already exists" do
-      expect(PhotoFS::Tag).to receive(:new).with(name)
+  describe "#add?" do
+    let(:tag) { PhotoFS::Tag.new 'test' }
 
-      tags.find_or_create(name)
+    context 'when tag is already in the set' do
+      before(:example) do
+        allow(tags.instance_variable_get(:@tags)).to receive(:has_key?).with(tag.name).and_return(true)
+      end
+
+      it 'should return nil' do
+        expect(tags.add? tag).to be nil
+      end
+
+      it 'should not add tag to the set' do
+        expect(tags.instance_variable_get(:@tags)).not_to receive(:[]=)
+
+        tags.add? tag
+      end
     end
 
-    it "should return an existing tag object" do
-      tag = tags.find_or_create(name)
+    context 'when tag is not in the set' do
+      before(:example) do
+        allow(tags.instance_variable_get(:@tags)).to receive(:has_key?).with(tag.name).and_return(false)
+      end
 
-      expect(tags.find_or_create name).to be(tag)
+      it 'should return self' do
+        expect(tags.add? tag).to be tags
+      end
+
+      it 'should add tag to the set' do
+        expect(tags.instance_variable_get(:@tags)).to receive(:[]=).with(tag.name, tag)
+
+        tags.add? tag
+      end
     end
   end
 

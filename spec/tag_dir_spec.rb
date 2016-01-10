@@ -7,6 +7,7 @@ describe PhotoFS::TagDir do
     let(:tags) { PhotoFS::TagSet.new }
     let(:dir) { PhotoFS::TagDir.new('t', tags) }
     let(:tag_name) { 'おさか' }
+    let(:tag) { PhotoFS::Tag.new tag_name }
 
     context 'when dir is the top-most tag directory' do
       before(:example) do
@@ -19,14 +20,14 @@ describe PhotoFS::TagDir do
         end
 
         it 'should create a new tag' do
-          expect(tags).to receive(:find_or_create).with(tag_name)
+          expect(tags).to receive(:add?).with(tag)
 
           dir.mkdir(tag_name)
         end
       end
 
       context 'when the tag exists' do
-        let(:dir_tags) { [PhotoFS::Tag.new(tag_name)] }
+        let(:dir_tags) { [tag] }
 
         before(:example) do
           allow(dir).to receive(:dir_tags).and_return(dir_tags)

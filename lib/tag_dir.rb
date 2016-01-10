@@ -11,9 +11,12 @@ module PhotoFS
 
     def mkdir(tag_name)
       raise Errno::EPERM.new(tag_name) unless is_tags_root?
-      raise Errno::EEXIST.new(tag_name) if node_hash.has_key?(tag_name)
 
-      @tags.find_or_create(tag_name)
+      tag = Tag.new tag_name
+
+      raise Errno::EEXIST.new(tag_name) if dir_tags.include?(tag)
+
+      @tags.add?(tag)
     end
 
     def rmdir(tag_name)

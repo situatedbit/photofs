@@ -20,18 +20,21 @@ module PhotoFS
       @tags = {}
     end
 
+    def add?(tag)
+      if @tags.has_key?(tag.name)
+        nil
+      else
+        @tags[tag.name] = tag
+        self
+      end
+    end
+
     def all
       @tags.values
     end
 
     def delete(tag)
       @tags.delete tag.name
-    end
-
-    def find_or_create(tag_name)
-      tag = find_by_name(tag_name) || Tag.new(tag_name)
-
-      @tags[tag_name] = tag
     end
 
     # returns array if tag_names is an array, a single tag otherwise
