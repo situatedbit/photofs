@@ -1,5 +1,5 @@
 require 'rfuse'
-require_relative 'path'
+require_relative 'relative_path'
 require_relative 'root_dir'
 require_relative 'mirrored_dir'
 require_relative 'tag_dir'
