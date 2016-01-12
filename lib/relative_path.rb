@@ -9,13 +9,13 @@ module PhotoFS
       other.is_a?(RelativePath) && (hash == other.hash)
     end
 
-    def follow_first
+    def descend
       return nil if is_this?
 
       RelativePath.new (['.'] + split[2..-1]).join(separator)
     end
 
-    def first_name
+    def top_name
       return nil if is_this?
 
       split[1]

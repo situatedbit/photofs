@@ -30,12 +30,12 @@ describe PhotoFS::RelativePath do
     end
   end
 
-  describe '#follow_first' do
+  describe :descend do
     context 'when there is more than one component' do
       let(:path) { PhotoFS::RelativePath.new '/first/second/third' }
 
       it 'returns a path object including all components but the last' do
-        expect(path.follow_first.to_s).to eq('./second/third')
+        expect(path.descend.to_s).to eq('./second/third')
       end
     end
 
@@ -43,7 +43,7 @@ describe PhotoFS::RelativePath do
       let(:path) { PhotoFS::RelativePath.new '/' }
 
       it 'returns a path object with length of 0' do
-        expect(path.follow_first).to be nil
+        expect(path.descend).to be nil
       end
     end
 
@@ -51,17 +51,17 @@ describe PhotoFS::RelativePath do
       let(:path) { PhotoFS::RelativePath.new '/help' }
 
       it 'returns a path referencing this' do
-        expect(path.follow_first.to_s).to eq('./')
+        expect(path.descend.to_s).to eq('./')
       end
     end
   end
 
-  describe '#first_name' do
+  describe '#top_name' do
     context 'when there is more than one component' do
       let(:path) { PhotoFS::RelativePath.new '/first/second/third' }
 
       it 'returns the first child as a string' do
-        expect(path.first_name).to eq('first')
+        expect(path.top_name).to eq('first')
       end
     end
 
@@ -69,7 +69,7 @@ describe PhotoFS::RelativePath do
       let(:path) { PhotoFS::RelativePath.new '/' }
 
       it 'is nil' do
-        expect(path.first_name).to be nil
+        expect(path.top_name).to be nil
       end
     end
 
@@ -77,7 +77,7 @@ describe PhotoFS::RelativePath do
       let(:path) { PhotoFS::RelativePath.new '/help' }
 
       it 'is the component string' do
-        expect(path.first_name).to eq('help')
+        expect(path.top_name).to eq('help')
       end
     end
   end

@@ -51,7 +51,7 @@ describe PhotoFS::Dir do
 
     context 'when the matching node is a directory' do
       let(:search_path) { PhotoFS::RelativePath.new('ikebukuro/shinjuku') }
-      let(:found_node_name) { search_path.first_name }
+      let(:found_node_name) { search_path.top_name }
       let(:truncated_search_path) { PhotoFS::RelativePath.new('./shinjuku') }
       let(:found_node) { PhotoFS::Dir.new(found_node_name, dir) }
 

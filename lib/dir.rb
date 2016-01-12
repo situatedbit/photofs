@@ -27,10 +27,10 @@ module PhotoFS
     def search(path)
       return self if path.is_this?
 
-      node = node_hash[path.first_name]
+      node = node_hash[path.top_name]
 
       if node
-        node.directory? ? node.search(path.follow_first) : node
+        node.directory? ? node.search(path.descend) : node
       else
         nil
       end
