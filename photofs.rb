@@ -1,4 +1,5 @@
 require 'rfuse'
+require_relative 'lib/fuse'
 
 MY_OPTIONS = [:source]
 OPTION_USAGE = " -o source=path/to/photos/"
