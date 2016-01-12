@@ -1,7 +1,12 @@
 module PhotoFS
   class RelativePath
     def initialize(path)
-      @path = path.sub(/^\.?\/?/, '.' + separator)
+      # normalize path to start with ./
+      @path = '.' + separator + path.sub(/^(.$|\.\/|\/)/, '')
+    end
+
+    def ==(other)
+      other.is_a?(RelativePath) && (hash == other.hash)
     end
 
     def follow_first
@@ -14,6 +19,10 @@ module PhotoFS
       return nil if is_this?
 
       split[1]
+    end
+
+    def hash
+      to_s.hash
     end
 
     def name
@@ -33,6 +42,8 @@ module PhotoFS
     def is_this?
       split.length == 1
     end
+
+    alias_method :eql?, :==
 
     private 
     def components

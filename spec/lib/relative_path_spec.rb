@@ -24,8 +24,8 @@ describe PhotoFS::RelativePath do
         expect(PhotoFS::RelativePath.new('./test').to_s).to eq('./test')
       end
 
-      it 'for empty string' do
-        expect(PhotoFS::RelativePath.new('').to_s).to eq('./')
+      it 'for leading .' do
+        expect(PhotoFS::RelativePath.new('.test').to_s).to eq('./.test')
       end
     end
   end

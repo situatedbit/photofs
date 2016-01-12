@@ -28,12 +28,11 @@ module PhotoFS
     end
 
     def search(path)
-      log("search: #{path}")
-      path_components = path.split ::File::SEPARATOR
+      log("search: #{path.to_s}")
       
-      node = @root.search(path_components.slice(1, path_components.size) || [])
+      node = @root.search(path)
 
-      raise Errno::ENOENT.new(path) if node.nil?
+      raise Errno::ENOENT.new(path.to_s) if node.nil?
 
       node
     end
@@ -42,7 +41,7 @@ module PhotoFS
     def readdir(context, path, filler, offset, ffi)
       log "readdir: #{path}"
 
-      dir = search path
+      dir = search RelativePath.new(path)
 
       raise Errno::ENOTDIR.new(path) unless dir.directory?
 
@@ -52,29 +51,31 @@ module PhotoFS
     def getattr(context, path)
       log "stat: #{path}"
 
+      path = RelativePath.new(path)
+
       Stat.new({:gid => context.gid, :uid => context.uid}, search(path).stat)
     end
 
     def readlink(context, path, size)
       log "readlink: #{path}, #{size.to_s}"
 
-      search(path).target_path
+      search(RelativePath.new(path)).target_path
     end
 
     def mkdir(context, path, mode)
       log "mkdir: #{path}"
 
-      path_components = path.split ::File::SEPARATOR
+      path = RelativePath.new(path)
 
-      search(path_components[0..-2].join(::File::SEPARATOR)).mkdir(path_components.last)
+      search(path.parent).mkdir(path.name)
     end
 
     def rmdir(context, path)
       log "rmdir: #{path}"
 
-      path_components = path.split ::File::SEPARATOR
+      path = RelativePath.new(path)
 
-      search(path_components[0..-2].join(::File::SEPARATOR)).rmdir(path_components.last)
+      search(path.parent).rmdir(path.name)
     end
 
     def log(s)

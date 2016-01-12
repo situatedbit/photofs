@@ -25,12 +25,12 @@ module PhotoFS
 
     # expect search to be an array of path compontents
     def search(path)
-      return self if path.empty?
+      return self if path.is_this?
 
-      node = node_hash[path.first]
+      node = node_hash[path.first_name]
 
       if node
-        node.directory? ? node.search(path.slice(1, path.size)) : node
+        node.directory? ? node.search(path.follow_first) : node
       else
         nil
       end

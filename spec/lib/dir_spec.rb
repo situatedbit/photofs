@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'dir'
+require 'relative_path'
 
 describe PhotoFS::Dir do
   let(:name) { 'iidabashi' }
@@ -41,17 +42,17 @@ describe PhotoFS::Dir do
     end
   end
 
-  describe 'search method' do
+  describe :search do
     context 'when path is empty' do
       it 'should return itself' do
-        expect(dir.search('')).to eq(dir)
+        expect(dir.search(PhotoFS::RelativePath.new('./'))).to eq(dir)
       end
     end
 
     context 'when the matching node is a directory' do
-      let(:search_path) { ['ikebukuro', 'shinjuku'] }
-      let(:found_node_name) { search_path.first }
-      let(:truncated_search_path) { ['shinjuku'] }
+      let(:search_path) { PhotoFS::RelativePath.new('ikebukuro/shinjuku') }
+      let(:found_node_name) { search_path.first_name }
+      let(:truncated_search_path) { PhotoFS::RelativePath.new('./shinjuku') }
       let(:found_node) { PhotoFS::Dir.new(found_node_name, dir) }
 
       before(:each) do
@@ -73,7 +74,7 @@ describe PhotoFS::Dir do
       end
 
       it 'should return that node' do      
-        expect(dir.search([file_name])).to eq(file)
+        expect(dir.search(PhotoFS::RelativePath.new(file_name))).to eq(file)
       end
     end
 
@@ -83,7 +84,7 @@ describe PhotoFS::Dir do
       end
 
       it 'should return nil' do
-        expect(dir.search(['garbage'])).to be nil
+        expect(dir.search(PhotoFS::RelativePath.new('garbage'))).to be nil
       end
     end
   end
