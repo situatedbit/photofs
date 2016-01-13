@@ -22,14 +22,12 @@ module PhotoFS
       raise Errno::EPERM.new(name)
     end
 
-    def rmdir(name)
-      raise Errno::EPERM.new(name)
-    end
-
-    protected
-
     def node_hash
       @nodes
+    end
+
+    def rmdir(name)
+      raise Errno::EPERM.new(name)
     end
 
   end

@@ -19,6 +19,10 @@ module PhotoFS
       @tags.add?(tag)
     end
 
+    def node_hash
+      Hash[ (files + dirs).map { |n| [n.name, n] } ]
+    end
+
     def rmdir(tag_name)
       tag = @tags.find_by_name tag_name
 
@@ -40,12 +44,6 @@ module PhotoFS
       mode = Stat.add Stat::MODE_READ_ONLY, Stat::PERM_USER_WRITE
 
       RFuse::Stat.directory(mode, stat_hash)
-    end
-
-    protected
-
-    def node_hash
-      Hash[ (files + dirs).map { |n| [n.name, n] } ]
     end
 
     private

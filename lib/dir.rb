@@ -19,6 +19,11 @@ module PhotoFS
       raise NotImplementedError
     end
 
+    # implement this in subclass to support memoization
+    def node_hash
+      raise NotImplementedError
+    end
+
     def nodes
       node_hash.values
     end
@@ -38,13 +43,6 @@ module PhotoFS
 
     def stat
       RFuse::Stat.directory(Stat::MODE_READ_ONLY, {})
-    end
-
-    protected
-
-    # implement this in subclass to support memoization
-    def node_hash
-      raise NotImplementedError
     end
 
   end
