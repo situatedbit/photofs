@@ -19,10 +19,6 @@ module PhotoFS
       raise Errno::EPERM
     end
 
-    def node_hash
-      Hash[entries.map { |e| [e, new_node(e)] }]
-    end
-
     def rmdir(name)
       raise Errno::EPERM
     end
@@ -31,6 +27,12 @@ module PhotoFS
       stat_hash = PhotoFS::Stat.stat_hash(::File.stat(@source_path))
 
       RFuse::Stat.directory(PhotoFS::Stat::MODE_READ_ONLY, stat_hash)
+    end
+
+    protected
+
+    def node_hash
+      Hash[entries.map { |e| [e, new_node(e)] }]
     end
 
     private

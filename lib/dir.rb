@@ -19,13 +19,8 @@ module PhotoFS
       raise NotImplementedError
     end
 
-    # implement this in subclass to support memoization
-    def node_hash
-      raise NotImplementedError
-    end
-
     def nodes
-      node_hash.values
+      relative_node_hash.merge node_hash
     end
 
     # expect search to be an array of path compontents
@@ -43,6 +38,16 @@ module PhotoFS
 
     def stat
       RFuse::Stat.directory(Stat::MODE_READ_ONLY, {})
+    end
+
+    protected
+
+    def node_hash
+      raise NotImplementedError
+    end
+
+    def relative_node_hash
+      { '.' => self, '..' => parent }
     end
 
   end

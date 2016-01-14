@@ -36,4 +36,15 @@ describe PhotoFS::RootDir do
       expect { root.mkdir 'anything' }.to raise_error(Errno::EPERM)
     end
   end
+
+  describe :relative_node_hash do
+    context 'when there is no mountpoint' do
+      let(:dir) { PhotoFS::RootDir.new }
+
+      it 'should only include .' do
+        expect((dir.send :relative_node_hash).to_a).to contain_exactly(['.', dir])
+      end
+    end
+  end
+
 end

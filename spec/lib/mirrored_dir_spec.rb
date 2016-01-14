@@ -50,7 +50,7 @@ describe PhotoFS::MirroredDir do
     end
   end
 
-  describe "nodes method" do
+  describe :node_hash do
     let(:dir) { PhotoFS::MirroredDir.new('test', path) }
     let(:file_name) { 'a-file' }
     let(:dir_name) { 'a-dir' }
@@ -61,7 +61,7 @@ describe PhotoFS::MirroredDir do
       end
 
       it "should return an empty collection" do
-        expect(dir.nodes).to be_empty
+        expect(dir.send :node_hash).to be_empty
       end
     end
 
@@ -72,7 +72,7 @@ describe PhotoFS::MirroredDir do
       end
 
       it "should return a file node representing that file" do
-        expect(dir.nodes).to contain_exactly(PhotoFS::File.new(file_name, [path, file_name].join(File::SEPARATOR), dir))
+        expect((dir.send :node_hash).values).to contain_exactly(PhotoFS::File.new(file_name, [path, file_name].join(File::SEPARATOR), dir))
       end
     end
 
@@ -83,7 +83,7 @@ describe PhotoFS::MirroredDir do
       end
 
       it "should return a mirrored dir for each dir, and a file for each file" do
-        expect(dir.nodes).to contain_exactly(PhotoFS::File.new(file_name, [path, file_name].join(File::SEPARATOR), dir), PhotoFS::MirroredDir.new(dir_name, [path, dir_name].join(File::SEPARATOR), dir))
+        expect((dir.send :node_hash).values).to contain_exactly(PhotoFS::File.new(file_name, [path, file_name].join(File::SEPARATOR), dir), PhotoFS::MirroredDir.new(dir_name, [path, dir_name].join(File::SEPARATOR), dir))
       end
     end
   end # nodes method

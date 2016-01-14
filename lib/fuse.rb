@@ -45,7 +45,7 @@ module PhotoFS
 
       raise Errno::ENOTDIR.new(path) unless dir.directory?
 
-      dir.node_hash.each_pair { |name, node| filler.push(name, node.stat, 0) }
+      dir.nodes.each_pair { |name, node| filler.push(name, node.stat, 0) }
     end
 
     def getattr(context, path)

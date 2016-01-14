@@ -36,13 +36,13 @@ describe PhotoFS::Fuse do
     context 'when path is a directory' do
       let(:node1) { instance_double('PhotoFS::Node', :stat => 'stat1') }
       let(:node2) { instance_double('PhotoFS::Node', :stat => 'stat2') }
-      let(:node_hash) do
+      let(:nodes) do
         { 'name-1' => node1, 'name-2' => node2 }
       end
 
       before(:example) do
         allow(dir).to receive(:directory?).and_return(true)
-        allow(dir).to receive(:node_hash).and_return(node_hash)
+        allow(dir).to receive(:nodes).and_return(nodes)
       end
 
       it 'will call filler with names from lookup table' do

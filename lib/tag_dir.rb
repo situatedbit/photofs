@@ -2,7 +2,7 @@ require_relative 'dir'
 
 module PhotoFS
   class TagDir < PhotoFS::Dir
-    def initialize(name, tags, query_tag_names=[])
+    def initialize(name, tags, query_tag_names=[], parent=nil)
       @tags = tags
       @query_tag_names = query_tag_names
 
@@ -17,10 +17,6 @@ module PhotoFS
       raise Errno::EEXIST.new(tag_name) if dir_tags.include?(tag)
 
       @tags.add?(tag)
-    end
-
-    def node_hash
-      Hash[ (files + dirs).map { |n| [n.name, n] } ]
     end
 
     def rmdir(tag_name)
@@ -46,11 +42,17 @@ module PhotoFS
       RFuse::Stat.directory(mode, stat_hash)
     end
 
+    protected
+
+    def node_hash
+      Hash[ (files + dirs).map { |n| [n.name, n] } ]
+    end
+
     private
 
     def dirs
       dir_tags.map do |tag|
-        TagDir.new(tag.name, @tags, @query_tag_names + [tag.name])
+        TagDir.new(tag.name, @tags, @query_tag_names + [tag.name], self)
       end
     end
 

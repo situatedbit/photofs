@@ -3,7 +3,16 @@ require 'tag_dir'
 require 'tag_set'
 
 describe PhotoFS::TagDir do
-  describe '#mkdir' do
+  describe :new do
+    let(:parent) { PhotoFS::Dir.new 'お母さん' }
+    it 'should take an optional parent' do
+      dir = PhotoFS::TagDir.new('name', {}, ['query', 'tag', 'names'], parent)
+
+      expect(dir.instance_variable_get(:@parent)).to be parent
+    end
+  end
+
+  describe :mkdir do
     let(:tags) { PhotoFS::TagSet.new }
     let(:dir) { PhotoFS::TagDir.new('t', tags) }
     let(:tag_name) { 'おさか' }
@@ -50,7 +59,7 @@ describe PhotoFS::TagDir do
     end
   end
 
-  describe '#rmdir' do
+  describe :rmdir do
     let(:tags) { PhotoFS::TagSet.new }
     let(:dir) { PhotoFS::TagDir.new('t', tags) }
     let(:dir_tags) { [] }
@@ -105,7 +114,7 @@ describe PhotoFS::TagDir do
 
   end
 
-  describe '#stat' do
+  describe :stat do
     let(:tag_dir) { PhotoFS::TagDir.new('nihonbashi', PhotoFS::TagSet.new) }
     let(:size) { 687 }
 
@@ -122,7 +131,7 @@ describe PhotoFS::TagDir do
     end
   end
 
-  describe '#node_hash' do
+  describe :node_hash do
     let(:tag_dir) { PhotoFS::TagDir.new('nihonbashi', PhotoFS::TagSet.new) }
 
     context 'when there are no files or dirs' do
@@ -159,7 +168,7 @@ describe PhotoFS::TagDir do
     end
   end
 
-  describe '#dirs' do
+  describe :dirs do
     let(:tag_dir) { PhotoFS::TagDir.new('nihonbashi', PhotoFS::TagSet.new) }
 
     context 'there are no dir_tags' do
@@ -186,15 +195,15 @@ describe PhotoFS::TagDir do
       end
 
       it 'should return a new collection with a tag_dir with combined query tags' do
-        expect(PhotoFS::TagDir).to receive(:new).with('c', tags, ['a', 'b', 'c'])
-        expect(PhotoFS::TagDir).to receive(:new).with('d', tags, ['a', 'b', 'd'])
+        expect(PhotoFS::TagDir).to receive(:new).with('c', tags, ['a', 'b', 'c'], tag_dir)
+        expect(PhotoFS::TagDir).to receive(:new).with('d', tags, ['a', 'b', 'd'], tag_dir)
 
         tag_dir.send :dirs
       end
     end
   end
 
-  describe '#size' do
+  describe :size do
     let(:tag_dir) { PhotoFS::TagDir.new('nihonbashi', PhotoFS::TagSet.new) }
     let(:file_name) { 'ぎんざ' }
     let(:dir_name) { 'おだいば' }
