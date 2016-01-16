@@ -2,11 +2,43 @@ require 'spec_helper'
 require 'node'
 
 describe PhotoFS::Node do
-  it 'should reject a parent that is not a directory' do
-    parent = double("non-directory parent")
-    allow(parent).to receive(:directory?) { false }
-    expect { PhotoFS::Node.new('onarimon', parent) }.to raise_error(ArgumentError)
+  describe :new do
+    let(:options) { Hash.new }
+    let(:name) { 'onarimon' }
+    let(:default_options) { { :default => 'option' } }
+
+    it 'should initialize with just a name' do
+      expect { PhotoFS::Node.new name }.not_to raise_error
+    end
+
+    it 'should take an options parameter' do
+      options[:test] = 'test'
+
+      node = PhotoFS::Node.new name, options
+
+      expect(node.instance_variable_get(:@options)[:test]).to eq('test')
+    end
+
+    it 'should merge options with default options' do
+      options[:special] = 'option'
+
+      allow_any_instance_of(PhotoFS::Node).to receive(:default_options).and_return(default_options)
+
+      node = PhotoFS::Node.new name, options
+
+      expect(node.instance_variable_get(:@options)[:default]).to eq(default_options[:default])
+      expect(node.instance_variable_get(:@options)[:special]).to eq(options[:special])
+    end
+
+    it 'should reject a parent that is not a directory' do
+      parent = double("non-directory parent")
+
+      allow(parent).to receive(:directory?) { false }
+
+      expect { PhotoFS::Node.new('onarimon', { :parent => parent }) }.to raise_error(ArgumentError)
+    end
   end
+
 
   describe '== method' do
     let(:common_name) { 'a common path' }
@@ -69,7 +101,7 @@ describe PhotoFS::Node do
 
     describe 'and second-level instance' do
       let(:second_name) { 'tokyo' }
-      let(:second_node) { PhotoFS::Node.new(second_name, node) }
+      let(:second_node) { PhotoFS::Node.new(second_name, {:parent => node}) }
 
       before(:each) do
         allow(node).to receive(:directory?) { true }

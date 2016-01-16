@@ -3,8 +3,8 @@ require_relative 'node'
 module PhotoFS
   class Dir < PhotoFS::Node
 
-    def initialize(name, parent = nil)
-      super(name, parent)
+    def initialize(name, options={})
+      super(name, options)
     end
 
     def directory?

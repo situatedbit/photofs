@@ -1,14 +1,35 @@
 require 'spec_helper'
 require 'tag_dir'
 require 'tag_set'
+require 'stat'
 
 describe PhotoFS::TagDir do
   describe :new do
     let(:parent) { PhotoFS::Dir.new 'お母さん' }
+    let(:query_tag_names) { ['query', 'tag', 'names'] }
+    let(:default_options) { {:query_tag_names => ['deafult', 'tag', 'names']} }
+
     it 'should take an optional parent' do
-      dir = PhotoFS::TagDir.new('name', {}, ['query', 'tag', 'names'], parent)
+      dir = PhotoFS::TagDir.new('name', {}, {:parent => parent})
 
       expect(dir.instance_variable_get(:@parent)).to be parent
+    end
+
+    it 'should take optional query_tag_names' do
+      dir = PhotoFS::TagDir.new('name', {}, {:query_tag_names => query_tag_names})
+
+      expect(dir.instance_variable_get(:@query_tag_names)).to be query_tag_names
+    end
+
+    it 'should merge options with defaults' do
+      options = {:special => 'option'}
+
+      allow_any_instance_of(PhotoFS::TagDir).to receive(:default_options).and_return(default_options)
+
+      dir = PhotoFS::TagDir.new 'name', {}, options
+
+      expect(dir.instance_variable_get(:@query_tag_names)).to eq(default_options[:query_tag_names])
+      expect(dir.instance_variable_get(:@options)[:special]).to eq(options[:special])
     end
   end
 
@@ -195,8 +216,8 @@ describe PhotoFS::TagDir do
       end
 
       it 'should return a new collection with a tag_dir with combined query tags' do
-        expect(PhotoFS::TagDir).to receive(:new).with('c', tags, ['a', 'b', 'c'], tag_dir)
-        expect(PhotoFS::TagDir).to receive(:new).with('d', tags, ['a', 'b', 'd'], tag_dir)
+        expect(PhotoFS::TagDir).to receive(:new).with('c', tags, {:query_tag_names => ['a', 'b', 'c'], :parent => tag_dir})
+        expect(PhotoFS::TagDir).to receive(:new).with('d', tags, {:query_tag_names => ['a', 'b', 'd'], :parent => tag_dir})
 
         tag_dir.send :dirs
       end

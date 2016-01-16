@@ -6,12 +6,12 @@ module PhotoFS
   class File < PhotoFS::Node
     attr_reader :target_path
 
-    def initialize(name, target_path, parent = nil)
+    def initialize(name, target_path, options = {})
       @target_path = ::File.absolute_path target_path
 
       raise ArgumentError.new('Target path must be a file') unless ::File.exist?(@target_path)
 
-      super(name, parent)
+      super(name, options)
     end
 
     def stat

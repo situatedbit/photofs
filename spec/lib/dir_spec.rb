@@ -1,6 +1,7 @@
 require 'spec_helper'
 require 'dir'
 require 'relative_path'
+require 'stat'
 
 describe PhotoFS::Dir do
   let(:name) { 'iidabashi' }
@@ -53,7 +54,7 @@ describe PhotoFS::Dir do
       let(:search_path) { PhotoFS::RelativePath.new('ikebukuro/shinjuku') }
       let(:found_node_name) { search_path.top_name }
       let(:truncated_search_path) { PhotoFS::RelativePath.new('./shinjuku') }
-      let(:found_node) { PhotoFS::Dir.new(found_node_name, dir) }
+      let(:found_node) { PhotoFS::Dir.new(found_node_name, {:parent => dir}) }
 
       before(:each) do
         allow(dir).to receive(:node_hash).and_return( { found_node_name => found_node } )
@@ -67,7 +68,7 @@ describe PhotoFS::Dir do
 
     context 'when the matching node is a file' do
       let(:file_name) { 'ikebukuro' }
-      let(:file) { PhotoFS::Dir.new(file_name, dir) }
+      let(:file) { PhotoFS::Dir.new(file_name, {:parent => dir}) }
 
       before(:each) do
         allow(dir).to receive(:node_hash).and_return( { file_name => file } )

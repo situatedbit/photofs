@@ -11,7 +11,7 @@ describe PhotoFS::MirroredDir do
     allow(File).to receive(:exist?) { true }
   end
 
-  describe "initialize method" do
+  describe :new do
     it "should take a directory target" do
       expect((PhotoFS::MirroredDir.new('test', path)).source_path).to eq(absolute_path)
     end
@@ -32,7 +32,7 @@ describe PhotoFS::MirroredDir do
       expect { dir.rmdir 'なにか' }.to raise_error(Errno::EPERM)
     end
   end
-  
+
   describe "stat method" do
     let(:dir) { PhotoFS::MirroredDir.new('test', path) }
 
@@ -72,18 +72,23 @@ describe PhotoFS::MirroredDir do
       end
 
       it "should return a file node representing that file" do
-        expect((dir.send :node_hash).values).to contain_exactly(PhotoFS::File.new(file_name, [path, file_name].join(File::SEPARATOR), dir))
+        expect((dir.send :node_hash).values).to contain_exactly(PhotoFS::File.new(file_name, [path, file_name].join(File::SEPARATOR), {:parent => dir}))
       end
     end
 
     context "when there are files and dirs in target dir" do
+      let(:node_hash) do
+        [PhotoFS::File.new(file_name, [path, file_name].join(File::SEPARATOR), {:parent => dir}),
+         PhotoFS::MirroredDir.new(dir_name, [path, dir_name].join(File::SEPARATOR), {:parent => dir})]
+      end
+
       before(:each) do
         allow(Dir).to receive(:entries).and_return(['.', '..', file_name, dir_name])
         allow(File).to receive(:directory?).and_return(false, true)
       end
 
       it "should return a mirrored dir for each dir, and a file for each file" do
-        expect((dir.send :node_hash).values).to contain_exactly(PhotoFS::File.new(file_name, [path, file_name].join(File::SEPARATOR), dir), PhotoFS::MirroredDir.new(dir_name, [path, dir_name].join(File::SEPARATOR), dir))
+        expect((dir.send :node_hash).values).to contain_exactly(*node_hash)
       end
     end
   end # nodes method

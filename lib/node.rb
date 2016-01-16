@@ -3,11 +3,12 @@ module PhotoFS
     attr_accessor :parent
     attr_reader :name
 
-    def initialize(name, parent = nil)
-      raise ArgumentError.new('node parent must be a directory') unless (parent.nil? || parent.directory?)
-
+    def initialize(name, options={})
       @name = name
-      @parent = parent
+      @options = default_options.merge options
+      @parent = @options[:parent]
+
+      raise ArgumentError.new('node parent must be a directory') unless (@parent.nil? || @parent.directory?)
     end
 
     def ==(other)
@@ -26,6 +27,12 @@ module PhotoFS
 
     def stat
       nil
+    end
+
+    private
+
+    def default_options
+      { :parent => nil }
     end
   end
 end

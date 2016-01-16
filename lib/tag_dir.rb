@@ -2,11 +2,13 @@ require_relative 'dir'
 
 module PhotoFS
   class TagDir < PhotoFS::Dir
-    def initialize(name, tags, query_tag_names=[], parent=nil)
+    def initialize(name, tags, options = {})
       @tags = tags
-      @query_tag_names = query_tag_names
+      @options = default_options.merge options
 
-      super(name, parent)
+      @query_tag_names = @options[:query_tag_names]
+
+      super(name, options)
     end
 
     def mkdir(tag_name)
@@ -50,9 +52,13 @@ module PhotoFS
 
     private
 
+    def default_options
+      { :query_tag_names => [] }
+    end
+
     def dirs
       dir_tags.map do |tag|
-        TagDir.new(tag.name, @tags, @query_tag_names + [tag.name], self)
+        TagDir.new(tag.name, @tags, {:query_tag_names => @query_tag_names + [tag.name], :parent => self})
       end
     end
 

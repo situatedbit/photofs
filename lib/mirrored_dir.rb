@@ -7,12 +7,12 @@ module PhotoFS
   class MirroredDir < PhotoFS::Dir
     attr_reader :source_path
 
-    def initialize(name, source_path, parent = nil)
+    def initialize(name, source_path, options = {})
       @source_path = ::File.absolute_path(source_path)
 
       raise ArgumentError.new('Source directory must be a directory') unless ::File.exist?(@source_path) || ::File.directory?(@source_path)
 
-      super(name, parent)
+      super(name, options)
     end
 
     def mkdir(name)
@@ -44,7 +44,7 @@ module PhotoFS
     def new_node(entry)
       path = [source_path, entry].join(::File::SEPARATOR)
 
-      ::File.directory?(path) ? MirroredDir.new(entry, path, self) : File.new(entry, path, self)
+      ::File.directory?(path) ? MirroredDir.new(entry, path, {:parent => self}) : File.new(entry, path, {:parent => self})
     end
 
   end
