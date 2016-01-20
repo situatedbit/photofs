@@ -53,5 +53,5 @@ describe PhotoFS::Fuse do
       end
 
     end
-  end
+  end # :readdir
 end

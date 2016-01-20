@@ -15,9 +15,11 @@ module PhotoFS
       @source_path = options[:source]
       @mountpoint = options[:mountpoint]
 
+      tags = TagSet.new
+
       @root = RootDir.new
-      @root.add MirroredDir.new('o', @source_path)
-      @root.add TagDir.new('t', TagSet.new)
+      @root.add MirroredDir.new('o', @source_path, {:tags => tags})
+      @root.add TagDir.new('t', tags)
     end
 
     private
