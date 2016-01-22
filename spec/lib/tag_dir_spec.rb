@@ -33,6 +33,41 @@ describe PhotoFS::TagDir do
     end
   end
 
+  describe :add do
+    let(:query_tag_names) { ['tag1', 'tag2'] }
+    let(:node) { PhotoFS::Node.new '子供' }
+    let(:payload) { 'the image' }
+    let(:dir) { PhotoFS::TagDir.new 'じしょ' , {:query_tag_names => query_tag_names}}
+
+    context 'when node payload is in images set' do
+      let(:images) { [payload] }
+
+      before(:example) do
+        allow(dir).to receive(:images).and_return(images)
+        allow(node).to receive(:payload).and_return(payload)
+      end
+
+      it 'should not be permitted' do
+        expect { dir.add('child', node) }.to raise_error(Errno::EPERM)
+      end
+    end
+
+    context 'when dir is tag root' do
+      before(:example) do
+        allow(dir).to receive(:is_tags_root?).and_return(true)
+      end
+
+      it 'should not be permitted' do
+        expect { dir.add('child', node) }.to raise_error(Errno::EPERM)
+      end
+    end
+
+    context 'when node is image in context set' do
+      it 'should tag image with all query tag names' do
+      end
+    end
+  end
+
   describe :mkdir do
     let(:tags) { PhotoFS::TagSet.new }
     let(:dir) { PhotoFS::TagDir.new('t', tags) }
@@ -78,7 +113,11 @@ describe PhotoFS::TagDir do
         expect { dir.mkdir tag_name }.to raise_error(Errno::EPERM)
       end
     end
-  end
+  end # :mkdir
+
+  describe :rename do
+    it 'should be implemented'
+  end # :rename
 
   describe :rmdir do
     let(:tags) { PhotoFS::TagSet.new }

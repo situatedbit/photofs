@@ -11,6 +11,10 @@ module PhotoFS
       super(name, options)
     end
 
+    def add(name, node)
+      raise Errno::EPERM
+    end
+
     def mkdir(tag_name)
       raise Errno::EPERM.new(tag_name) unless is_tags_root?
 
@@ -19,6 +23,9 @@ module PhotoFS
       raise Errno::EEXIST.new(tag_name) if dir_tags.include?(tag)
 
       @tags.add?(tag)
+    end
+
+    def rename(child_name, to_parent, to_name)
     end
 
     def rmdir(tag_name)

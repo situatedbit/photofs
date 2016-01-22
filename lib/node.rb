@@ -12,7 +12,7 @@ module PhotoFS
     end
 
     def ==(other)
-      self.equal?(other) || (other.respond_to?(:path) && self.path == other.path)
+      self.equal?(other) || (other.respond_to?(:payload) && self.payload == other.payload)
     end
 
     def directory?
@@ -23,6 +23,12 @@ module PhotoFS
       return ::File::SEPARATOR + name if parent.nil?
 
       parent.path + ::File::SEPARATOR + name
+    end
+
+    # payload can be overwritten to store arbitrary objects for carriage
+    # comparison between nodes is based on comparison between payloads
+    def payload
+      path
     end
 
     def stat

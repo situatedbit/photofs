@@ -31,13 +31,25 @@ describe PhotoFS::Dir do
     end
   end # top level instance
 
-  describe '#mkdir' do
+  describe :add do
+    it 'should refuse with not permitted' do
+      expect{ dir.add('child-name', PhotoFS::Node.new('blah')) }.to raise_error(Errno::EPERM)
+    end
+  end
+
+  describe :mkdir do
     it 'should not be implemented' do
       expect{ dir.mkdir 'anything' }.to raise_error(NotImplementedError)
     end
   end
 
-  describe '#rmdir' do
+  describe :rename do
+    it 'should not be implemented' do
+      expect{ dir.rename 'child-name', PhotoFS::Node.new('to-parent'), 'to-name' }.to raise_error(Errno::EPERM)
+    end
+  end
+
+  describe :rmdir do
     it 'should not be implemented' do
       expect{ dir.rmdir 'anything' }.to raise_error(NotImplementedError)
     end

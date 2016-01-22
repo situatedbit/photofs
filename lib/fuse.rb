@@ -50,6 +50,13 @@ module PhotoFS
       dir.nodes.each_pair { |name, node| filler.push(name, node.stat, 0) }
     end
 
+    def rename(context, from, to)
+      # rename to: /t/first, from: /t/second
+      # fuse verifies that if moved between directories, the parent dir exists
+      # does not appear to do permissions check (e.g., allows rename to under u/)
+      log "rename to: #{to}, from: #{from}"
+    end
+
     def getattr(context, path)
       log "stat: #{path}"
 

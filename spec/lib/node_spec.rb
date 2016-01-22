@@ -39,18 +39,17 @@ describe PhotoFS::Node do
     end
   end
 
-
-  describe '== method' do
-    let(:common_name) { 'a common path' }
-    let(:this) { PhotoFS::Node.new(common_name) }
-    let(:that) { PhotoFS::Node.new(common_name) }
+  describe :== do
+    let(:payload) { 'a common path' }
+    let(:this) { PhotoFS::Node.new('path-b') }
+    let(:that) { PhotoFS::Node.new('path-a') }
 
     before(:each) do
-      allow(this).to receive(:path).and_return(common_name)
-      allow(that).to receive(:path).and_return(common_name)
+      allow(this).to receive(:payload).and_return(payload)
+      allow(that).to receive(:payload).and_return(payload)
     end
 
-    context 'when two nodes have the same path' do
+    context 'when two nodes have the same payload' do
       it 'should return true' do
         expect(this == that).to be true
       end
@@ -64,16 +63,29 @@ describe PhotoFS::Node do
       end
     end
 
-    context 'when other has a different path' do
-      before(:each) do
-        allow(that).to receive(:path).and_return(common_name * 2)
+    context 'when other has a different payload' do
+      before(:example) do
+        allow(that).to receive(:payload).and_return(payload * 2)
       end
 
       it 'should return false' do
         expect(this == that).to be false
       end
     end
-  end # == method
+  end # :==
+
+  describe :payload do
+    let(:path) { 'some-path' }
+    let(:node) { PhotoFS::Node.new('blah') }
+
+    before(:example) do
+      allow(node).to receive(:path).and_return(path)
+    end
+
+    it 'should be the path' do
+      expect(node.payload).to eq(path)
+    end
+  end
 
   describe 'top-level instance' do
     let(:name) { 'otemachi' }

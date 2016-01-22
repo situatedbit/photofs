@@ -7,12 +7,20 @@ module PhotoFS
       super(name, options)
     end
 
+    def add(name, node)
+      raise Errno::EPERM
+    end
+
     def directory?
       true
     end
 
     def mkdir(name)
       raise NotImplementedError
+    end
+
+    def rename(child_name, to_parent, to_name)
+      raise Errno::EPERM
     end
 
     def rmdir(name)
