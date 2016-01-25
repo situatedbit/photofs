@@ -36,7 +36,7 @@ module PhotoFS
       if is_tags_root?
         @tags.delete tag
       else
-        tag.subtract images
+        tag - images
       end
     end
 

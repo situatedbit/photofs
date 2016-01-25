@@ -164,11 +164,7 @@ describe PhotoFS::TagDir do
           allow(dir).to receive(:images).and_return(images)
         end
 
-        it 'should remove that tag from any images that are in the current directory' do
-          expect(tag).to receive(:subtract).with(images)
-
-          dir.rmdir tag_name
-        end
+        it 'should remove that tag from any images that are in the current directory with a destructive method call'
       end
     end # rmdir
 

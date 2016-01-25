@@ -9,6 +9,12 @@ describe PhotoFS::Tag do
     expect(PhotoFS::Tag.new(name).name).to eq(name)
   end
 
+  describe :add do
+    context 'when an image is added' do
+      it 'should cause :images to include that image'
+    end
+  end
+
   describe "#hash" do
     let(:left) { PhotoFS::Tag.new name }
     let(:right) { PhotoFS::Tag.new(name * 2) }

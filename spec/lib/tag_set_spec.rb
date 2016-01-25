@@ -128,7 +128,7 @@ describe PhotoFS::TagSet do
     end
   end
 
-  describe "#intersection" do
+  describe :intersection do
     let(:first) { PhotoFS::Tag.new('first') }
     let(:second) { PhotoFS::Tag.new('second') }
     let(:first_images) { [1, 2, 3].map { |i| PhotoFS::Image.new(i.to_s) } }

@@ -10,7 +10,7 @@ module PhotoFS
       if tags.nil? || tags.empty?
         ImageSet.new
       elsif tags.length == 1
-        ImageSet.new tags.first
+        ImageSet.new(:set => tags.first)
       else
         tags.first & tags[1..-1]
       end

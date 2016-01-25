@@ -4,10 +4,10 @@ module PhotoFS
   class Tag < ImageSet
     attr_reader :name
 
-    def initialize(name, enum=nil)
+    def initialize(name, options={})
       @name = name
 
-      super enum
+      super options
     end
 
     def ==(other)
