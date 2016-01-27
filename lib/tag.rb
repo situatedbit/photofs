@@ -17,5 +17,13 @@ module PhotoFS
     def hash
       name.hash
     end
+
+    def remove(images)
+      images.each do |i|
+        local_set.delete i
+      end
+
+      self
+    end
   end
 end

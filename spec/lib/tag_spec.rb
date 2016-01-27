@@ -63,4 +63,27 @@ describe PhotoFS::Tag do
       end
     end
   end
+
+  describe :remove do
+    let(:image_a) { PhotoFS::Image.new('a') }
+    let(:image_b) { PhotoFS::Image.new('b') }
+    let(:image_c) { PhotoFS::Image.new('c') }
+    let(:tag) { PhotoFS::Tag.new('tag') }
+    let(:all_images) { [image_a, image_b, image_c] }
+    let(:first_two_images) { [image_a, image_b] }
+
+    context 'when the tag contains many images' do
+      before(:example) do
+        all_images.each { |i| tag.add i }        
+      end
+
+      it 'should remove images from this tag' do
+        expect(tag.remove(first_two_images).to_a).to contain_exactly(image_c)
+      end
+    end
+
+    it 'should return the tag' do
+      expect(tag.remove first_two_images).to be(tag)
+    end
+  end # :remove
 end

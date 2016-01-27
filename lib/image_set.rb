@@ -25,10 +25,6 @@ module PhotoFS
       ImageSet.new(:set => intersection)
     end
 
-    def -(other_images)
-      range.to_a - other_images
-    end
-
     def add(image)
       root_set << image
     end
@@ -62,6 +58,10 @@ module PhotoFS
 
     def root_set
       @parent ? @parent.root_set : @set
+    end
+
+    def local_set
+      @set
     end
 
     private
