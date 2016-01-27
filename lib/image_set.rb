@@ -41,6 +41,10 @@ module PhotoFS
       ImageSet.new(:filter => block, :parent => self)
     end
 
+    def include? image
+      range.include? image
+    end
+
     def to_a
       range.to_a
     end

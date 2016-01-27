@@ -1,6 +1,7 @@
 require_relative 'dir'
 require_relative 'stat'
 require_relative 'file'
+require_relative 'image_set'
 require 'rfuse'
 
 module PhotoFS
@@ -12,6 +13,7 @@ module PhotoFS
       @options = default_options.merge options
 
       @tags = @options[:tags]
+      @images_domain = @options[:images]
 
       raise ArgumentError.new('Source directory must be a directory') unless ::File.exist?(@source_path) || ::File.directory?(@source_path)
 
@@ -20,6 +22,12 @@ module PhotoFS
 
     def mkdir(name)
       raise Errno::EPERM
+    end
+
+    def rename(child_name, to_parent, to_name)
+      # do own accounting
+      # to_parent.add(to_name, child_node)
+      # throw exception if bad.
     end
 
     def rmdir(name)
@@ -41,7 +49,8 @@ module PhotoFS
     private
 
     def default_options
-      {:tags => nil}
+      { :tags => nil,
+        :images => PhotoFS::ImageSet.new }
     end
 
     def entries
@@ -49,7 +58,11 @@ module PhotoFS
     end
 
     def tags_node
-      @tags ? {'tags' => TagDir.new('tags', @tags, {:parent => self} )} : {}
+      tag_dir_images_domain = @images_domain.filter do |i|
+        dir_images.include? i
+      end
+
+      @tags ? {'tags' => TagDir.new('tags', @tags, {:parent => self, :images => tag_dir_images_domain} )} : {}
     end
 
     def mirrored_nodes

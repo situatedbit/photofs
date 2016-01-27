@@ -35,20 +35,24 @@ describe PhotoFS::TagDir do
 
   describe :add do
     let(:query_tag_names) { ['tag1', 'tag2'] }
-    let(:node) { PhotoFS::Node.new '子供' }
     let(:payload) { 'the image' }
-    let(:dir) { PhotoFS::TagDir.new 'じしょ' , {:query_tag_names => query_tag_names}}
+    let(:node) { instance_double('PhotoFS::Node', :name => '子供', :path => 'garbage', :payload => payload) }
+    let(:dir) { PhotoFS::TagDir.new 'じしょ' , {}, {:query_tag_names => query_tag_names}}
+    let(:images_domain) { instance_double('PhotoFS::ImageSet') }
 
-    context 'when node payload is in images set' do
-      let(:images) { [payload] }
+    before(:example) do
+      dir.instance_variable_set(:@images_domain, images_domain)
 
+      allow(dir).to receive(:images).and_return(instance_double('images', {:include? => false}))
+    end
+
+    context 'when node payload is already in images set' do
       before(:example) do
-        allow(dir).to receive(:images).and_return(images)
-        allow(node).to receive(:payload).and_return(payload)
+        allow(dir).to receive(:images).and_return(instance_double('images', {:include? => true}))
       end
 
       it 'should not be permitted' do
-        expect { dir.add('child', node) }.to raise_error(Errno::EPERM)
+        expect { dir.add('child', node) }.to raise_error(Errno::EEXIST)
       end
     end
 
@@ -62,11 +66,33 @@ describe PhotoFS::TagDir do
       end
     end
 
-    context 'when node is image in context set' do
-      it 'should tag image with all query tag names' do
+    context 'when node image is not in the image domain' do
+      before(:example) do
+        allow(images_domain).to receive(:include?).and_return(false)
+      end
+
+      it 'should not be permitted' do
+        expect { dir.add('child', node) }.to raise_error(Errno::EPERM)
       end
     end
-  end
+
+    context 'when node is image in image domain' do
+      let(:tag_a) { instance_double('PhotoFS::Tag') }
+      let(:tag_b) { instance_double('PhotoFS::Tag') }
+
+      before(:example) do
+        allow(images_domain).to receive(:include?).and_return(true)
+        allow(dir).to receive(:query_tags).and_return([tag_a, tag_b])
+      end
+
+      it 'should tag image with all query tag names' do
+        expect(tag_a).to receive(:add).with(node.payload)
+        expect(tag_b).to receive(:add).with(node.payload)
+
+        dir.add('some-name', node)
+      end
+    end
+  end # :add
 
   describe :mkdir do
     let(:tags) { PhotoFS::TagSet.new }
@@ -114,10 +140,6 @@ describe PhotoFS::TagDir do
       end
     end
   end # :mkdir
-
-  describe :rename do
-    it 'should be implemented'
-  end # :rename
 
   describe :rmdir do
     let(:tags) { PhotoFS::TagSet.new }
@@ -251,8 +273,8 @@ describe PhotoFS::TagDir do
       end
 
       it 'should return a new collection with a tag_dir with combined query tags' do
-        expect(PhotoFS::TagDir).to receive(:new).with('c', tags, {:query_tag_names => ['a', 'b', 'c'], :parent => tag_dir})
-        expect(PhotoFS::TagDir).to receive(:new).with('d', tags, {:query_tag_names => ['a', 'b', 'd'], :parent => tag_dir})
+        expect(PhotoFS::TagDir).to receive(:new).with('c', tags, hash_including(:query_tag_names => ['a', 'b', 'c']))
+        expect(PhotoFS::TagDir).to receive(:new).with('d', tags, hash_including(:query_tag_names => ['a', 'b', 'd']))
 
         tag_dir.send :dirs
       end

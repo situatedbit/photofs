@@ -5,6 +5,10 @@ require 'fuse'
 describe PhotoFS::Fuse do
   let(:context) { instance_double('RFuse::Context') }
 
+  describe :rename do
+    it 'should be implemented'
+  end
+
   describe :readdir do
     let(:fuse) { PhotoFS::Fuse.new({:source => 'source-path', :mountpoint => 'mount-point'}) }
     let(:filler) { instance_double("filler") }

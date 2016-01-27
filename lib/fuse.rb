@@ -16,10 +16,11 @@ module PhotoFS
       @mountpoint = options[:mountpoint]
 
       tags = TagSet.new
+      images = ImageSet.new # global image set
 
       @root = RootDir.new
-      @root.add MirroredDir.new('o', @source_path, {:tags => tags})
-      @root.add TagDir.new('t', tags)
+      @root.add MirroredDir.new('o', @source_path, {:tags => tags, :images => images})
+      @root.add TagDir.new('t', tags, {:images => images})
     end
 
     private
@@ -54,6 +55,7 @@ module PhotoFS
       # rename to: /t/first, from: /t/second
       # fuse verifies that if moved between directories, the parent dir exists
       # does not appear to do permissions check (e.g., allows rename to under u/)
+      # from_parent.rename(child_name, to_parent, to_name)
       log "rename to: #{to}, from: #{from}"
     end
 

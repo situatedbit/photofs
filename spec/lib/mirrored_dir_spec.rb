@@ -43,6 +43,10 @@ describe PhotoFS::MirroredDir do
     end
   end
 
+  describe :rename do
+    it 'should be implemented'
+  end
+
   describe '#rmdir' do
     let(:dir) { PhotoFS::MirroredDir.new('test', path) }
 
@@ -141,6 +145,10 @@ describe PhotoFS::MirroredDir do
       end
     end
 
+    context 'when there are no images in the dir' do
+      it 'should be empty'
+    end
+
     context 'when there is a tag set' do
       let(:tags) { instance_double('PhotoFS::TagSet') }
       let(:tag_dir) { instance_double('PhotoFS::TagDir', :name => 'tags') }
@@ -156,7 +164,7 @@ describe PhotoFS::MirroredDir do
       end
 
       it 'should set self as parent' do
-        expect(PhotoFS::TagDir).to receive(:new).with('tags', tags, {:parent => dir})
+        expect(PhotoFS::TagDir).to receive(:new).with('tags', tags, hash_including(:parent => dir))
 
         dir.send :tags_node
       end

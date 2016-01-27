@@ -1,4 +1,5 @@
 require_relative 'dir'
+require_relative 'image_set'
 
 module PhotoFS
   class TagDir < PhotoFS::Dir
@@ -7,12 +8,23 @@ module PhotoFS
       @options = default_options.merge options
 
       @query_tag_names = @options[:query_tag_names]
+      @images_domain = @options[:images]
 
       super(name, options)
     end
 
     def add(name, node)
-      raise Errno::EPERM
+      raise Errno::EPERM if is_tags_root?
+
+      image = node.payload
+
+      raise Errno::EEXIST.new(node.path) if images.include? image
+
+      raise Errno::EPERM unless @images_domain.include? image
+
+      query_tags.each do |tag|
+        tag.add image
+      end
     end
 
     def mkdir(tag_name)
@@ -60,12 +72,13 @@ module PhotoFS
     private
 
     def default_options
-      { :query_tag_names => [] }
+      { :query_tag_names => [],
+        :images => PhotoFS::ImageSet.new }
     end
 
     def dirs
       dir_tags.map do |tag|
-        TagDir.new(tag.name, @tags, {:query_tag_names => @query_tag_names + [tag.name], :parent => self})
+        TagDir.new(tag.name, @tags, {:query_tag_names => @query_tag_names + [tag.name], :parent => self, :images => @image_domain})
       end
     end
 
