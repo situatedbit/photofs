@@ -52,11 +52,12 @@ module PhotoFS
     end
 
     def rename(context, from, to)
-      # rename to: /t/first, from: /t/second
-      # fuse verifies that if moved between directories, the parent dir exists
-      # does not appear to do permissions check (e.g., allows rename to under u/)
-      # from_parent.rename(child_name, to_parent, to_name)
-      log "rename to: #{to}, from: #{from}"
+      log "rename #{from} to #{to}"
+
+      from = RelativePath.new from
+      to = RelativePath.new to
+
+      search(from.parent).rename(from.name, search(to.parent), to.name)
     end
 
     def getattr(context, path)
