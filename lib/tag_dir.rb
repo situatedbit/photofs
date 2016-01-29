@@ -38,6 +38,7 @@ module PhotoFS
     end
 
     def rename(child_name, to_parent, to_name)
+      raise NotImplementedError
     end
 
     def rmdir(tag_name)
@@ -49,6 +50,20 @@ module PhotoFS
         @tags.delete tag
       else
         tag - images
+      end
+    end
+
+    def soft_move(node, name)
+      raise Errno::EPERM if is_tags_root?
+      raise Errno::EPERM if node.directory?
+
+      image = node.payload
+
+      raise Errno::EPERM unless @images_domain.include? image
+      raise Errno::EPERM if images.include? image
+
+      query_tags.each do |tag|
+        tag.add image
       end
     end
 

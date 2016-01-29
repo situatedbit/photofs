@@ -24,10 +24,12 @@ module PhotoFS
       raise Errno::EPERM
     end
 
-    def rename(child_name, to_parent, to_name)
-      # do own accounting
-      # to_parent.add(to_name, child_node)
-      # throw exception if bad.
+    def rename(from_name, to_parent, to_name)
+      from_node = node_hash[from_name]
+
+      raise Errno::ENOENT.new(from_name) unless from_node
+
+      to_parent.soft_move(from_node, to_name)
     end
 
     def rmdir(name)

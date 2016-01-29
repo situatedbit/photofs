@@ -100,5 +100,11 @@ describe PhotoFS::Dir do
         expect(dir.search(PhotoFS::RelativePath.new('garbage'))).to be nil
       end
     end
+  end # :search
+
+  describe :soft_move do
+    it 'should not be implemented' do
+      expect { dir.soft_move 'node', 'name' }.to raise_error(Errno::EPERM)
+    end
   end
 end

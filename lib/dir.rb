@@ -44,6 +44,10 @@ module PhotoFS
       end
     end
 
+    def soft_move(node, name)
+      raise Errno::EPERM
+    end
+
     def stat
       RFuse::Stat.directory(Stat::MODE_READ_ONLY, {})
     end

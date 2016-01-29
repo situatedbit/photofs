@@ -141,6 +141,10 @@ describe PhotoFS::TagDir do
     end
   end # :mkdir
 
+  describe :rename do
+    it 'it should be implemented'
+  end
+
   describe :rmdir do
     let(:tags) { PhotoFS::TagSet.new }
     let(:dir) { PhotoFS::TagDir.new('t', tags) }
@@ -189,8 +193,73 @@ describe PhotoFS::TagDir do
         it 'should remove that tag from any images that are in the current directory with a destructive method call'
       end
     end # rmdir
-
   end
+
+  describe :soft_move do
+    let(:tag_set) { PhotoFS::TagSet.new }
+    let(:tag_dir) { PhotoFS::TagDir.new('日本橋', tag_set) }
+    let(:name) { 'new name' }
+    let(:node) { instance_double('PhotoFS::File', :payload => 'node-payload', :directory? => false) }
+    let(:images_domain) { instance_double('PhotoFS::ImageSet') }
+
+    before(:example) do
+      tag_set.add? PhotoFS::Tag.new('tag1')
+      tag_set.add? PhotoFS::Tag.new('tag2')
+      allow(tag_dir).to receive(:query_tags).and_return(tag_set.all)
+
+      tag_dir.instance_variable_set(:@images_domain, images_domain)
+      allow(images_domain).to receive(:include?).with(node.payload).and_return(true)
+
+      allow(tag_dir).to receive(:images).and_return(PhotoFS::ImageSet.new({:set => []}))
+      allow(tag_dir).to receive(:is_tags_root?).and_return(false)
+    end
+
+    it 'should apply each query tag to image' do
+      tag_set.all.each do |tag|
+        expect(tag).to receive(:add).with(node.payload)
+      end
+
+      tag_dir.soft_move(node, name)
+    end
+
+    context 'when node is a directory' do
+      let(:node) { instance_double('PhotoFS::Dir', :directory? => true, :payload => nil) }
+
+      it 'should not be permitted' do
+        expect { tag_dir.soft_move(node, name) }.to raise_error(Errno::EPERM)
+      end
+    end
+
+    context 'when dir is tag root' do
+      before(:example) do
+        allow(tag_dir).to receive(:is_tags_root?).and_return(true)
+      end
+
+      it 'should not be permitted' do
+        expect { tag_dir.soft_move(node, name) }.to raise_error(Errno::EPERM)
+      end
+    end
+
+    context 'when node payload is not in image domain' do
+      before(:example) do
+        allow(images_domain).to receive(:include?).with(node.payload).and_return(false)
+      end
+
+      it 'should not be permitted' do
+        expect { tag_dir.soft_move(node, name) }.to raise_error(Errno::EPERM)
+      end
+    end
+
+    context 'when node payload is already in dir images' do
+      before(:example) do
+        allow(tag_dir).to receive(:images).and_return(PhotoFS::ImageSet.new({:set => [node.payload]}))
+      end
+
+      it 'should not be permitted' do
+        expect { tag_dir.soft_move(node, name) }.to raise_error(Errno::EPERM)
+      end
+    end
+  end # :soft_move
 
   describe :stat do
     let(:tag_dir) { PhotoFS::TagDir.new('nihonbashi', PhotoFS::TagSet.new) }

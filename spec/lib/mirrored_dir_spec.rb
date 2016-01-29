@@ -44,8 +44,35 @@ describe PhotoFS::MirroredDir do
   end
 
   describe :rename do
-    it 'should be implemented'
-  end
+    let(:dir) { PhotoFS::MirroredDir.new('test', path) }
+    let(:from_name) { 'from' }
+    let(:to_name) { 'to' }
+    let(:parent_node) { instance_double('PhotoFS::Dir') }
+
+    context 'when from_name is not in dir' do
+      before(:example) do
+        allow(dir).to receive(:node_hash).and_return({})
+      end
+
+      it 'should return ENOEXIST error' do
+        expect { dir.rename from_name, parent_node, to_name }.to raise_error(Errno::ENOENT)
+      end
+    end
+
+    context 'when from_name is in dir' do
+      let(:from_node) { instance_double('PhotoFS::Node') }
+
+      before(:example) do
+        allow(dir).to receive(:node_hash).and_return({from_name => from_node})
+      end
+
+      it 'should send :soft_move to to_parent' do
+        expect(parent_node).to receive(:soft_move).with(from_node, to_name)
+
+        dir.rename from_name, parent_node, to_name
+      end
+    end
+  end # :rename
 
   describe '#rmdir' do
     let(:dir) { PhotoFS::MirroredDir.new('test', path) }
