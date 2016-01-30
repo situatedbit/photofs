@@ -1,4 +1,5 @@
 require 'rfuse'
+require_relative 'file_monitor'
 require_relative 'relative_path'
 require_relative 'root_dir'
 require_relative 'mirrored_dir'
@@ -15,12 +16,18 @@ module PhotoFS
       @source_path = options[:source]
       @mountpoint = options[:mountpoint]
 
-      tags = TagSet.new
-      images = ImageSet.new # global image set
+      @images = ImageSet.new # global image set
+      @image_monitor = FileMonitor.new(@source_path, @images)
 
       @root = RootDir.new
-      @root.add MirroredDir.new('o', @source_path, {:tags => tags, :images => images})
-      @root.add TagDir.new('t', tags, {:images => images})
+    end
+
+    def init(context, rfuse_connection_info)
+      @image_monitor.scan
+
+      tags = TagSet.new
+      @root.add MirroredDir.new('o', @source_path, {:tags => tags, :images => @images})
+      @root.add TagDir.new('t', tags, {:images => @images})
     end
 
     private

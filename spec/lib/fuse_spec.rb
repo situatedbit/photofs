@@ -9,11 +9,6 @@ describe PhotoFS::Fuse do
 
   before(:example) do
     allow(PhotoFS::RootDir).to receive(:new).and_return(root_dir)
-    allow(root_dir).to receive(:add)
-
-    allow(PhotoFS::MirroredDir).to receive(:new) do
-      instance_double('PhotoFS::MirroredDir', :directory? => true, :name => 'mirrored-dir')
-    end
 
     allow(fuse).to receive(:log) # swallow log messages
   end

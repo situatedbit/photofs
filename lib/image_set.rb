@@ -29,6 +29,15 @@ module PhotoFS
       root_set << image
     end
 
+    def find_by_path(path)
+      # slow!
+      range.each do |image|
+        return image if image.path == path
+      end
+
+      return nil
+    end
+
     def range
       domain.to_a.select { |i| @filter.call(i) }.to_set
     end

@@ -134,6 +134,31 @@ describe PhotoFS::ImageSet do
     end
   end # :add
 
+  describe :find_by_path do
+    let(:image_a) { PhotoFS::Image.new 'path-a' }
+    let(:image_b) { PhotoFS::Image.new 'path-b' }
+
+    context 'when an image matches the path' do
+      before(:example) do
+        allow(set).to receive(:range).and_return(Set.new([image_a, image_b]))
+      end
+
+      it 'should return that image' do
+        expect(set.find_by_path image_a.path).to be image_a
+      end
+    end
+
+    context 'when no image matches the path' do
+      before(:example) do
+        allow(set).to receive(:range).and_return(Set.new([image_b]))
+      end
+
+      it 'should return nil' do
+        expect(set.find_by_path image_a.path).to be nil
+      end
+    end
+  end # :find_by_path
+
   describe :range do
     let(:set) { PhotoFS::ImageSet.new }
 
