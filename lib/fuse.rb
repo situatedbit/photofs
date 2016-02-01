@@ -23,7 +23,7 @@ module PhotoFS
     end
 
     def init(context, rfuse_connection_info)
-      @image_monitor.scan
+      @image_monitor.scan.each { |paths| log("added image #{paths}") }
 
       tags = TagSet.new
       @root.add MirroredDir.new('o', @source_path, {:tags => tags, :images => @images})

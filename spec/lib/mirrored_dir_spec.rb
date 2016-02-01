@@ -11,6 +11,28 @@ describe PhotoFS::MirroredDir do
     allow(File).to receive(:exist?) { true }
   end
 
+  describe :images do
+    let(:dir) { PhotoFS::MirroredDir.new('test', path) }
+    let(:path1) { 'path-1' }
+    let(:path2) { 'path-2' }
+    let(:entries) { [path1, path2] }
+    let(:images_domain) { PhotoFS::ImageSet.new }
+
+    before(:each) do
+      allow(dir).to receive(:entries).and_return(entries)
+      allow(dir).to receive(:expand_path).with(path1).and_return(path1)
+      allow(dir).to receive(:expand_path).with(path2).and_return(path2)
+
+      allow(images_domain).to receive(:find_by_path).with(path1).and_return(path1)
+      allow(images_domain).to receive(:find_by_path).with(path2).and_return(nil)
+      dir.instance_variable_set(:@images_domain, images_domain)
+    end
+
+    it 'should only include images with paths in the images domain' do
+      expect(dir.send :images).to contain_exactly(path1)
+    end
+  end
+
   describe :new do
     let(:options) { {} }
     let(:default_options) { {:default => 'some-default'} }
@@ -35,7 +57,7 @@ describe PhotoFS::MirroredDir do
     end
   end
 
-  describe '#mkdir' do
+  describe :mkdir do
     let(:dir) { PhotoFS::MirroredDir.new('test', path) }
 
     it 'should just say no' do
@@ -74,7 +96,7 @@ describe PhotoFS::MirroredDir do
     end
   end # :rename
 
-  describe '#rmdir' do
+  describe :rmdir do
     let(:dir) { PhotoFS::MirroredDir.new('test', path) }
 
     it 'should just say no' do
@@ -192,6 +214,12 @@ describe PhotoFS::MirroredDir do
 
       it 'should set self as parent' do
         expect(PhotoFS::TagDir).to receive(:new).with('tags', tags, hash_including(:parent => dir))
+
+        dir.send :tags_node
+      end
+
+      it 'should set an image set' do
+        expect(PhotoFS::TagDir).to receive(:new).with('tags', tags, hash_including(:images))
 
         dir.send :tags_node
       end

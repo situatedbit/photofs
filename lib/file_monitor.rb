@@ -15,6 +15,7 @@ module PhotoFS
       paths.each do |image_path|
         if !@set.find_by_path(image_path)
           @set.add(Image.new(image_path))
+          added << image_path
         end
       end
     end

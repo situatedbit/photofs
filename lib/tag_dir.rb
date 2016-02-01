@@ -93,7 +93,7 @@ module PhotoFS
 
     def dirs
       dir_tags.map do |tag|
-        TagDir.new(tag.name, @tags, {:query_tag_names => @query_tag_names + [tag.name], :parent => self, :images => @image_domain})
+        TagDir.new(tag.name, @tags, {:query_tag_names => @query_tag_names + [tag.name], :parent => self, :images => @images_domain})
       end
     end
 
@@ -106,7 +106,7 @@ module PhotoFS
     end
 
     def files
-      images.all.map { |image| File.new(image.name, image.path, self) }
+      images.all.map { |image| File.new(image.name, image.path, {:parent => self}) }
     end
 
     def images

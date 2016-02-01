@@ -55,16 +55,29 @@ module PhotoFS
         :images => PhotoFS::ImageSet.new }
     end
 
+    def expand_path(entry)
+      ::File.join(source_path, entry)
+    end
+
+    def images
+      # images for each entry entries corresponding to an image in image domain
+      entries.reduce([]) do |images, entry|
+        image = @images_domain.find_by_path expand_path(entry)
+
+        image ? images << image : images
+      end
+    end
+
     def entries
       ::Dir.entries(source_path) - ['.', '..']
     end
 
     def tags_node
-      tag_dir_images_domain = @images_domain.filter do |i|
-        dir_images.include? i
+      subdir_images_domain = @images_domain.filter do |i|
+        images.include? i
       end
 
-      @tags ? {'tags' => TagDir.new('tags', @tags, {:parent => self, :images => tag_dir_images_domain} )} : {}
+      @tags ? {'tags' => TagDir.new('tags', @tags, {:parent => self, :images => subdir_images_domain} )} : {}
     end
 
     def mirrored_nodes
@@ -72,12 +85,12 @@ module PhotoFS
     end
 
     def new_node(entry)
-      path = [source_path, entry].join(::File::SEPARATOR)
+      path = expand_path(entry)
 
       if ::File.directory?(path)
-        MirroredDir.new(entry, path, {:parent => self, :tags => @tags})
+        MirroredDir.new(entry, path, {:parent => self, :tags => @tags, :images => @images_domain})
       else
-        File.new(entry, path, {:parent => self})
+        File.new(entry, path, {:parent => self, :payload => @images_domain.find_by_path(path)})
       end
     end
 

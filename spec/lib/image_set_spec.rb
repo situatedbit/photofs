@@ -3,26 +3,6 @@ require 'image_set'
 require 'image'
 require 'tag'
 
-=begin
-
-tag#select(filter)
-
-tagged_images = global_images.filter(tag)
-
-tagged_images = global_images.filter do |i|
-  local_images.include? i
-end
-
-tagged_images.all # executes the filter on global images set
-
-OR
-
-tagged_images = global_images.filter(tag) # tag implements :image_filter, which returns a block?
-
-tagged_images.all # executes the filter on global images set
-
-=end
-
 describe PhotoFS::ImageSet do
   let(:set) { PhotoFS::ImageSet.new }
 

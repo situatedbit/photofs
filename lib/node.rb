@@ -7,6 +7,7 @@ module PhotoFS
       @name = name
       @options = default_options.merge options
       @parent = @options[:parent]
+      @payload = @options[:payload]
 
       raise ArgumentError.new('node parent must be a directory') unless (@parent.nil? || @parent.directory?)
     end
@@ -28,7 +29,7 @@ module PhotoFS
     # payload can be overwritten to store arbitrary objects for carriage
     # comparison between nodes is based on comparison between payloads
     def payload
-      path
+      @payload || path
     end
 
     def stat
@@ -38,7 +39,8 @@ module PhotoFS
     private
 
     def default_options
-      { :parent => nil }
+      { :parent => nil,
+        :payload => nil }
     end
   end
 end
