@@ -21,9 +21,9 @@ module PhotoFS
     end
 
     def path
-      return ::File::SEPARATOR + name if parent.nil?
+      return Fuse.fs.separator + name if parent.nil?
 
-      parent.path + ::File::SEPARATOR + name
+      Fuse.fs.join(parent.path, name)
     end
 
     # payload can be overwritten to store arbitrary objects for carriage

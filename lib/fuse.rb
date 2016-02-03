@@ -1,4 +1,5 @@
 require 'rfuse'
+require_relative 'fs/local'
 require_relative 'file_monitor'
 require_relative 'relative_path'
 require_relative 'root_dir'
@@ -10,6 +11,10 @@ module PhotoFS
   class Fuse
     attr_reader :source_path
 
+    def self.fs
+      FS::Local.new
+    end
+
     def initialize(options)
       raise RFuse::Error, "Missing source option (-o source=path)" unless options[:source]
 
@@ -17,13 +22,12 @@ module PhotoFS
       @mountpoint = options[:mountpoint]
 
       @images = ImageSet.new # global image set
-      @image_monitor = FileMonitor.new(@source_path, @images)
 
       @root = RootDir.new
     end
 
     def init(context, rfuse_connection_info)
-      @image_monitor.scan
+      FileMonitor.new(@source_path).paths.each { |path| @images.add Image.new(path) }
 
       tags = TagSet.new
       @root.add MirroredDir.new('o', @source_path, {:tags => tags, :images => @images})

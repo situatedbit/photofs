@@ -1,3 +1,5 @@
+require_relative 'fuse'
+
 module PhotoFS
   class Image
     # modifying path would break hashed storage based on path/name
@@ -12,7 +14,7 @@ module PhotoFS
     end
 
     def name
-      path.gsub ::File::SEPARATOR, '-'
+      path.gsub Fuse.fs.separator, '-'
     end
 
     def ==(other)

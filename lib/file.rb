@@ -1,3 +1,4 @@
+require_relative 'fuse'
 require_relative 'node'
 require_relative 'stat'
 require 'rfuse'
@@ -7,15 +8,15 @@ module PhotoFS
     attr_reader :target_path
 
     def initialize(name, target_path, options = {})
-      @target_path = ::File.absolute_path target_path
+      @target_path = Fuse.fs.absolute_path target_path
 
-      raise ArgumentError.new('Target path must be a file') unless ::File.exist?(@target_path)
+      raise ArgumentError.new('Target path must be a file') unless Fuse.fs.exist?(@target_path)
 
       super(name, options)
     end
 
     def stat
-      stat_hash = Stat.stat_hash(::File.stat(@target_path))
+      stat_hash = Stat.stat_hash(Fuse.fs.stat(@target_path))
 
       stat_hash[:mode] = RFuse::Stat::S_IFLNK | Stat::MODE_READ_ONLY
       stat_hash[:nlink] = 1

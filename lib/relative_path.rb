@@ -1,3 +1,5 @@
+require_relative 'fuse'
+
 module PhotoFS
   class RelativePath
     def initialize(path)
@@ -55,7 +57,7 @@ module PhotoFS
     end
 
     def separator
-      ::File::SEPARATOR
+      Fuse.fs.separator
     end
 
     def split
