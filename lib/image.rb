@@ -14,7 +14,7 @@ module PhotoFS
     end
 
     def name
-      path.gsub Fuse.fs.separator, '-'
+      path.gsub(Fuse.fs.separator, '-').sub(/\A-/, '')
     end
 
     def ==(other)

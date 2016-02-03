@@ -4,7 +4,7 @@ require 'image'
 describe PhotoFS::Image do
   let(:path) { 'kawaguchiko' }
 
-  describe "#hash" do
+  describe :hash do
     let(:left) { PhotoFS::Image.new path }
     let(:right) { PhotoFS::Image.new(path * 2) }
 
@@ -21,7 +21,7 @@ describe PhotoFS::Image do
     end
   end
 
-  describe "== method" do
+  describe :== do
     let(:left) { PhotoFS::Image.new(path) }
 
     context "other is not an image" do
@@ -52,4 +52,14 @@ describe PhotoFS::Image do
       end
     end
   end
+
+  describe :name do
+    let(:image) { PhotoFS::Image.new('') }
+
+    it 'should replace all forward slashes with dashes and strip leading dashes' do
+      allow(image).to receive(:path).and_return('/some/path/to/whatever')
+
+      expect(image.name).to eq('some-path-to-whatever')
+    end
+  end # :name
 end
