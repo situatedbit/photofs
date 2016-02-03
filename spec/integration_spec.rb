@@ -3,6 +3,16 @@ require 'file_monitor'
 require 'rfuse'
 require 'fs/test'
 
+=begin
+          filler = instance_double('Filler')
+
+          allow(filler).to receive(:push) do |name|
+            puts("#{name}\n")
+          end
+
+          fuse.readdir(context, '/t', filler, 0, 0)
+=end
+
 describe 'integration for' do
   let(:source_path) { '/home/me/photos' }
   let(:mountpoint) { '/home/me/p' }
@@ -126,6 +136,7 @@ describe 'integration for' do
         before(:example) do
           fuse.mkdir(context, '/t/better', 0)
 
+          fuse.rename(context, '/o/a/1a.jpg', '/t/good/1a.jpg')
           fuse.rename(context, '/o/a/1a.jpg', '/t/better/1a.jpg')
         end
 

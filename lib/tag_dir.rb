@@ -101,7 +101,7 @@ module PhotoFS
       if is_tags_root?
         @tags.all
       else
-        @tags.find_by_image(images.all) - query_tags
+        @tags.find_by_image(images.to_a) - query_tags
       end
     end
 

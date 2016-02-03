@@ -55,6 +55,10 @@ module PhotoFS
       images.map { |image| hash[image] || [] }.flatten.uniq
     end
 
+    def to_s
+      "[#{@tags.values.join(', ')}]"
+    end
+
     private
 
     def image_tags_hash
