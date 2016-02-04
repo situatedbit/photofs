@@ -74,6 +74,10 @@ describe PhotoFS::Tag do
       it 'should remove images from this tag' do
         expect(tag.remove(first_two_images).to_a).to contain_exactly(image_c)
       end
+
+      it 'should remove individual images passed as a non-array argument' do
+        expect(tag.remove(image_c).to_a).to contain_exactly(*first_two_images)
+      end
     end
 
     it 'should return the tag' do

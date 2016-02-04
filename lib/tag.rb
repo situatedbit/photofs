@@ -19,6 +19,8 @@ module PhotoFS
     end
 
     def remove(images)
+      images = [images].flatten # normalize as array
+
       images.each do |i|
         local_set.delete i
       end
