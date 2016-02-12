@@ -72,8 +72,24 @@ describe 'integration for' do
           expect { fuse.getattr(context, '/t/good-tag') }.to raise_error(Errno::ENOENT)
         end
       end
-
     end # :tags:top_level_dir
+
+    context 'when the tag still has images in it in a different source directory' do
+      let(:image_directories) { ['/a', '/b'].map {|p| "#{source_path}#{p}"} }
+      let(:image_files) { ['/a/1.jpg'].map {|p| "#{source_path}#{p}"} }
+      let(:image_monitor) { instance_double('PhotoFS::FileMonitor', :paths => image_files) }
+
+      before(:example) do
+        file_system.add({:dirs => image_directories, :files => image_files})
+
+        fuse.mkdir(context, '/t/good', 0)
+        fuse.rename(context, '/o/a/1.jpg', '/o/a/tags/good/1.jpg')
+      end
+
+      it 'should not be permitted' do
+        expect { fuse.rmdir context, '/o/b/tags/good' }.to raise_error(Errno::EPERM)
+      end
+    end
   end # :tags
 
   describe :mirrored_dirs do

@@ -213,14 +213,14 @@ describe PhotoFS::TagDir do
       end
     end
 
-    context 'when the tag does exist' do
+    context 'when the tag exists' do
       before(:example) do
         allow(dir.instance_variable_get(:@tags)).to receive(:find_by_name).with(tag_name).and_return(tag)
         allow(dir).to receive(:dir_tags).and_return(dir_tags)
         allow(dir_tags).to receive(:include?).with(tag).and_return(true)
       end
 
-      context 'when the tag is at the top level' do
+      context 'and it is at the top level' do
         before(:example) do
           allow(dir).to receive(:is_tags_root?).and_return(true)
         end
@@ -230,20 +230,32 @@ describe PhotoFS::TagDir do
 
           dir.rmdir tag_name
         end
-      end
+
+        context 'but it still contains images' do
+          before(:example) do
+            allow(tag).to receive(:images).and_return(instance_double('Array', :empty? => false))
+          end
+
+          it 'should raise an error' do
+            expect { dir.rmdir tag_name }.to raise_error(Errno::EPERM)
+          end
+        end
+      end # it is at the top level
 
       context 'when the tag is not at the top level' do
-        let(:images) { PhotoFS::ImageSet.new }
+        # this doesn't make sense; you'd delete all of the
+        # children first, once that happens, this dir ceases to exist.
 
         before(:example) do
           allow(dir).to receive(:is_tags_root?).and_return(false)
-          allow(dir).to receive(:images).and_return(images)
         end
 
-        it 'should remove that tag from any images that are in the current directory with a destructive method call'
+        it 'should raise an error' do
+          expect { dir.rmdir tag_name }.to raise_error(Errno::EPERM)
+        end
       end
-    end # rmdir
-  end
+    end # : the tag exists
+  end # :rmdir
 
   describe :soft_move do
     let(:tag_set) { PhotoFS::TagSet.new }

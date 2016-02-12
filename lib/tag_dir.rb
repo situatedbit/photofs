@@ -58,12 +58,10 @@ module PhotoFS
       tag = @tags.find_by_name tag_name
 
       raise Errno::ENOENT.new(tag_name) unless tag && dir_tags.include?(tag)
+      raise Errno::EPERM unless is_tags_root?
+      raise Errno::EPERM unless tag.images.empty?
 
-      if is_tags_root?
-        @tags.delete tag
-      else
-        tag - images
-      end
+      @tags.delete tag
     end
 
     def soft_move(node, name)
