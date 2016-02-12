@@ -99,4 +99,31 @@ describe PhotoFS::Fuse do
 
     end
   end # :readdir
+
+  describe :unlink do
+    context 'when the file does not exist' do
+      before(:example) do
+        allow(fuse).to receive(:search).and_raise(Errno::ENOENT)
+      end
+
+      it 'should raise ENOENT' do
+        expect { fuse.unlink(context, '/some-file') }.to raise_error(Errno::ENOENT)
+      end
+    end
+
+    context 'when the file does exist' do
+      let(:parent_node) { instance_double('PhotoFS::Dir') }
+      let(:parent_path) { PhotoFS::RelativePath.new('/t/good') }
+
+      before(:example) do
+        allow(fuse).to receive(:search).with(parent_path).and_return(parent_node)
+      end
+
+      it 'should call remove on parent node' do
+        expect(parent_node).to receive(:remove).with('file')
+
+        fuse.unlink(context, '/t/good/file')
+      end
+    end
+  end # :unlink
 end

@@ -132,6 +132,19 @@ describe 'integration for' do
         end
       end
 
+      describe 'tagging multiple images with a single tag' do
+        before(:example) do
+          fuse.rename(context, '/o/a/1a.jpg', '/o/a/tags/good/1a.jpg')
+          fuse.rename(context, '/o/c/1c.JPG', '/o/c/tags/good/1c.JPG')
+        end
+
+        it 'should result in both images in t/' do
+          expect(fuse.readlink(context, '/t/good/home-me-photos-a-1a.jpg', 0)).to eq("#{source_path}/a/1a.jpg")
+          expect(fuse.readlink(context, '/t/good/home-me-photos-c-1c.JPG', 0)).to eq("#{source_path}/c/1c.JPG")
+        end
+      end
+
+
       describe 'an image is tagged twice' do
         before(:example) do
           fuse.mkdir(context, '/t/better', 0)
@@ -153,6 +166,45 @@ describe 'integration for' do
         end
       end
     end # /t/good
-    
   end # :tagging_images
+
+  describe 'untagging images' do
+    let(:image_directories) { ["/a", "/a/b", "/c"].map {|p| "#{source_path}#{p}"} }
+    let(:image_files) { ['/a/1a.jpg', '/a/2a.jpg', '/c/1c.JPG'].map {|p| "#{source_path}#{p}"} }
+    let(:image_monitor) { instance_double('PhotoFS::FileMonitor', :paths => image_files) }
+
+    before(:example) do
+      file_system.add({:dirs => image_directories, :files => image_files})
+
+      fuse.mkdir(context, '/t/good', 0)
+      fuse.rename(context, '/o/a/1a.jpg', '/o/a/tags/good/1a.jpg')
+    end
+
+    context 'when an image is removed from single tag' do
+      it 'should not be listed under that tag' do
+        expect(fuse.getattr(context, '/t/good/home-me-photos-a-1a.jpg')).not_to be nil
+
+        fuse.unlink(context, '/t/good/home-me-photos-a-1a.jpg')
+
+        expect{ fuse.getattr(context, '/t/good/home-me-photos-a-1a.jpg') }.to raise_error(Errno::ENOENT)
+      end
+    end
+
+    context 'when an image is removed from nested tag directories' do
+      before(:example) do
+        fuse.mkdir(context, '/t/bad', 0)
+        fuse.rename(context, '/o/a/1a.jpg', '/o/a/tags/bad/1a.jpg')
+      end
+
+      it 'should not be listed under either tag' do
+        expect(fuse.getattr(context, '/o/a/tags/bad/home-me-photos-a-1a.jpg')).not_to be nil
+        expect(fuse.getattr(context, '/o/a/tags/good/home-me-photos-a-1a.jpg')).not_to be nil
+
+        fuse.unlink(context, '/t/good/bad/home-me-photos-a-1a.jpg')
+
+        expect{ fuse.getattr(context, '/o/a/tags/bad/home-me-photos-a-1a.jpg') }.to raise_error(Errno::ENOENT)
+        expect{ fuse.getattr(context, '/o/a/tags/good/home-me-photos-a-1a.jpg') }.to raise_error(Errno::ENOENT)
+      end
+    end
+  end # untagging images
 end

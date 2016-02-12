@@ -1,4 +1,3 @@
-require 'spec_helper'
 require 'tag_dir'
 require 'tag_set'
 require 'stat'
@@ -144,6 +143,57 @@ describe PhotoFS::TagDir do
   describe :rename do
     it 'it should be implemented'
   end
+
+  describe :remove do
+    let(:dir) { PhotoFS::TagDir.new 'じしょ' , {}, {:query_tag_names => []}}
+
+    context 'when the child does not exist in files' do
+      let(:node_hash) { Hash.new }
+
+      before(:example) do
+        allow(dir).to receive(:node_hash).and_return(node_hash)
+      end
+
+      it 'should raise ENOENT' do
+        expect { dir.remove('whatever') }.to raise_error(Errno::ENOENT)
+      end
+    end
+
+    context 'when the child exists and' do
+      let(:child_name) { 'the-image' }
+      let(:tag_a) { instance_double('PhotoFS::Tag', :name => 'good') }
+      let(:image) { instance_double('PhotoFS::Image') }
+      let(:child_node) { instance_double('PhotoFS::File', :name => child_name, :payload => image, :directory? => false) }
+      let(:node_hash) { {child_node.name => child_node} }
+
+      before(:example) do
+        allow(dir).to receive(:query_tags).and_return(query_tags)
+        allow(dir).to receive(:node_hash).and_return(node_hash)
+      end
+
+      context 'the tag one level deep' do
+        let(:query_tags) { [tag_a] }
+
+        it 'should untag image' do
+          expect(tag_a).to receive(:remove).with(image)
+
+          dir.remove(child_name)
+        end
+      end
+
+      context 'when tag is nested' do
+        let(:tag_b) { instance_double('PhotoFS::Tag', :name => 'bad') }
+        let(:query_tags) { [tag_a, tag_b] }
+
+        it 'should untag image with each tag in nesting' do
+          expect(tag_a).to receive(:remove).with(image)
+          expect(tag_b).to receive(:remove).with(image)
+
+          dir.remove(child_name)
+        end
+      end
+    end
+  end # :remove
 
   describe :rmdir do
     let(:tags) { PhotoFS::TagSet.new }

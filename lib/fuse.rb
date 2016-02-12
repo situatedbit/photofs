@@ -104,6 +104,14 @@ module PhotoFS
     def log(s)
       puts s
     end
+
+    def unlink(context, path)
+      log "unlink: #{path}"
+
+      path = RelativePath.new(path)
+
+      search(path.parent).remove(path.name)
+    end
   end
 
 end # module

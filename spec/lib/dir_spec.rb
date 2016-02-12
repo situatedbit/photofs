@@ -49,6 +49,12 @@ describe PhotoFS::Dir do
     end
   end
 
+  describe :remove do
+    it 'should not be permitted' do
+      expect{ dir.remove 'child-name' }.to raise_error(Errno::EPERM)
+    end
+  end
+
   describe :rmdir do
     it 'should not be implemented' do
       expect{ dir.rmdir 'anything' }.to raise_error(NotImplementedError)

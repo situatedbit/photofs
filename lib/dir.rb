@@ -23,6 +23,10 @@ module PhotoFS
       raise Errno::EPERM
     end
 
+    def remove(child_name)
+      raise Errno::EPERM
+    end
+
     def rmdir(name)
       raise NotImplementedError
     end

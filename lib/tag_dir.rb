@@ -41,6 +41,19 @@ module PhotoFS
       raise NotImplementedError
     end
 
+    def remove(child_name)
+      child = node_hash[child_name]
+
+      raise Errno::ENOENT.new(child_name) if child.nil?
+      raise Errno::EPERM if child.directory?
+
+      image = child.payload
+
+      query_tags.each do |tag|
+        tag.remove image
+      end
+    end
+
     def rmdir(tag_name)
       tag = @tags.find_by_name tag_name
 
@@ -106,7 +119,7 @@ module PhotoFS
     end
 
     def files
-      images.all.map { |image| File.new(image.name, image.path, {:parent => self}) }
+      images.all.map { |image| File.new(image.name, image.path, {:parent => self, :payload => image}) }
     end
 
     def images
