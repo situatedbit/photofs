@@ -76,7 +76,7 @@ describe 'integration for' do
 
     context 'when the tag still has images in it in a different source directory' do
       let(:image_directories) { ['/a', '/b'].map {|p| "#{source_path}#{p}"} }
-      let(:image_files) { ['/a/1.jpg'].map {|p| "#{source_path}#{p}"} }
+      let(:image_files) { ['/a/1.jpg', '/b/2.jpg'].map {|p| "#{source_path}#{p}"} }
       let(:image_monitor) { instance_double('PhotoFS::FileMonitor', :paths => image_files) }
 
       before(:example) do

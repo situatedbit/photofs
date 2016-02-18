@@ -74,11 +74,15 @@ module PhotoFS
     end
 
     def tags_node
-      subdir_images_domain = @images_domain.filter do |i|
+      return {} if @tags.nil? || tags_node_image_domain.empty?
+
+      {'tags' => TagDir.new('tags', @tags, {:parent => self, :images => tags_node_image_domain} )}
+    end
+
+    def tags_node_image_domain
+      @images_domain.filter do |i|
         images.include? i
       end
-
-      @tags ? {'tags' => TagDir.new('tags', @tags, {:parent => self, :images => subdir_images_domain} )} : {}
     end
 
     def mirrored_nodes

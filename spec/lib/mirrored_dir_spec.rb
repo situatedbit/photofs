@@ -194,18 +194,29 @@ describe PhotoFS::MirroredDir do
       end
     end
 
-    context 'when there are no images in the dir' do
-      it 'should be empty'
+    context 'when there is a tags set but no images in the dir' do
+      let(:tags) { instance_double('PhotoFS::TagSet') }
+
+      before(:example) do
+        dir.instance_variable_set(:@tags, tags)
+        allow(dir).to receive(:tags_node_image_domain).and_return(instance_double('PhotoFS::ImageSet', :empty? => true))
+      end
+
+      it 'should not exist' do
+        expect(dir.send :tags_node).to be_empty
+      end
     end
 
-    context 'when there is a tag set' do
+    context 'when there is a tags set and images in the dir' do
       let(:tags) { instance_double('PhotoFS::TagSet') }
       let(:tag_dir) { instance_double('PhotoFS::TagDir', :name => 'tags') }
+      let(:tags_node_image_domain) { instance_double('PhotoFS::ImageSet', :empty? => false) }
 
       before(:example) do
         dir.instance_variable_set(:@tags, tags)
 
         allow(PhotoFS::TagDir).to receive(:new).and_return(tag_dir)
+        allow(dir).to receive(:tags_node_image_domain).and_return(tags_node_image_domain)
       end
 
       it 'should contain a new tag dir' do
