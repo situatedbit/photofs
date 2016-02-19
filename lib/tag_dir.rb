@@ -1,5 +1,7 @@
 require_relative 'dir'
-require_relative 'image_set'
+require 'photofs/core/tag'
+require 'photofs/core/tag_set'
+require 'photofs/core/image_set'
 
 module PhotoFS
   class TagDir < PhotoFS::Dir
@@ -30,7 +32,7 @@ module PhotoFS
     def mkdir(tag_name)
       raise Errno::EPERM.new(tag_name) unless is_tags_root?
 
-      tag = Tag.new tag_name
+      tag = PhotoFS::Core::Tag.new tag_name
 
       raise Errno::EEXIST.new(tag_name) if dir_tags.include?(tag)
 
@@ -99,7 +101,7 @@ module PhotoFS
 
     def default_options
       { :query_tag_names => [],
-        :images => PhotoFS::ImageSet.new }
+        :images => PhotoFS::Core::ImageSet.new }
     end
 
     def dirs
@@ -121,7 +123,7 @@ module PhotoFS
     end
 
     def images
-      TagSet.intersection(query_tags)
+      PhotoFS::Core::TagSet.intersection(query_tags)
     end
 
     def is_tags_root?

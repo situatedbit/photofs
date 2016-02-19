@@ -1,4 +1,3 @@
-require 'spec_helper'
 require 'file'
 
 describe PhotoFS::File do

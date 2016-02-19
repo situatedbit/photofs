@@ -1,5 +1,4 @@
 require_relative 'fuse'
-require_relative 'image'
 
 module PhotoFS
   class FileMonitor

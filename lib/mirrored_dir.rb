@@ -2,7 +2,7 @@ require_relative 'fuse'
 require_relative 'dir'
 require_relative 'stat'
 require_relative 'file'
-require_relative 'image_set'
+require 'photofs/core/image_set'
 require 'rfuse'
 
 module PhotoFS
@@ -53,7 +53,7 @@ module PhotoFS
 
     def default_options
       { :tags => nil,
-        :images => PhotoFS::ImageSet.new }
+        :images => PhotoFS::Core::ImageSet.new }
     end
 
     def expand_path(entry)

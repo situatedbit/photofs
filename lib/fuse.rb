@@ -1,11 +1,12 @@
 require 'rfuse'
+require 'photofs/core/tag_set'
+require 'photofs/core/image'
 require_relative 'fs/local'
 require_relative 'file_monitor'
 require_relative 'relative_path'
 require_relative 'root_dir'
 require_relative 'mirrored_dir'
 require_relative 'tag_dir'
-require_relative 'tag_set'
 
 module PhotoFS
   class Fuse
@@ -21,15 +22,15 @@ module PhotoFS
       @source_path = options[:source]
       @mountpoint = options[:mountpoint]
 
-      @images = ImageSet.new # global image set
+      @images = PhotoFS::Core::ImageSet.new # global image set
 
       @root = RootDir.new
     end
 
     def init(context, rfuse_connection_info)
-      FileMonitor.new(@source_path).paths.each { |path| @images.add Image.new(path) }
+      FileMonitor.new(@source_path).paths.each { |path| @images.add PhotoFS::Core::Image.new(path) }
 
-      tags = TagSet.new
+      tags = PhotoFS::Core::TagSet.new
       @root.add MirroredDir.new('o', @source_path, {:tags => tags, :images => @images})
       @root.add TagDir.new('t', tags, {:images => @images})
     end

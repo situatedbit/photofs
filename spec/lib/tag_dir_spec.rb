@@ -1,5 +1,5 @@
+require 'photofs/core/tag_set'
 require 'tag_dir'
-require 'tag_set'
 require 'stat'
 
 describe PhotoFS::TagDir do
@@ -37,7 +37,7 @@ describe PhotoFS::TagDir do
     let(:payload) { 'the image' }
     let(:node) { instance_double('PhotoFS::Node', :name => '子供', :path => 'garbage', :payload => payload) }
     let(:dir) { PhotoFS::TagDir.new 'じしょ' , {}, {:query_tag_names => query_tag_names}}
-    let(:images_domain) { instance_double('PhotoFS::ImageSet') }
+    let(:images_domain) { instance_double('PhotoFS::Core:;ImageSet') }
 
     before(:example) do
       dir.instance_variable_set(:@images_domain, images_domain)
@@ -76,8 +76,8 @@ describe PhotoFS::TagDir do
     end
 
     context 'when node is image in image domain' do
-      let(:tag_a) { instance_double('PhotoFS::Tag') }
-      let(:tag_b) { instance_double('PhotoFS::Tag') }
+      let(:tag_a) { instance_double('PhotoFS::Core::Tag') }
+      let(:tag_b) { instance_double('PhotoFS::Core::Tag') }
 
       before(:example) do
         allow(images_domain).to receive(:include?).and_return(true)
@@ -94,10 +94,10 @@ describe PhotoFS::TagDir do
   end # :add
 
   describe :mkdir do
-    let(:tags) { PhotoFS::TagSet.new }
+    let(:tags) { PhotoFS::Core::TagSet.new }
     let(:dir) { PhotoFS::TagDir.new('t', tags) }
     let(:tag_name) { 'おさか' }
-    let(:tag) { PhotoFS::Tag.new tag_name }
+    let(:tag) { PhotoFS::Core::Tag.new tag_name }
 
     context 'when dir is the top-most tag directory' do
       before(:example) do
@@ -161,8 +161,8 @@ describe PhotoFS::TagDir do
 
     context 'when the child exists and' do
       let(:child_name) { 'the-image' }
-      let(:tag_a) { instance_double('PhotoFS::Tag', :name => 'good') }
-      let(:image) { instance_double('PhotoFS::Image') }
+      let(:tag_a) { instance_double('PhotoFS::Core::Tag', :name => 'good') }
+      let(:image) { instance_double('PhotoFS::Core::Image') }
       let(:child_node) { instance_double('PhotoFS::File', :name => child_name, :payload => image, :directory? => false) }
       let(:node_hash) { {child_node.name => child_node} }
 
@@ -182,7 +182,7 @@ describe PhotoFS::TagDir do
       end
 
       context 'when tag is nested' do
-        let(:tag_b) { instance_double('PhotoFS::Tag', :name => 'bad') }
+        let(:tag_b) { instance_double('PhotoFS::Core::Tag', :name => 'bad') }
         let(:query_tags) { [tag_a, tag_b] }
 
         it 'should untag image with each tag in nesting' do
@@ -196,11 +196,11 @@ describe PhotoFS::TagDir do
   end # :remove
 
   describe :rmdir do
-    let(:tags) { PhotoFS::TagSet.new }
+    let(:tags) { PhotoFS::Core::TagSet.new }
     let(:dir) { PhotoFS::TagDir.new('t', tags) }
     let(:dir_tags) { [] }
     let(:tag_name) { 'ほっかいど' }
-    let(:tag) { PhotoFS::Tag.new tag_name }
+    let(:tag) { PhotoFS::Core::Tag.new tag_name }
 
     context 'when the tag does not exist' do
       before(:example) do
@@ -258,21 +258,21 @@ describe PhotoFS::TagDir do
   end # :rmdir
 
   describe :soft_move do
-    let(:tag_set) { PhotoFS::TagSet.new }
+    let(:tag_set) { PhotoFS::Core::TagSet.new }
     let(:tag_dir) { PhotoFS::TagDir.new('日本橋', tag_set) }
     let(:name) { 'new name' }
     let(:node) { instance_double('PhotoFS::File', :payload => 'node-payload', :directory? => false) }
-    let(:images_domain) { instance_double('PhotoFS::ImageSet') }
+    let(:images_domain) { instance_double('PhotoFS::Core::ImageSet') }
 
     before(:example) do
-      tag_set.add? PhotoFS::Tag.new('tag1')
-      tag_set.add? PhotoFS::Tag.new('tag2')
+      tag_set.add? PhotoFS::Core::Tag.new('tag1')
+      tag_set.add? PhotoFS::Core::Tag.new('tag2')
       allow(tag_dir).to receive(:query_tags).and_return(tag_set.all)
 
       tag_dir.instance_variable_set(:@images_domain, images_domain)
       allow(images_domain).to receive(:include?).with(node.payload).and_return(true)
 
-      allow(tag_dir).to receive(:images).and_return(PhotoFS::ImageSet.new({:set => []}))
+      allow(tag_dir).to receive(:images).and_return(PhotoFS::Core::ImageSet.new({:set => []}))
       allow(tag_dir).to receive(:is_tags_root?).and_return(false)
     end
 
@@ -314,7 +314,7 @@ describe PhotoFS::TagDir do
 
     context 'when node payload is already in dir images' do
       before(:example) do
-        allow(tag_dir).to receive(:images).and_return(PhotoFS::ImageSet.new({:set => [node.payload]}))
+        allow(tag_dir).to receive(:images).and_return(PhotoFS::Core::ImageSet.new({:set => [node.payload]}))
       end
 
       it 'should not be permitted' do
@@ -324,7 +324,7 @@ describe PhotoFS::TagDir do
   end # :soft_move
 
   describe :stat do
-    let(:tag_dir) { PhotoFS::TagDir.new('nihonbashi', PhotoFS::TagSet.new) }
+    let(:tag_dir) { PhotoFS::TagDir.new('nihonbashi', PhotoFS::Core::TagSet.new) }
     let(:size) { 687 }
 
     before(:example) do
@@ -341,7 +341,7 @@ describe PhotoFS::TagDir do
   end
 
   describe :node_hash do
-    let(:tag_dir) { PhotoFS::TagDir.new('nihonbashi', PhotoFS::TagSet.new) }
+    let(:tag_dir) { PhotoFS::TagDir.new('nihonbashi', PhotoFS::Core::TagSet.new) }
 
     context 'when there are no files or dirs' do
       before(:example) do
@@ -378,7 +378,7 @@ describe PhotoFS::TagDir do
   end
 
   describe :dirs do
-    let(:tag_dir) { PhotoFS::TagDir.new('nihonbashi', PhotoFS::TagSet.new) }
+    let(:tag_dir) { PhotoFS::TagDir.new('nihonbashi', PhotoFS::Core::TagSet.new) }
 
     context 'there are no dir_tags' do
       before(:example) do
@@ -394,7 +394,7 @@ describe PhotoFS::TagDir do
       let(:tag_class) { Struct.new(:name) }
       let(:dir_tags) { [tag_class.new('c'), tag_class.new('d')] }
       let(:query_tag_names) { ['a', 'b'] }
-      let(:tags) { PhotoFS::TagSet.new }
+      let(:tags) { PhotoFS::Core::TagSet.new }
 
       before(:example) do
         tag_dir.instance_variable_set(:@tags, tags)
@@ -413,7 +413,7 @@ describe PhotoFS::TagDir do
   end
 
   describe :size do
-    let(:tag_dir) { PhotoFS::TagDir.new('nihonbashi', PhotoFS::TagSet.new) }
+    let(:tag_dir) { PhotoFS::TagDir.new('nihonbashi', PhotoFS::Core::TagSet.new) }
     let(:file_name) { 'ぎんざ' }
     let(:dir_name) { 'おだいば' }
 

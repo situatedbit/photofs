@@ -1,4 +1,3 @@
-require 'spec_helper'
 require 'dir'
 require 'relative_path'
 require 'stat'

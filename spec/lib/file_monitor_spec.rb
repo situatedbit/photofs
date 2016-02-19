@@ -1,5 +1,5 @@
-require 'spec_helper'
 require 'file_monitor'
+require 'photofs/core/image_set'
 
 describe PhotoFS::FileMonitor do
   let(:path) { '/path' }

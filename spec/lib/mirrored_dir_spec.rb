@@ -1,4 +1,3 @@
-require 'spec_helper'
 require 'mirrored_dir'
 require 'file'
 
@@ -16,7 +15,7 @@ describe PhotoFS::MirroredDir do
     let(:path1) { 'path-1' }
     let(:path2) { 'path-2' }
     let(:entries) { [path1, path2] }
-    let(:images_domain) { PhotoFS::ImageSet.new }
+    let(:images_domain) { PhotoFS::Core::ImageSet.new }
 
     before(:each) do
       allow(dir).to receive(:entries).and_return(entries)
@@ -195,11 +194,11 @@ describe PhotoFS::MirroredDir do
     end
 
     context 'when there is a tags set but no images in the dir' do
-      let(:tags) { instance_double('PhotoFS::TagSet') }
+      let(:tags) { instance_double('PhotoFS::Core::TagSet') }
 
       before(:example) do
         dir.instance_variable_set(:@tags, tags)
-        allow(dir).to receive(:tags_node_image_domain).and_return(instance_double('PhotoFS::ImageSet', :empty? => true))
+        allow(dir).to receive(:tags_node_image_domain).and_return(instance_double('PhotoFS::Core::ImageSet', :empty? => true))
       end
 
       it 'should not exist' do
@@ -208,9 +207,9 @@ describe PhotoFS::MirroredDir do
     end
 
     context 'when there is a tags set and images in the dir' do
-      let(:tags) { instance_double('PhotoFS::TagSet') }
+      let(:tags) { instance_double('PhotoFS::Core::TagSet') }
       let(:tag_dir) { instance_double('PhotoFS::TagDir', :name => 'tags') }
-      let(:tags_node_image_domain) { instance_double('PhotoFS::ImageSet', :empty? => false) }
+      let(:tags_node_image_domain) { instance_double('PhotoFS::Core::ImageSet', :empty? => false) }
 
       before(:example) do
         dir.instance_variable_set(:@tags, tags)
