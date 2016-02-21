@@ -1,13 +1,13 @@
 require 'rfuse'
-require 'fuse'
+require 'photofs/fuse'
 
-describe PhotoFS::Fuse do
+describe PhotoFS::Fuse::Fuse do
   let(:context) { instance_double('RFuse::Context') }
   let(:root_dir) { instance_double('PhotoFS::RootDir') }
-  let(:fuse) { PhotoFS::Fuse.new({:source => 'source-path', :mountpoint => 'mount-point'}) }
+  let(:fuse) { PhotoFS::Fuse::Fuse.new({:source => 'source-path', :mountpoint => 'mount-point'}) }
 
   before(:example) do
-    allow(PhotoFS::RootDir).to receive(:new).and_return(root_dir)
+    allow(PhotoFS::Fuse::RootDir).to receive(:new).and_return(root_dir)
 
     allow(fuse).to receive(:log) # swallow log messages
   end
@@ -15,10 +15,10 @@ describe PhotoFS::Fuse do
   describe :rename do
     let(:from) { '/a/b/c/from' }
     let(:to) { '/1/2/3/to' }
-    let(:from_path) { PhotoFS::RelativePath.new from }
-    let(:to_path) { PhotoFS::RelativePath.new to }
-    let(:from_parent_node) { instance_double('PhotoFS::Dir') }
-    let(:to_parent_node) { instance_double('PhotoFS::Dir') }
+    let(:from_path) { PhotoFS::Fuse::RelativePath.new from }
+    let(:to_path) { PhotoFS::Fuse::RelativePath.new to }
+    let(:from_parent_node) { instance_double('PhotoFS::Fuse::Dir') }
+    let(:to_parent_node) { instance_double('PhotoFS::Fuse::Dir') }
 
     context 'when from does not exist' do
       before(:example) do
@@ -78,8 +78,8 @@ describe PhotoFS::Fuse do
     end
 
     context 'when path is a directory' do
-      let(:node1) { instance_double('PhotoFS::Node', :stat => 'stat1') }
-      let(:node2) { instance_double('PhotoFS::Node', :stat => 'stat2') }
+      let(:node1) { instance_double('PhotoFS::Fuse::Node', :stat => 'stat1') }
+      let(:node2) { instance_double('PhotoFS::Fuse::Node', :stat => 'stat2') }
       let(:nodes) do
         { 'name-1' => node1, 'name-2' => node2 }
       end
@@ -111,8 +111,8 @@ describe PhotoFS::Fuse do
     end
 
     context 'when the file does exist' do
-      let(:parent_node) { instance_double('PhotoFS::Dir') }
-      let(:parent_path) { PhotoFS::RelativePath.new('/t/good') }
+      let(:parent_node) { instance_double('PhotoFS::Fuse::Dir') }
+      let(:parent_path) { PhotoFS::Fuse::RelativePath.new('/t/good') }
 
       before(:example) do
         allow(fuse).to receive(:search).with(parent_path).and_return(parent_node)

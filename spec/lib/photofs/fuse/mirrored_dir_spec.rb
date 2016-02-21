@@ -1,7 +1,7 @@
-require 'mirrored_dir'
-require 'file'
+require 'photofs/fuse/mirrored_dir'
+require 'photofs/fuse/file'
 
-describe PhotoFS::MirroredDir do
+describe PhotoFS::Fuse::MirroredDir do
   let(:absolute_path) { '/tmp/garbage' }
   let(:path) { 'garbage' }
 
@@ -11,7 +11,7 @@ describe PhotoFS::MirroredDir do
   end
 
   describe :images do
-    let(:dir) { PhotoFS::MirroredDir.new('test', path) }
+    let(:dir) { PhotoFS::Fuse::MirroredDir.new('test', path) }
     let(:path1) { 'path-1' }
     let(:path2) { 'path-2' }
     let(:entries) { [path1, path2] }
@@ -37,19 +37,19 @@ describe PhotoFS::MirroredDir do
     let(:default_options) { {:default => 'some-default'} }
 
     it "should take a directory target" do
-      expect((PhotoFS::MirroredDir.new('test', path)).source_path).to eq(absolute_path)
+      expect((PhotoFS::Fuse::MirroredDir.new('test', path)).source_path).to eq(absolute_path)
     end
 
     it 'should merge optional arguments' do
-      PhotoFS::MirroredDir.new('test', path)
+      PhotoFS::Fuse::MirroredDir.new('test', path)
     end
 
     it 'should merge options with default options' do
       options[:special] = 'option'
 
-      allow_any_instance_of(PhotoFS::MirroredDir).to receive(:default_options).and_return(default_options)
+      allow_any_instance_of(PhotoFS::Fuse::MirroredDir).to receive(:default_options).and_return(default_options)
 
-      dir = PhotoFS::MirroredDir.new 'test', path, options
+      dir = PhotoFS::Fuse::MirroredDir.new 'test', path, options
 
       expect(dir.instance_variable_get(:@options)[:default]).to eq(default_options[:default])
       expect(dir.instance_variable_get(:@options)[:special]).to eq(options[:special])
@@ -57,7 +57,7 @@ describe PhotoFS::MirroredDir do
   end
 
   describe :mkdir do
-    let(:dir) { PhotoFS::MirroredDir.new('test', path) }
+    let(:dir) { PhotoFS::Fuse::MirroredDir.new('test', path) }
 
     it 'should just say no' do
       expect { dir.mkdir 'なにか' }.to raise_error(Errno::EPERM)
@@ -65,10 +65,10 @@ describe PhotoFS::MirroredDir do
   end
 
   describe :rename do
-    let(:dir) { PhotoFS::MirroredDir.new('test', path) }
+    let(:dir) { PhotoFS::Fuse::MirroredDir.new('test', path) }
     let(:from_name) { 'from' }
     let(:to_name) { 'to' }
-    let(:parent_node) { instance_double('PhotoFS::Dir') }
+    let(:parent_node) { instance_double('PhotoFS::Fuse::Dir') }
 
     context 'when from_name is not in dir' do
       before(:example) do
@@ -81,7 +81,7 @@ describe PhotoFS::MirroredDir do
     end
 
     context 'when from_name is in dir' do
-      let(:from_node) { instance_double('PhotoFS::Node') }
+      let(:from_node) { instance_double('PhotoFS::Fuse::Node') }
 
       before(:example) do
         allow(dir).to receive(:node_hash).and_return({from_name => from_node})
@@ -96,7 +96,7 @@ describe PhotoFS::MirroredDir do
   end # :rename
 
   describe :rmdir do
-    let(:dir) { PhotoFS::MirroredDir.new('test', path) }
+    let(:dir) { PhotoFS::Fuse::MirroredDir.new('test', path) }
 
     it 'should just say no' do
       expect { dir.rmdir 'なにか' }.to raise_error(Errno::EPERM)
@@ -104,15 +104,15 @@ describe PhotoFS::MirroredDir do
   end
 
   describe :stat do
-    let(:dir) { PhotoFS::MirroredDir.new('test', path) }
+    let(:dir) { PhotoFS::Fuse::MirroredDir.new('test', path) }
 
     before(:each) do
-      allow(PhotoFS::Stat).to receive(:stat_hash).and_return({})
+      allow(PhotoFS::Fuse::Stat).to receive(:stat_hash).and_return({})
       allow(File).to receive(:stat).and_return({})
     end
 
     it "should return read-only" do
-      expect(dir.stat.mode & PhotoFS::Stat::MODE_MASK).to eq(PhotoFS::Stat::MODE_READ_ONLY)
+      expect(dir.stat.mode & PhotoFS::Fuse::Stat::MODE_MASK).to eq(PhotoFS::Fuse::Stat::MODE_READ_ONLY)
     end
 
     it "should return real directory" do
@@ -121,7 +121,7 @@ describe PhotoFS::MirroredDir do
   end
 
   describe :node_hash do
-    let(:dir) { PhotoFS::MirroredDir.new('test', path) }
+    let(:dir) { PhotoFS::Fuse::MirroredDir.new('test', path) }
     let(:tags_node) { Hash.new }
     let(:mirrored_nodes) { Hash.new }
 
@@ -138,7 +138,7 @@ describe PhotoFS::MirroredDir do
   end # :node_hash
 
   describe :mirrored_nodes do
-    let(:dir) { PhotoFS::MirroredDir.new('test', path) }
+    let(:dir) { PhotoFS::Fuse::MirroredDir.new('test', path) }
     let(:file_name) { 'a-file' }
     let(:dir_name) { 'a-dir' }
 
@@ -159,14 +159,14 @@ describe PhotoFS::MirroredDir do
       end
 
       it "should be a file node representing that file" do
-        expect((dir.send :node_hash).values).to contain_exactly(PhotoFS::File.new(file_name, [path, file_name].join(File::SEPARATOR), {:parent => dir}))
+        expect((dir.send :node_hash).values).to contain_exactly(PhotoFS::Fuse::File.new(file_name, [path, file_name].join(File::SEPARATOR), {:parent => dir}))
       end
     end
 
     context "when there are files and dirs in target dir" do
       let(:node_hash) do
-        [PhotoFS::File.new(file_name, [path, file_name].join(File::SEPARATOR), {:parent => dir}),
-         PhotoFS::MirroredDir.new(dir_name, [path, dir_name].join(File::SEPARATOR), {:parent => dir})]
+        [PhotoFS::Fuse::File.new(file_name, [path, file_name].join(File::SEPARATOR), {:parent => dir}),
+         PhotoFS::Fuse::MirroredDir.new(dir_name, [path, dir_name].join(File::SEPARATOR), {:parent => dir})]
       end
 
       before(:each) do
@@ -181,7 +181,7 @@ describe PhotoFS::MirroredDir do
   end
 
   describe :tags_node do
-    let(:dir) { PhotoFS::MirroredDir.new('test', path) }
+    let(:dir) { PhotoFS::Fuse::MirroredDir.new('test', path) }
 
     context 'when there is no tag set' do
       before(:example) do
@@ -208,13 +208,13 @@ describe PhotoFS::MirroredDir do
 
     context 'when there is a tags set and images in the dir' do
       let(:tags) { instance_double('PhotoFS::Core::TagSet') }
-      let(:tag_dir) { instance_double('PhotoFS::TagDir', :name => 'tags') }
+      let(:tag_dir) { instance_double('PhotoFS::Fuse::TagDir', :name => 'tags') }
       let(:tags_node_image_domain) { instance_double('PhotoFS::Core::ImageSet', :empty? => false) }
 
       before(:example) do
         dir.instance_variable_set(:@tags, tags)
 
-        allow(PhotoFS::TagDir).to receive(:new).and_return(tag_dir)
+        allow(PhotoFS::Fuse::TagDir).to receive(:new).and_return(tag_dir)
         allow(dir).to receive(:tags_node_image_domain).and_return(tags_node_image_domain)
       end
 
@@ -223,13 +223,13 @@ describe PhotoFS::MirroredDir do
       end
 
       it 'should set self as parent' do
-        expect(PhotoFS::TagDir).to receive(:new).with('tags', tags, hash_including(:parent => dir))
+        expect(PhotoFS::Fuse::TagDir).to receive(:new).with('tags', tags, hash_including(:parent => dir))
 
         dir.send :tags_node
       end
 
       it 'should set an image set' do
-        expect(PhotoFS::TagDir).to receive(:new).with('tags', tags, hash_including(:images))
+        expect(PhotoFS::Fuse::TagDir).to receive(:new).with('tags', tags, hash_including(:images))
 
         dir.send :tags_node
       end

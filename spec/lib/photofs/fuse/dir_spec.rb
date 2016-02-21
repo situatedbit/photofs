@@ -1,10 +1,10 @@
-require 'dir'
-require 'relative_path'
-require 'stat'
+require 'photofs/fuse/dir'
+require 'photofs/fuse/relative_path'
+require 'photofs/fuse/stat'
 
-describe PhotoFS::Dir do
+describe PhotoFS::Fuse::Dir do
   let(:name) { 'iidabashi' }
-  let(:dir) { PhotoFS::Dir.new name }
+  let(:dir) { PhotoFS::Fuse::Dir.new name }
 
   describe 'top-level instance' do
     it 'should have a name' do
@@ -21,7 +21,7 @@ describe PhotoFS::Dir do
 
     describe 'stat method' do
       it "should return read-only" do
-        expect(dir.stat.mode & PhotoFS::Stat::MODE_MASK).to eq(PhotoFS::Stat::MODE_READ_ONLY)
+        expect(dir.stat.mode & PhotoFS::Fuse::Stat::MODE_MASK).to eq(PhotoFS::Fuse::Stat::MODE_READ_ONLY)
       end
 
       it "should return real directory" do
@@ -32,7 +32,7 @@ describe PhotoFS::Dir do
 
   describe :add do
     it 'should refuse with not permitted' do
-      expect{ dir.add('child-name', PhotoFS::Node.new('blah')) }.to raise_error(Errno::EPERM)
+      expect{ dir.add('child-name', PhotoFS::Fuse::Node.new('blah')) }.to raise_error(Errno::EPERM)
     end
   end
 
@@ -44,7 +44,7 @@ describe PhotoFS::Dir do
 
   describe :rename do
     it 'should not be implemented' do
-      expect{ dir.rename 'child-name', PhotoFS::Node.new('to-parent'), 'to-name' }.to raise_error(Errno::EPERM)
+      expect{ dir.rename 'child-name', PhotoFS::Fuse::Node.new('to-parent'), 'to-name' }.to raise_error(Errno::EPERM)
     end
   end
 
@@ -63,15 +63,15 @@ describe PhotoFS::Dir do
   describe :search do
     context 'when path is empty' do
       it 'should return itself' do
-        expect(dir.search(PhotoFS::RelativePath.new('./'))).to eq(dir)
+        expect(dir.search(PhotoFS::Fuse::RelativePath.new('./'))).to eq(dir)
       end
     end
 
     context 'when the matching node is a directory' do
-      let(:search_path) { PhotoFS::RelativePath.new('ikebukuro/shinjuku') }
+      let(:search_path) { PhotoFS::Fuse::RelativePath.new('ikebukuro/shinjuku') }
       let(:found_node_name) { search_path.top_name }
-      let(:truncated_search_path) { PhotoFS::RelativePath.new('./shinjuku') }
-      let(:found_node) { PhotoFS::Dir.new(found_node_name, {:parent => dir}) }
+      let(:truncated_search_path) { PhotoFS::Fuse::RelativePath.new('./shinjuku') }
+      let(:found_node) { PhotoFS::Fuse::Dir.new(found_node_name, {:parent => dir}) }
 
       before(:each) do
         allow(dir).to receive(:node_hash).and_return( { found_node_name => found_node } )
@@ -85,14 +85,14 @@ describe PhotoFS::Dir do
 
     context 'when the matching node is a file' do
       let(:file_name) { 'ikebukuro' }
-      let(:file) { PhotoFS::Dir.new(file_name, {:parent => dir}) }
+      let(:file) { PhotoFS::Fuse::Dir.new(file_name, {:parent => dir}) }
 
       before(:each) do
         allow(dir).to receive(:node_hash).and_return( { file_name => file } )
       end
 
       it 'should return that node' do      
-        expect(dir.search(PhotoFS::RelativePath.new(file_name))).to eq(file)
+        expect(dir.search(PhotoFS::Fuse::RelativePath.new(file_name))).to eq(file)
       end
     end
 
@@ -102,7 +102,7 @@ describe PhotoFS::Dir do
       end
 
       it 'should return nil' do
-        expect(dir.search(PhotoFS::RelativePath.new('garbage'))).to be nil
+        expect(dir.search(PhotoFS::Fuse::RelativePath.new('garbage'))).to be nil
       end
     end
   end # :search

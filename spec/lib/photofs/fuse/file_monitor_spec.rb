@@ -1,11 +1,11 @@
-require 'file_monitor'
+require 'photofs/fuse/file_monitor'
 require 'photofs/core/image_set'
 
-describe PhotoFS::FileMonitor do
+describe PhotoFS::Fuse::FileMonitor do
   let(:path) { '/path' }
   let(:paths) { ['a/b/c.jpg', '1/2/3.jpg'] }
-  let(:image_set) { PhotoFS::ImageSet.new }
-  let(:monitor) { PhotoFS::FileMonitor.new path }
+  let(:image_set) { PhotoFS::Core::ImageSet.new }
+  let(:monitor) { PhotoFS::Fuse::FileMonitor.new path }
 
   before(:example) do
     allow(File).to receive(:expand_path).with(path).and_return(path)

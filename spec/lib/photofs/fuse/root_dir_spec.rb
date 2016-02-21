@@ -1,15 +1,14 @@
-require 'spec_helper'
-require 'root_dir'
-require 'node'
+require 'photofs/fuse/root_dir'
+require 'photofs/fuse/node'
 
-describe PhotoFS::RootDir do
-  let(:root) { PhotoFS::RootDir.new }
+describe PhotoFS::Fuse::RootDir do
+  let(:root) { PhotoFS::Fuse::RootDir.new }
 
   describe "#add" do
-    let(:dir) { PhotoFS::Dir.new('test') }
+    let(:dir) { PhotoFS::Fuse::Dir.new('test') }
 
     it 'sould only accept directories' do
-      expect { root.add PhotoFS::Node.new('bad!') }.to raise_error(ArgumentError)
+      expect { root.add PhotoFS::Fuse::Node.new('bad!') }.to raise_error(ArgumentError)
     end
 
     it 'should set the parent on the dir' do
@@ -39,7 +38,7 @@ describe PhotoFS::RootDir do
 
   describe :relative_node_hash do
     context 'when there is no mountpoint' do
-      let(:dir) { PhotoFS::RootDir.new }
+      let(:dir) { PhotoFS::Fuse::RootDir.new }
 
       it 'should only include .' do
         expect((dir.send :relative_node_hash).to_a).to contain_exactly(['.', dir])

@@ -1,21 +1,21 @@
 require 'photofs/core/tag_set'
-require 'tag_dir'
-require 'stat'
+require 'photofs/fuse/tag_dir'
+require 'photofs/fuse/stat'
 
-describe PhotoFS::TagDir do
+describe PhotoFS::Fuse::TagDir do
   describe :new do
-    let(:parent) { PhotoFS::Dir.new 'お母さん' }
+    let(:parent) { PhotoFS::Fuse::Dir.new 'お母さん' }
     let(:query_tag_names) { ['query', 'tag', 'names'] }
     let(:default_options) { {:query_tag_names => ['deafult', 'tag', 'names']} }
 
     it 'should take an optional parent' do
-      dir = PhotoFS::TagDir.new('name', {}, {:parent => parent})
+      dir = PhotoFS::Fuse::TagDir.new('name', {}, {:parent => parent})
 
       expect(dir.instance_variable_get(:@parent)).to be parent
     end
 
     it 'should take optional query_tag_names' do
-      dir = PhotoFS::TagDir.new('name', {}, {:query_tag_names => query_tag_names})
+      dir = PhotoFS::Fuse::TagDir.new('name', {}, {:query_tag_names => query_tag_names})
 
       expect(dir.instance_variable_get(:@query_tag_names)).to be query_tag_names
     end
@@ -23,9 +23,9 @@ describe PhotoFS::TagDir do
     it 'should merge options with defaults' do
       options = {:special => 'option'}
 
-      allow_any_instance_of(PhotoFS::TagDir).to receive(:default_options).and_return(default_options)
+      allow_any_instance_of(PhotoFS::Fuse::TagDir).to receive(:default_options).and_return(default_options)
 
-      dir = PhotoFS::TagDir.new 'name', {}, options
+      dir = PhotoFS::Fuse::TagDir.new 'name', {}, options
 
       expect(dir.instance_variable_get(:@query_tag_names)).to eq(default_options[:query_tag_names])
       expect(dir.instance_variable_get(:@options)[:special]).to eq(options[:special])
@@ -36,7 +36,7 @@ describe PhotoFS::TagDir do
     let(:query_tag_names) { ['tag1', 'tag2'] }
     let(:payload) { 'the image' }
     let(:node) { instance_double('PhotoFS::Node', :name => '子供', :path => 'garbage', :payload => payload) }
-    let(:dir) { PhotoFS::TagDir.new 'じしょ' , {}, {:query_tag_names => query_tag_names}}
+    let(:dir) { PhotoFS::Fuse::TagDir.new 'じしょ' , {}, {:query_tag_names => query_tag_names}}
     let(:images_domain) { instance_double('PhotoFS::Core:;ImageSet') }
 
     before(:example) do
@@ -95,7 +95,7 @@ describe PhotoFS::TagDir do
 
   describe :mkdir do
     let(:tags) { PhotoFS::Core::TagSet.new }
-    let(:dir) { PhotoFS::TagDir.new('t', tags) }
+    let(:dir) { PhotoFS::Fuse::TagDir.new('t', tags) }
     let(:tag_name) { 'おさか' }
     let(:tag) { PhotoFS::Core::Tag.new tag_name }
 
@@ -145,7 +145,7 @@ describe PhotoFS::TagDir do
   end
 
   describe :remove do
-    let(:dir) { PhotoFS::TagDir.new 'じしょ' , {}, {:query_tag_names => []}}
+    let(:dir) { PhotoFS::Fuse::TagDir.new 'じしょ' , {}, {:query_tag_names => []}}
 
     context 'when the child does not exist in files' do
       let(:node_hash) { Hash.new }
@@ -197,7 +197,7 @@ describe PhotoFS::TagDir do
 
   describe :rmdir do
     let(:tags) { PhotoFS::Core::TagSet.new }
-    let(:dir) { PhotoFS::TagDir.new('t', tags) }
+    let(:dir) { PhotoFS::Fuse::TagDir.new('t', tags) }
     let(:dir_tags) { [] }
     let(:tag_name) { 'ほっかいど' }
     let(:tag) { PhotoFS::Core::Tag.new tag_name }
@@ -259,7 +259,7 @@ describe PhotoFS::TagDir do
 
   describe :soft_move do
     let(:tag_set) { PhotoFS::Core::TagSet.new }
-    let(:tag_dir) { PhotoFS::TagDir.new('日本橋', tag_set) }
+    let(:tag_dir) { PhotoFS::Fuse::TagDir.new('日本橋', tag_set) }
     let(:name) { 'new name' }
     let(:node) { instance_double('PhotoFS::File', :payload => 'node-payload', :directory? => false) }
     let(:images_domain) { instance_double('PhotoFS::Core::ImageSet') }
@@ -324,7 +324,7 @@ describe PhotoFS::TagDir do
   end # :soft_move
 
   describe :stat do
-    let(:tag_dir) { PhotoFS::TagDir.new('nihonbashi', PhotoFS::Core::TagSet.new) }
+    let(:tag_dir) { PhotoFS::Fuse::TagDir.new('nihonbashi', PhotoFS::Core::TagSet.new) }
     let(:size) { 687 }
 
     before(:example) do
@@ -332,7 +332,7 @@ describe PhotoFS::TagDir do
     end
 
     it 'should return writable by owner' do
-      expect(tag_dir.stat.mode & PhotoFS::Stat::MODE_MASK & PhotoFS::Stat::PERM_USER_WRITE).to be PhotoFS::Stat::PERM_USER_WRITE
+      expect(tag_dir.stat.mode & PhotoFS::Fuse::Stat::MODE_MASK & PhotoFS::Fuse::Stat::PERM_USER_WRITE).to be PhotoFS::Fuse::Stat::PERM_USER_WRITE
     end
 
     it 'should include size' do
@@ -341,7 +341,7 @@ describe PhotoFS::TagDir do
   end
 
   describe :node_hash do
-    let(:tag_dir) { PhotoFS::TagDir.new('nihonbashi', PhotoFS::Core::TagSet.new) }
+    let(:tag_dir) { PhotoFS::Fuse::TagDir.new('nihonbashi', PhotoFS::Core::TagSet.new) }
 
     context 'when there are no files or dirs' do
       before(:example) do
@@ -378,7 +378,7 @@ describe PhotoFS::TagDir do
   end
 
   describe :dirs do
-    let(:tag_dir) { PhotoFS::TagDir.new('nihonbashi', PhotoFS::Core::TagSet.new) }
+    let(:tag_dir) { PhotoFS::Fuse::TagDir.new('nihonbashi', PhotoFS::Core::TagSet.new) }
 
     context 'there are no dir_tags' do
       before(:example) do
@@ -404,8 +404,8 @@ describe PhotoFS::TagDir do
       end
 
       it 'should return a new collection with a tag_dir with combined query tags' do
-        expect(PhotoFS::TagDir).to receive(:new).with('c', tags, hash_including(:query_tag_names => ['a', 'b', 'c']))
-        expect(PhotoFS::TagDir).to receive(:new).with('d', tags, hash_including(:query_tag_names => ['a', 'b', 'd']))
+        expect(PhotoFS::Fuse::TagDir).to receive(:new).with('c', tags, hash_including(:query_tag_names => ['a', 'b', 'c']))
+        expect(PhotoFS::Fuse::TagDir).to receive(:new).with('d', tags, hash_including(:query_tag_names => ['a', 'b', 'd']))
 
         tag_dir.send :dirs
       end
@@ -413,7 +413,7 @@ describe PhotoFS::TagDir do
   end
 
   describe :size do
-    let(:tag_dir) { PhotoFS::TagDir.new('nihonbashi', PhotoFS::Core::TagSet.new) }
+    let(:tag_dir) { PhotoFS::Fuse::TagDir.new('nihonbashi', PhotoFS::Core::TagSet.new) }
     let(:file_name) { 'ぎんざ' }
     let(:dir_name) { 'おだいば' }
 
@@ -431,8 +431,8 @@ describe PhotoFS::TagDir do
       let(:size) { (file_name + dir_name).length }
 
       let(:node_hash) do
-        { file_name => PhotoFS::Node.new(file_name),
-          dir_name => PhotoFS::Node.new(dir_name) }
+        { file_name => PhotoFS::Fuse::Node.new(file_name),
+          dir_name => PhotoFS::Fuse::Node.new(dir_name) }
       end
 
       before(:example) do

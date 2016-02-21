@@ -1,20 +1,19 @@
-require 'spec_helper'
-require 'node'
+require 'photofs/fuse/node'
 
-describe PhotoFS::Node do
+describe PhotoFS::Fuse::Node do
   describe :new do
     let(:options) { Hash.new }
     let(:name) { 'onarimon' }
     let(:default_options) { { :default => 'option' } }
 
     it 'should initialize with just a name' do
-      expect { PhotoFS::Node.new name }.not_to raise_error
+      expect { PhotoFS::Fuse::Node.new name }.not_to raise_error
     end
 
     it 'should take an options parameter' do
       options[:test] = 'test'
 
-      node = PhotoFS::Node.new name, options
+      node = PhotoFS::Fuse::Node.new name, options
 
       expect(node.instance_variable_get(:@options)[:test]).to eq('test')
     end
@@ -22,9 +21,9 @@ describe PhotoFS::Node do
     it 'should merge options with default options' do
       options[:special] = 'option'
 
-      allow_any_instance_of(PhotoFS::Node).to receive(:default_options).and_return(default_options)
+      allow_any_instance_of(PhotoFS::Fuse::Node).to receive(:default_options).and_return(default_options)
 
-      node = PhotoFS::Node.new name, options
+      node = PhotoFS::Fuse::Node.new name, options
 
       expect(node.instance_variable_get(:@options)[:default]).to eq(default_options[:default])
       expect(node.instance_variable_get(:@options)[:special]).to eq(options[:special])
@@ -35,14 +34,14 @@ describe PhotoFS::Node do
 
       allow(parent).to receive(:directory?) { false }
 
-      expect { PhotoFS::Node.new('onarimon', { :parent => parent }) }.to raise_error(ArgumentError)
+      expect { PhotoFS::Fuse::Node.new('onarimon', { :parent => parent }) }.to raise_error(ArgumentError)
     end
   end
 
   describe :== do
     let(:payload) { 'a common path' }
-    let(:this) { PhotoFS::Node.new('path-b') }
-    let(:that) { PhotoFS::Node.new('path-a') }
+    let(:this) { PhotoFS::Fuse::Node.new('path-b') }
+    let(:that) { PhotoFS::Fuse::Node.new('path-a') }
 
     before(:each) do
       allow(this).to receive(:payload).and_return(payload)
@@ -76,7 +75,7 @@ describe PhotoFS::Node do
 
   describe :payload do
     let(:path) { 'some-path' }
-    let(:node) { PhotoFS::Node.new('blah') }
+    let(:node) { PhotoFS::Fuse::Node.new('blah') }
 
     before(:example) do
       allow(node).to receive(:path).and_return(path)
@@ -89,7 +88,7 @@ describe PhotoFS::Node do
 
   describe 'top-level instance' do
     let(:name) { 'otemachi' }
-    let(:node) { PhotoFS::Node.new name }
+    let(:node) { PhotoFS::Fuse::Node.new name }
 
     it 'should have no parent' do
       expect(node.parent).to be nil
@@ -113,7 +112,7 @@ describe PhotoFS::Node do
 
     describe 'and second-level instance' do
       let(:second_name) { 'tokyo' }
-      let(:second_node) { PhotoFS::Node.new(second_name, {:parent => node}) }
+      let(:second_node) { PhotoFS::Fuse::Node.new(second_name, {:parent => node}) }
 
       before(:each) do
         allow(node).to receive(:directory?) { true }

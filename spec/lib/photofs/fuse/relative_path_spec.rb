@@ -1,38 +1,37 @@
-require 'spec_helper'
-require 'relative_path'
+require 'photofs/fuse/relative_path'
 
-describe PhotoFS::RelativePath do
+describe PhotoFS::Fuse::RelativePath do
   describe "#new" do
     describe 'should normalize leading ./' do
       it 'for a period' do
-        expect(PhotoFS::RelativePath.new('.').to_s).to eq('./')
+        expect(PhotoFS::Fuse::RelativePath.new('.').to_s).to eq('./')
       end
 
       it 'for an empty string' do
-        expect(PhotoFS::RelativePath.new('').to_s).to eq('./')
+        expect(PhotoFS::Fuse::RelativePath.new('').to_s).to eq('./')
       end
 
       it 'for path component' do
-        expect(PhotoFS::RelativePath.new('test').to_s).to eq('./test')
+        expect(PhotoFS::Fuse::RelativePath.new('test').to_s).to eq('./test')
       end
 
       it 'for leading /' do
-        expect(PhotoFS::RelativePath.new('/test').to_s).to eq('./test')
+        expect(PhotoFS::Fuse::RelativePath.new('/test').to_s).to eq('./test')
       end
 
       it 'for leading ./' do
-        expect(PhotoFS::RelativePath.new('./test').to_s).to eq('./test')
+        expect(PhotoFS::Fuse::RelativePath.new('./test').to_s).to eq('./test')
       end
 
       it 'for leading .' do
-        expect(PhotoFS::RelativePath.new('.test').to_s).to eq('./.test')
+        expect(PhotoFS::Fuse::RelativePath.new('.test').to_s).to eq('./.test')
       end
     end
   end
 
   describe :descend do
     context 'when there is more than one component' do
-      let(:path) { PhotoFS::RelativePath.new '/first/second/third' }
+      let(:path) { PhotoFS::Fuse::RelativePath.new '/first/second/third' }
 
       it 'returns a path object including all components but the last' do
         expect(path.descend.to_s).to eq('./second/third')
@@ -40,7 +39,7 @@ describe PhotoFS::RelativePath do
     end
 
     context 'when there are no components' do
-      let(:path) { PhotoFS::RelativePath.new '/' }
+      let(:path) { PhotoFS::Fuse::RelativePath.new '/' }
 
       it 'returns a path object with length of 0' do
         expect(path.descend).to be nil
@@ -48,7 +47,7 @@ describe PhotoFS::RelativePath do
     end
 
     context 'when there is one component' do
-      let(:path) { PhotoFS::RelativePath.new '/help' }
+      let(:path) { PhotoFS::Fuse::RelativePath.new '/help' }
 
       it 'returns a path referencing this' do
         expect(path.descend.to_s).to eq('./')
@@ -58,7 +57,7 @@ describe PhotoFS::RelativePath do
 
   describe '#top_name' do
     context 'when there is more than one component' do
-      let(:path) { PhotoFS::RelativePath.new '/first/second/third' }
+      let(:path) { PhotoFS::Fuse::RelativePath.new '/first/second/third' }
 
       it 'returns the first child as a string' do
         expect(path.top_name).to eq('first')
@@ -66,7 +65,7 @@ describe PhotoFS::RelativePath do
     end
 
     context 'when there are no components' do
-      let(:path) { PhotoFS::RelativePath.new '/' }
+      let(:path) { PhotoFS::Fuse::RelativePath.new '/' }
 
       it 'is nil' do
         expect(path.top_name).to be nil
@@ -74,7 +73,7 @@ describe PhotoFS::RelativePath do
     end
 
     context 'when there is one component' do
-      let(:path) { PhotoFS::RelativePath.new '/help' }
+      let(:path) { PhotoFS::Fuse::RelativePath.new '/help' }
 
       it 'is the component string' do
         expect(path.top_name).to eq('help')
@@ -83,7 +82,7 @@ describe PhotoFS::RelativePath do
   end
 
   describe '#length' do
-    let(:path) { PhotoFS::RelativePath.new '/test/path' }
+    let(:path) { PhotoFS::Fuse::RelativePath.new '/test/path' }
 
     it 'should return the number of path components' do
       expect(path.send :length).to be 2      
@@ -92,7 +91,7 @@ describe PhotoFS::RelativePath do
 
   describe '#name' do
     context 'if path is empty' do
-      let(:path) { PhotoFS::RelativePath.new '' }
+      let(:path) { PhotoFS::Fuse::RelativePath.new '' }
 
       it 'should return empty string' do
         expect(path.name).to be_empty
@@ -100,7 +99,7 @@ describe PhotoFS::RelativePath do
     end
 
     context 'when there is at least one path component' do
-      let(:path) { PhotoFS::RelativePath.new '/what/ever' }
+      let(:path) { PhotoFS::Fuse::RelativePath.new '/what/ever' }
 
       it 'should return the last component' do
         expect(path.name).to eq('ever')
@@ -110,7 +109,7 @@ describe PhotoFS::RelativePath do
 
   describe '#parent' do
     context 'when there is more than one component' do
-      let(:path) { PhotoFS::RelativePath.new './first/second/third' }
+      let(:path) { PhotoFS::Fuse::RelativePath.new './first/second/third' }
 
       it 'returns a path object including all components but the last' do
         expect(path.parent.to_s).to eq('./first/second')
@@ -118,7 +117,7 @@ describe PhotoFS::RelativePath do
     end
 
     context 'when there are no components' do
-      let(:path) { PhotoFS::RelativePath.new '/' }
+      let(:path) { PhotoFS::Fuse::RelativePath.new '/' }
 
       it 'is nil' do
         expect(path.parent).to be nil
@@ -126,7 +125,7 @@ describe PhotoFS::RelativePath do
     end
 
     context 'when there is one component' do
-      let(:path) { PhotoFS::RelativePath.new '/help' }
+      let(:path) { PhotoFS::Fuse::RelativePath.new '/help' }
 
       it 'path representing this' do
         expect(path.parent.is_this?).to be true
@@ -136,7 +135,7 @@ describe PhotoFS::RelativePath do
 
   describe '#is_this?' do
     context 'when there is more than one component' do
-      let(:path) { PhotoFS::RelativePath.new '/first/second/third' }
+      let(:path) { PhotoFS::Fuse::RelativePath.new '/first/second/third' }
 
       it 'is false' do
         expect(path.is_this?).to be false
@@ -144,7 +143,7 @@ describe PhotoFS::RelativePath do
     end
 
     context 'when there are no components' do
-      let(:path) { PhotoFS::RelativePath.new './' }
+      let(:path) { PhotoFS::Fuse::RelativePath.new './' }
 
       it 'is true' do
         expect(path.is_this?).to be true
@@ -152,7 +151,7 @@ describe PhotoFS::RelativePath do
     end
 
     context 'when there is one component' do
-      let(:path) { PhotoFS::RelativePath.new './help' }
+      let(:path) { PhotoFS::Fuse::RelativePath.new './help' }
 
       it 'is false' do
         expect(path.is_this?).to be false
@@ -162,7 +161,7 @@ describe PhotoFS::RelativePath do
 
   describe '#to_s' do
     let(:path_s) { '/what/ever' }
-    let(:path) { PhotoFS::RelativePath.new path_s }
+    let(:path) { PhotoFS::Fuse::RelativePath.new path_s }
 
     it 'should return normalized original path' do
       expect(path.to_s).to eq('.' + path_s)

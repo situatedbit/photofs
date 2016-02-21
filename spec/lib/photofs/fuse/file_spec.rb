@@ -1,9 +1,9 @@
-require 'file'
+require 'photofs/fuse/file'
 
-describe PhotoFS::File do
+describe PhotoFS::Fuse::File do
   let(:target_path) { '~/garbage' }
   let(:absolute_path) { '/tmp/garbage' }
-  let(:file) { PhotoFS::File.new('garbage', target_path) }
+  let(:file) { PhotoFS::Fuse::File.new('garbage', target_path) }
 
   before(:each) do
     allow(File).to receive(:absolute_path).and_return(absolute_path)
@@ -24,7 +24,7 @@ describe PhotoFS::File do
 
   describe "stat method" do
     before(:each) do
-      allow(PhotoFS::Stat).to receive(:stat_hash).and_return({})
+      allow(PhotoFS::Fuse::Stat).to receive(:stat_hash).and_return({})
       allow(File).to receive(:stat).and_return({})
     end
 
@@ -41,7 +41,7 @@ describe PhotoFS::File do
     end
 
     it "should be read only" do
-      expect(file.stat.mode & PhotoFS::Stat::MODE_MASK).to eq(PhotoFS::Stat::MODE_READ_ONLY)
+      expect(file.stat.mode & PhotoFS::Fuse::Stat::MODE_MASK).to eq(PhotoFS::Fuse::Stat::MODE_READ_ONLY)
     end
   end
 end
