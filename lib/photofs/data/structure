@@ -1,0 +1,20 @@
+tag
+  id
+  name
+  images -> tag_image
+
+tag_bindings
+  tag_id
+  image_id
+
+image
+  id
+  jpeg -> file
+
+file
+  path
+  crc (eventually?)
+
+ImageSet.find_by_name
+  -> Repository::ImageSet -> actually manipulates Image objects from the DB
+  -> Repository::Image -> fetched by R:ImageSet, converted into Image objects
