@@ -20,6 +20,10 @@ module PhotoFS
         ::File.directory? path
       end
 
+      def dirname(file)
+        ::File.dirname(file)
+      end
+
       def entries(path)
         ::Dir.entries path
       end
@@ -48,6 +52,10 @@ module PhotoFS
 
       def join(*args)
         ::File.join(*args)
+      end
+
+      def mkdir(path, mode = 0777)
+        ::Dir.mkdir(path, mode)
       end
 
       def separator

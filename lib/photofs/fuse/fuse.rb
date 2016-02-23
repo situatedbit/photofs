@@ -1,7 +1,8 @@
 require 'rfuse'
 require 'photofs/core/tag_set'
 require 'photofs/core/image'
-require 'photofs/fs/local'
+require 'photofs/data/database'
+require 'photofs/fs'
 require_relative 'file_monitor'
 require_relative 'relative_path'
 require_relative 'root_dir'
@@ -14,7 +15,7 @@ module PhotoFS
       attr_reader :source_path
 
       def self.fs
-        PhotoFS::FS::Local.new
+        PhotoFS::FS.file_system
       end
 
       def initialize(options)
@@ -23,7 +24,7 @@ module PhotoFS
         @source_path = options[:source]
         @mountpoint = options[:mountpoint]
 
-        @images = PhotoFS::Core::ImageSet.new # global image set
+        @images = PhotoFS::Core::ImageSet.new() # global image set
 
         @root = RootDir.new
       end
@@ -37,6 +38,20 @@ module PhotoFS
       end
 
       private
+      def database
+        PhotoFS::Data::Database.new('production', data_path).setup
+      end
+
+      def data_path
+        path = ::File.join(@source_path, PhotoFS::FS::DATA_DIR)
+
+        unless Fuse.fs.exist?(path) && Fuse.fs.directory?(path)
+          Fuse.fs.mkdir(path)
+        end
+
+        path
+      end
+
       def source_path=(value)
         raise RFuse::Error.new("Source is not a directory (#{value})") unless ::File.directory?(value)
 

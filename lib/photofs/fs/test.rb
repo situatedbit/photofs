@@ -4,7 +4,6 @@ module PhotoFS::FS
     def initialize(file_system)
       @dirs = file_system[:dirs] || []
       @files = file_system[:files] || []
-      @all = @dirs + @files
 
       @stats = file_system[:stats] || {}
     end
@@ -16,7 +15,6 @@ module PhotoFS::FS
     def add(fs_mapping)
       @dirs = @dirs + fs_mapping[:dirs] if fs_mapping.has_key? :dirs
       @files = @files + fs_mapping[:files] if fs_mapping.has_key? :files
-      @all = @dirs + @files
 
       @stats = @stats + fs_mapping[:stats] if fs_mapping.has_key? :stats
     end
@@ -28,7 +26,7 @@ module PhotoFS::FS
     def entries(path)
       return nil if !exist?(path) || !directory?(path)
 
-      children = @all.select do |candidate|
+      children = all.select do |candidate|
         candidate != path && candidate.start_with?(path) && candidate.sub(path, '').start_with?('/')
       end
 
@@ -41,11 +39,15 @@ module PhotoFS::FS
     end
 
     def exist?(path)
-      @all.include? path
+      all.include? path
     end
 
     def expand_path(path)
       path
+    end
+
+    def mkdir(path, mode = 0777)
+      @dir << path
     end
 
     def stat(path)
@@ -63,5 +65,12 @@ module PhotoFS::FS
 
       stat
     end
+
+    private
+
+    def all
+      @dirs + @files
+    end
+
   end
 end
