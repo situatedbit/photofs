@@ -39,7 +39,7 @@ module PhotoFS
 
       private
       def database
-        PhotoFS::Data::Database.new('production', data_path).setup
+        PhotoFS::Data::Database.new('production', data_path).connect.setup
       end
 
       def data_path

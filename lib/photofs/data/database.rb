@@ -11,9 +11,14 @@ module PhotoFS
         @config['production']['database'] = ::File.join(db_path, 'db.sqlite3')
         @current_config = @config[env]
         @env = env
-        
+
         ActiveRecord::Base.configurations = @config
+      end
+
+      def connect
         ActiveRecord::Base.establish_connection @current_config
+
+        self
       end
 
       def setup
