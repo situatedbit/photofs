@@ -23,7 +23,7 @@ module PhotoFS
         images = [images].flatten # normalize as array
 
         images.each do |i|
-          local_set.delete i
+          set.delete i
         end
 
         self

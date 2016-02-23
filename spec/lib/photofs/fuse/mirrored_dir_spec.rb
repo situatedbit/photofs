@@ -1,13 +1,15 @@
 require 'photofs/fuse/mirrored_dir'
 require 'photofs/fuse/file'
+require 'photofs/fs/test'
 
 describe PhotoFS::Fuse::MirroredDir do
   let(:absolute_path) { '/tmp/garbage' }
   let(:path) { 'garbage' }
+  let(:fs) { PhotoFS::FS::Test.new({ :dirs => [absolute_path], :files => [], :absolute_paths => {path => absolute_path} }) }
 
   before(:each) do
-    allow(File).to receive(:absolute_path) { absolute_path }
-    allow(File).to receive(:exist?) { true }
+    allow(PhotoFS::FS).to receive(:file_system).and_return(fs)
+    allow(fs).to receive(:exist?).and_return(true)
   end
 
   describe :images do
@@ -144,7 +146,7 @@ describe PhotoFS::Fuse::MirroredDir do
 
     context "when there are no files" do
       before(:example) do
-        allow(Dir).to receive(:entries).and_return(['.', '..'])
+        allow(fs).to receive(:entries).and_return(['.', '..'])
       end
 
       it "should be empty" do
@@ -154,8 +156,9 @@ describe PhotoFS::Fuse::MirroredDir do
 
     context "when there is a file in the target dir" do
       before(:each) do
-        allow(Dir).to receive(:entries).and_return(['.', '..', file_name])
-        allow(File).to receive(:directory?).and_return(false)
+        allow(fs).to receive(:entries).and_return(['.', '..', file_name])
+        allow(fs).to receive(:directory?).and_return(false)
+        fs.add({:absolute_paths => { file_name => ::File.join(absolute_path, file_name)}})
       end
 
       it "should be a file node representing that file" do
@@ -170,8 +173,9 @@ describe PhotoFS::Fuse::MirroredDir do
       end
 
       before(:each) do
-        allow(Dir).to receive(:entries).and_return(['.', '..', file_name, dir_name])
-        allow(File).to receive(:directory?).and_return(false, true)
+        allow(fs).to receive(:entries).and_return(['.', '..', file_name, dir_name])
+        allow(fs).to receive(:directory?).and_return(false, true)
+        fs.add({:absolute_paths => { file_name => ::File.join(absolute_path, file_name), dir_name => ::File.join(absolute_path, dir_name)}})
       end
 
       it "should be a mirrored dir for each dir and a file for each file" do
@@ -198,7 +202,7 @@ describe PhotoFS::Fuse::MirroredDir do
 
       before(:example) do
         dir.instance_variable_set(:@tags, tags)
-        allow(dir).to receive(:tags_node_image_domain).and_return(instance_double('PhotoFS::Core::ImageSet', :empty? => true))
+        allow(dir).to receive(:images).and_return([])
       end
 
       it 'should not exist' do
@@ -209,13 +213,13 @@ describe PhotoFS::Fuse::MirroredDir do
     context 'when there is a tags set and images in the dir' do
       let(:tags) { instance_double('PhotoFS::Core::TagSet') }
       let(:tag_dir) { instance_double('PhotoFS::Fuse::TagDir', :name => 'tags') }
-      let(:tags_node_image_domain) { instance_double('PhotoFS::Core::ImageSet', :empty? => false) }
+      let(:images) { [instance_double('PhotoFS::Core::Image')] }
 
       before(:example) do
         dir.instance_variable_set(:@tags, tags)
 
         allow(PhotoFS::Fuse::TagDir).to receive(:new).and_return(tag_dir)
-        allow(dir).to receive(:tags_node_image_domain).and_return(tags_node_image_domain)
+        allow(dir).to receive(:images).and_return(images)
       end
 
       it 'should contain a new tag dir' do

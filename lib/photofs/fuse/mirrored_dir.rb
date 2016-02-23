@@ -1,8 +1,8 @@
-require_relative 'fuse'
 require_relative 'dir'
 require_relative 'stat'
 require_relative 'file'
 require 'photofs/core/image_set'
+require 'photofs/fs'
 require 'rfuse'
 
 module PhotoFS
@@ -11,13 +11,13 @@ module PhotoFS
       attr_reader :source_path
 
       def initialize(name, source_path, options = {})
-        @source_path = Fuse.fs.absolute_path(source_path)
+        @source_path = fs.absolute_path(source_path)
         @options = default_options.merge options
 
         @tags = @options[:tags]
         @images_domain = @options[:images]
 
-        raise ArgumentError.new('Source directory must be a directory') unless Fuse.fs.exist?(@source_path) || Fuse.fs.directory?(@source_path)
+        raise ArgumentError.new('Source directory must be a directory') unless fs.exist?(@source_path) || fs.directory?(@source_path)
 
         super(name, options)
       end
@@ -39,7 +39,7 @@ module PhotoFS
       end
 
       def stat
-        stat_hash = PhotoFS::Fuse::Stat.stat_hash(Fuse.fs.stat(@source_path))
+        stat_hash = PhotoFS::Fuse::Stat.stat_hash(fs.stat(@source_path))
 
         RFuse::Stat.directory(PhotoFS::Fuse::Stat::MODE_READ_ONLY, stat_hash)
       end
@@ -58,7 +58,7 @@ module PhotoFS
       end
 
       def expand_path(entry)
-        Fuse.fs.join(source_path, entry)
+        fs.join(source_path, entry)
       end
 
       def images
@@ -71,19 +71,15 @@ module PhotoFS
       end
 
       def entries
-        Fuse.fs.entries(source_path) - ['.', '..']
+        fs.entries(source_path) - ['.', '..']
       end
 
       def tags_node
-        return {} if @tags.nil? || tags_node_image_domain.empty?
+        tag_dir_image_set = PhotoFS::Core::ImageSet.new({set: Set.new(images)})
 
-        {'tags' => TagDir.new('tags', @tags, {:parent => self, :images => tags_node_image_domain} )}
-      end
+        return {} if @tags.nil? || tag_dir_image_set.empty?
 
-      def tags_node_image_domain
-        @images_domain.filter do |i|
-          images.include? i
-        end
+        {'tags' => TagDir.new('tags', @tags, {:parent => self, :images => tag_dir_image_set} )}
       end
 
       def mirrored_nodes
@@ -93,11 +89,16 @@ module PhotoFS
       def new_node(entry)
         path = expand_path(entry)
 
-        if Fuse.fs.directory?(path)
+        if fs.directory?(path)
           MirroredDir.new(entry, path, {:parent => self, :tags => @tags, :images => @images_domain})
         else
           File.new(entry, path, {:parent => self, :payload => @images_domain.find_by_path(path)})
         end
+      end
+
+      private
+      def fs
+        PhotoFS::FS.file_system
       end
 
     end

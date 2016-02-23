@@ -6,10 +6,7 @@ module PhotoFS
       def initialize(options={})
         @options = default_options.merge options
 
-        # parent and image_set should be mutually exclusive; either/or
         @set = @options[:set]
-        @filter = @options[:filter]
-        @parent = @options[:parent]
       end
 
       # new image set from cumulative intersection between this set and image_sets
@@ -19,7 +16,7 @@ module PhotoFS
 
         return ImageSet.new if image_sets.empty?
 
-        intersection = image_sets.reduce(range) do |memo, image_set|
+        intersection = image_sets.reduce(set) do |memo, image_set|
           memo & image_set.to_set
         end
 
@@ -27,69 +24,50 @@ module PhotoFS
       end
 
       def add(image)
-        root_set << image
+        set << image
+      end
+
+      def empty?
+        set.empty?
       end
 
       def find_by_path(path)
-        # slow!
-        range.each do |image|
+        set.each do |image|
           return image if image.path == path
         end
 
         return nil
       end
 
-      def range
-        domain.to_a.select { |i| @filter.call(i) }.to_set
-      end
-
-      def empty?
-        range.empty?
-      end
-
-      def filter(&block)
-        ImageSet.new(:filter => block, :parent => self)
-      end
-
-      def include? image
-        range.include? image
+      def include?(image)
+        set.include? image
       end
 
       def to_a
-        range.to_a
+        set.to_a
       end
 
       def to_set
-        Set.new range
+        Set.new set
       end
 
       alias_method :intersection, :&
       alias_method :<<, :add
-      alias_method :images, :range
-      alias_method :all, :range
+      alias_method :images, :to_a
+      alias_method :all, :to_a
 
       protected
 
-      def root_set
-        @parent ? @parent.root_set : @set
-      end
-
-      def local_set
+      def set
         @set
       end
 
       private
 
       def default_options
-        { :filter => Proc.new { |i| true },
-          :parent => nil,
-          :set => Set.new
-        }
+        { :set => Set.new }
       end
 
-      def domain
-        @parent ? @parent.range : @set
-      end
     end
   end
 end

@@ -2,6 +2,7 @@ require 'photofs/fuse'
 require 'photofs/fuse/file_monitor'
 require 'rfuse'
 require 'photofs/fs/test'
+require 'photofs/fs'
 
 =begin
           filler = instance_double('Filler')
@@ -24,7 +25,7 @@ describe 'integration for' do
   let(:image_monitor) { instance_double('PhotoFS::FileMonitor', :paths => []) }
 
   before(:example) do
-    allow(PhotoFS::Fuse::Fuse).to receive(:fs).and_return(file_system)
+    allow(PhotoFS::FS).to receive(:file_system).and_return(file_system)
 
     allow(PhotoFS::Fuse::FileMonitor).to receive(:new).and_return(image_monitor)
 

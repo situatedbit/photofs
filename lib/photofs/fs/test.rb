@@ -4,19 +4,21 @@ module PhotoFS::FS
     def initialize(file_system)
       @dirs = file_system[:dirs] || []
       @files = file_system[:files] || []
+      @absolute_paths = file_system[:absolute_paths] || {}
 
       @stats = file_system[:stats] || {}
     end
 
     def absolute_path(path)
-      path
+      @absolute_paths[path] || path
     end
 
     def add(fs_mapping)
       @dirs = @dirs + fs_mapping[:dirs] if fs_mapping.has_key? :dirs
       @files = @files + fs_mapping[:files] if fs_mapping.has_key? :files
+      @absolute_paths = @absolute_paths.merge(fs_mapping[:absolute_paths]) if fs_mapping.has_key? :absolute_paths
 
-      @stats = @stats + fs_mapping[:stats] if fs_mapping.has_key? :stats
+      @stats = @stats.merge(fs_mapping[:stats]) if fs_mapping.has_key? :stats
     end
 
     def directory?(path)
