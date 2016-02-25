@@ -7,5 +7,6 @@ gem 'standalone_migrations'
 gem 'sqlite3'
 
 group :development, :test do
-  gem 'rspec-rails', '~> 3.0'
+  gem 'rspec', '~> 3.4'
+  gem 'database_cleaner'
 end
