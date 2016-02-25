@@ -19,7 +19,9 @@
 
 require 'active_record'
 require 'database_cleaner'
+require 'factory_girl'
 
+# normally rspec-rails will do this for us
 environment = 'test'
 configurations = YAML::load(File.open('config/database.yml'))
 ActiveRecord::Base.configurations = configurations
@@ -59,6 +61,13 @@ RSpec.configure do |config|
     DatabaseCleaner.cleaning do
       example.run
     end
+  end
+
+  # https://github.com/thoughtbot/factory_girl/blob/master/GETTING_STARTED.md
+  config.include FactoryGirl::Syntax::Methods
+
+  config.before(:suite) do
+    FactoryGirl.find_definitions
   end
 
 # The settings below are suggested to provide a good initial experience
