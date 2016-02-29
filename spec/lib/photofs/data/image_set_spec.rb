@@ -1,29 +1,106 @@
 require 'photofs/data/image_set'
 
 describe PhotoFS::Data::ImageSet do
+  let(:image_set) { PhotoFS::Data::ImageSet.new }
+
   describe :add do
-    it 'should insert into database with an active record object'
+    let(:image) { instance_double('PhotoFS::Core::Image') }
+    let(:image_record) { instance_double('PhotoFS::Data::Image', {:save! => nil}) }
 
-    it 'should add image to the local cache'
+    before(:example) do
+      allow(PhotoFS::Data::Image).to receive(:new_from_image).with(image).and_return(image_record)
+    end
 
-    it 'should throw an exception if not unique on path'
-  end
+    it 'should insert into database with an active record object' do
+      expect(image_record).to receive(:save!)
+
+      image_set.add image
+    end
+
+    it 'should add image to the local cache' do
+      expect(image_set.instance_variable_get :@record_object_map).to receive(:[]=).with(image_record, image)
+
+      image_set.add image
+    end
+
+    context 'when the image record is invalid' do
+      let(:image_record) { build(:image) }
+
+      before(:example) do
+        allow(image_record).to receive(:save!).and_raise(ActiveRecord::RecordInvalid.new(image_record))
+      end
+
+      it 'should throw an exception if not unique on path' do
+        expect { image_set.add image }.to raise_error(ActiveRecord::RecordInvalid)
+      end
+    end
+  end # :add
 
   describe :empty? do
-    it 'should return count on Data::Image'
+    it 'should return count on Data::Image' do
+      expect(PhotoFS::Data::Image).to receive(:count)
+
+      image_set.empty?
+    end
   end
 
   describe :find_by_path do
-    it 'should fetch using path attribute'
+    let(:image_record) { create(:image) }
+    let(:path) { image_record.to_simple.path }
 
-    it 'should add the returned image to the cache'
+    it 'should be an simple image object' do
+      expect(image_set.find_by_path(path).is_a? PhotoFS::Core::Image).to be true
+    end
+
+    it 'should add the returned image to the cache' do
+      expect(image_set.instance_variable_get(:@record_object_map)).to receive(:[]=).with(image_record, image_record.to_simple)
+
+      image_set.find_by_path path
+    end
+
+    context 'when the path is not in the database' do
+      let(:path) { image_record.to_simple.path + 'nope' }
+
+      it 'should be nil' do
+        expect(image_set.find_by_path path).to be nil
+      end
+    end
 
     context 'when an image is already in the cache' do
-      it 'should return the cached object'
+      let(:cached_image) { instance_double('PhotoFS::Core::Image') }
+
+      before(:example) do
+        allow(image_set.instance_variable_get(:@record_object_map)).to receive(:[]).with(image_record).and_return(cached_image)
+      end
+
+      it 'should not update the cache' do
+        expect(image_set.instance_variable_get(:@record_object_map)).not_to receive(:[]=)
+
+        image_set.find_by_path path
+      end
+
+      it 'should return the cached object' do
+        expect(image_set.find_by_path path).to be cached_image
+      end
+    end
+  end # :find_by_path
+
+  describe :save! do
+    it 'should save each dirty image in the cache'
+
+    context 'when an image is invalid' do
+      it 'should ensure that all valid images are saved'
+      it 'should throw an exception'
     end
   end
 
   describe :set do
-    it 'should return all Images as simple objects in a set'
+    it 'should have the same size as count'
+
+    it 'should return simple objects'
+
+    it 'should fill the cache with all simple objects not already in the cache'
+
+    it 'should not update the cache'
   end
 end
