@@ -86,13 +86,47 @@ describe PhotoFS::Data::ImageSet do
   end # :find_by_path
 
   describe :save! do
-    it 'should save each dirty image in the cache'
+    let!(:record_1) { create :image }
+    let!(:record_2) { create :image }
+    let!(:record_3) { create :image }
 
-    context 'when an image is invalid' do
-      it 'should ensure that all valid images are saved'
-      it 'should throw an exception'
+    let(:image_1) { record_1.to_simple }
+    let(:image_2) { record_2.to_simple }
+    let(:image_3) { record_3.to_simple }
+
+    let(:record_object_map) do
+      { record_1 => image_1, record_2 => image_2, record_3 => image_3 }
     end
-  end
+
+    before(:example) do
+      image_set.instance_variable_set(:@record_object_map, record_object_map)
+    end
+
+    context 'when there are dirty images in the cache' do
+      before(:example) do
+        allow(record_2).to receive(:consistent_with?).with(image_2).and_return(false)
+        allow(record_3).to receive(:consistent_with?).with(image_3).and_return(false)
+      end
+
+      it 'should update each dirty image record' do
+        expect(record_2).to receive(:update_from).with(image_2)
+        expect(record_3).to receive(:update_from).with(image_3)
+
+        image_set.save!
+      end
+
+      it 'should save each dirty image record' do
+        expect(record_2).to receive :save!
+        expect(record_3).to receive :save!
+
+        image_set.save!
+      end
+
+      it 'should not save clean records' do
+        expect(record_1).not_to receive :save!
+      end
+    end
+  end # :save!
 
 # protected
   describe :set do

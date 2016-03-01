@@ -18,8 +18,20 @@ module PhotoFS
         image_record
       end
 
+      def consistent_with?(image)
+        jpeg_file && jpeg_file.path == image.path
+      end
+
       def to_simple
         PhotoFS::Core::Image.new(jpeg_file.path)
+      end
+
+      def update_from(image)
+        if jpeg_file.path != image.path
+          build_jpeg_file(:path => image.path)
+        end
+
+        self
       end
 
     end

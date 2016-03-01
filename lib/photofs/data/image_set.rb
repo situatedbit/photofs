@@ -44,6 +44,14 @@ module PhotoFS
       end
 
       def save!
+        @record_object_map.each_pair do |record, simple_object|
+          if !record.consistent_with?(simple_object)
+            record.update_from(simple_object)
+            record.save!
+          end
+        end
+
+        @record_object_map.rehash
       end
 
       def size
