@@ -5,7 +5,9 @@ require 'photofs/data/image'
 
 FactoryGirl.define do
   factory :file, class: PhotoFS::Data::File do
-    path '/null/void'
+    sequence :path do |n|
+      "/null/void/#{n}.jpg"
+    end
   end
 
   factory :image, class: PhotoFS::Data::Image do

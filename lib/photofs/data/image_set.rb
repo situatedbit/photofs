@@ -53,9 +53,14 @@ module PhotoFS
       protected
 
       def set
-# nope: grab from database and cache        Set.new @record_object_map.values
-      end
+        cached_ids = @record_object_map.keys.map { |record| record.id }
 
+        image_records = Image.where.not(id: cached_ids)
+
+        image_records.all.each { |record| @record_object_map[record] = record.to_simple }
+
+        @record_object_map.values.to_set
+      end
 
     end
   end
