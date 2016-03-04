@@ -8,7 +8,7 @@ module PhotoFS
 
       def initialize(env, db_path = '')
         @config = config_file
-        @config['production']['database'] = ::File.join(db_path, 'db.sqlite3')
+        @config[env]['database'] = ::File.join(db_path, 'db.sqlite3') unless db_path.empty?
         @current_config = @config[env]
         @env = env
 
@@ -21,17 +21,15 @@ module PhotoFS
         self
       end
 
-      def setup
-        if @env == 'production'
-          configure_db_tasks
+      def ensure_schema
+        configure_db_tasks
 
-          unless fs.exist?(@current_config['database'])
-            DatabaseTasks.create_current(@env)
-            DatabaseTasks.load_schema_current(:ruby)
-          end
-
-          DatabaseTasks.migrate
+        unless fs.exist?(@current_config['database'])
+          DatabaseTasks.create_current(@env)
+          DatabaseTasks.load_schema_current(:ruby)
         end
+
+        DatabaseTasks.migrate
 
         self
       end
@@ -39,12 +37,12 @@ module PhotoFS
       private
 
       def config_file
-        @config_file ||= YAML::load(IO.read('config/database.yml'))
+        @config_file ||= YAML::load(IO.read(::File.join(PhotoFS::FS.app_root, 'config', 'database.yml')))
       end
 
       def configure_db_tasks
         DatabaseTasks.database_configuration = @current_config
-        DatabaseTasks.db_dir = PhotoFS::FS.db_path
+        DatabaseTasks.db_dir = PhotoFS::FS.db_config_path
         DatabaseTasks.env = @env
         DatabaseTasks.migrations_paths = PhotoFS::FS.migration_paths
         DatabaseTasks.root = PhotoFS::FS.app_root

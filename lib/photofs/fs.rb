@@ -8,7 +8,17 @@ module PhotoFS
       ::File.join ::File.dirname(__FILE__), '..', '..'
     end
 
-    def self.db_path
+    def self.data_path(base_path = '')
+      path = ::File.join(base_path, DATA_DIR)
+
+      unless file_system.exist?(path) && file_system.directory?(path)
+        file_system.mkdir(path)
+      end
+
+      path
+    end
+
+    def self.db_config_path
        ::File.join app_root, 'db'
     end
 

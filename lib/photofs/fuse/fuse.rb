@@ -2,6 +2,7 @@ require 'rfuse'
 require 'photofs/core/tag_set'
 require 'photofs/core/image'
 require 'photofs/data/database'
+require 'photofs/data/image_set'
 require 'photofs/fs'
 require_relative 'file_monitor'
 require_relative 'relative_path'
@@ -23,14 +24,17 @@ module PhotoFS
 
         @source_path = options[:source]
         @mountpoint = options[:mountpoint]
+        @environment = options[:env] || 'production'
 
-        @images = PhotoFS::Core::ImageSet.new() # global image set
+        @images = PhotoFS::Data::ImageSet.new() # global image set
 
         @root = RootDir.new
       end
 
       def init(context, rfuse_connection_info)
-        FileMonitor.new(@source_path).paths.each { |path| @images.add PhotoFS::Core::Image.new(path) }
+        initialize_database unless @environment == 'test'
+
+        scan_source_path
 
         tags = PhotoFS::Core::TagSet.new
         @root.add MirroredDir.new('o', @source_path, {:tags => tags, :images => @images})
@@ -38,18 +42,21 @@ module PhotoFS
       end
 
       private
-      def database
-        PhotoFS::Data::Database.new('production', data_path).connect.setup
+      def initialize_database
+        db = PhotoFS::Data::Database.new(@environment, PhotoFS::FS.data_path(@source_path))
+
+        db.connect.ensure_schema
       end
 
-      def data_path
-        path = ::File.join(@source_path, PhotoFS::FS::DATA_DIR)
+      def save!
+# WORKLINE: we want tests for this
+#        @images.save!
+      end
 
-        unless Fuse.fs.exist?(path) && Fuse.fs.directory?(path)
-          Fuse.fs.mkdir(path)
+      def scan_source_path
+        FileMonitor.new(@source_path).paths.each do |path|
+          @images.add PhotoFS::Core::Image.new(path) unless @images.find_by_path(path)
         end
-
-        path
       end
 
       def source_path=(value)
@@ -86,6 +93,8 @@ module PhotoFS
         to = RelativePath.new to
 
         search(from.parent).rename(from.name, search(to.parent), to.name)
+
+        save!
       end
 
       def getattr(context, path)
@@ -108,6 +117,8 @@ module PhotoFS
         path = RelativePath.new(path)
 
         search(path.parent).mkdir(path.name)
+
+        save!
       end
 
       def rmdir(context, path)
@@ -116,6 +127,8 @@ module PhotoFS
         path = RelativePath.new(path)
 
         search(path.parent).rmdir(path.name)
+
+        save!
       end
 
       def log(s)
@@ -128,7 +141,10 @@ module PhotoFS
         path = RelativePath.new(path)
 
         search(path.parent).remove(path.name)
+
+        save!
       end
+
     end
   end
 end # module

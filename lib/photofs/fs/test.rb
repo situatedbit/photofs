@@ -19,6 +19,8 @@ module PhotoFS::FS
       @absolute_paths = @absolute_paths.merge(fs_mapping[:absolute_paths]) if fs_mapping.has_key? :absolute_paths
 
       @stats = @stats.merge(fs_mapping[:stats]) if fs_mapping.has_key? :stats
+
+      self
     end
 
     def directory?(path)

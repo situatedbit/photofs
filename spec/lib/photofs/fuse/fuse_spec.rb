@@ -17,7 +17,7 @@ describe PhotoFS::Fuse::Fuse do
     let(:to) { '/1/2/3/to' }
     let(:from_path) { PhotoFS::Fuse::RelativePath.new from }
     let(:to_path) { PhotoFS::Fuse::RelativePath.new to }
-    let(:from_parent_node) { instance_double('PhotoFS::Fuse::Dir') }
+    let(:from_parent_node) { instance_double('PhotoFS::Fuse::Dir', :rename => nil) }
     let(:to_parent_node) { instance_double('PhotoFS::Fuse::Dir') }
 
     context 'when from does not exist' do
@@ -53,6 +53,12 @@ describe PhotoFS::Fuse::Fuse do
 
       it 'should send :rename to from parent node' do
         expect(from_parent_node).to receive(:rename).with(from_name, to_parent_node, to_name)
+
+        fuse.rename(context, from, to)
+      end
+
+      it 'should save the data store' do
+        expect(fuse).to receive(:save!)
 
         fuse.rename(context, from, to)
       end
@@ -111,7 +117,7 @@ describe PhotoFS::Fuse::Fuse do
     end
 
     context 'when the file does exist' do
-      let(:parent_node) { instance_double('PhotoFS::Fuse::Dir') }
+      let(:parent_node) { instance_double('PhotoFS::Fuse::Dir', :remove => nil) }
       let(:parent_path) { PhotoFS::Fuse::RelativePath.new('/t/good') }
 
       before(:example) do
@@ -120,6 +126,12 @@ describe PhotoFS::Fuse::Fuse do
 
       it 'should call remove on parent node' do
         expect(parent_node).to receive(:remove).with('file')
+
+        fuse.unlink(context, '/t/good/file')
+      end
+
+      it 'should save the data store' do
+        expect(fuse).to receive(:save!)
 
         fuse.unlink(context, '/t/good/file')
       end

@@ -1,8 +1,9 @@
+require 'photofs/data/image'
+require 'photofs/fs/test'
+require 'photofs/fs'
 require 'photofs/fuse'
 require 'photofs/fuse/file_monitor'
 require 'rfuse'
-require 'photofs/fs/test'
-require 'photofs/fs'
 
 =begin
           filler = instance_double('Filler')
@@ -21,7 +22,7 @@ describe 'integration for' do
 
   let(:file_system) { PhotoFS::FS::Test.new({ :dirs => [source_path, mountpoint], :files => [] }) }
 
-  let(:fuse) { PhotoFS::Fuse::Fuse.new({:source => source_path, :mountpoint => mountpoint}) }
+  let(:fuse) { PhotoFS::Fuse::Fuse.new({:source => source_path, :mountpoint => mountpoint, :env => 'test'}) }
   let(:image_monitor) { instance_double('PhotoFS::FileMonitor', :paths => []) }
 
   before(:example) do

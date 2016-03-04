@@ -26,7 +26,7 @@ module PhotoFS
       end
 
       def find_by_path(path)
-        jpeg_file = File.where("path = ?", path).first
+        jpeg_file = File.where(path: path).first
 
         return nil if jpeg_file.nil?
 
