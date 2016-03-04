@@ -49,8 +49,7 @@ module PhotoFS
       end
 
       def save!
-# WORKLINE: we want tests for this
-#        @images.save!
+        @images.save!
       end
 
       def scan_source_path

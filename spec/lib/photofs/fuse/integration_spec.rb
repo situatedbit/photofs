@@ -225,4 +225,18 @@ describe 'integration for' do
       end
     end
   end # untagging images
+
+  describe 'persisting images' do
+    context 'when an image is present in the source tree during initialization' do
+      let(:image_directories) { ['/a'].map {|p| "#{source_path}#{p}"} }
+      let(:image_files) { ['/a/1.jpg'].map {|p| "#{source_path}#{p}"} }
+      let(:file_system) { PhotoFS::FS::Test.new({ :dirs => [source_path, mountpoint] + image_directories, :files => image_files }) }
+      let(:image_monitor) { instance_double('PhotoFS::FileMonitor', :paths => image_files) }
+
+      it 'should be persisted in the database' do
+        expect(PhotoFS::Data::Image.first.jpeg_file.path).to eq(image_files.first)
+      end
+    end
+  end # persisting images
+
 end
