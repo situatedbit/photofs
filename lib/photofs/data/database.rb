@@ -8,7 +8,7 @@ module PhotoFS
 
       def initialize(env, db_path = '')
         @config = config_file
-        @config[env]['database'] = ::File.join(db_path, 'db.sqlite3') unless db_path.empty?
+        @config[env]['database'] = ::File.join(db_path, 'photofs.sqlite3') unless db_path.empty?
         @current_config = @config[env]
         @env = env
 
