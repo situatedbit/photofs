@@ -27,7 +27,7 @@ module PhotoFS
     end
 
     def self.migration_paths
-      [::File.join(db_path, 'migrate')]
+      [::File.join(db_config_path, 'migrate')]
     end
   end
 end
