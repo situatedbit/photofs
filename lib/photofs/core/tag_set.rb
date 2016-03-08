@@ -22,28 +22,28 @@ module PhotoFS
       end
 
       def add?(tag)
-        if @tags.has_key?(tag.name)
+        if tags.has_key?(tag.name)
           nil
         else
-          @tags[tag.name] = tag
+          tags[tag.name] = tag
           self
         end
       end
 
       def all
-        @tags.values
+        tags.values
       end
 
       def delete(tag)
-        @tags.delete tag.name
+        tags.delete tag.name
       end
 
       # returns array if tag_names is an array, a single tag otherwise
       def find_by_name(tag_names)
         if tag_names.respond_to? :map
-          tag_names.map { |n| @tags[n] }.select { |t| not t.nil? }
+          tag_names.map { |n| tags[n] }.select { |t| not t.nil? }
         else
-          @tags[tag_names]
+          tags[tag_names]
         end
       end
 
@@ -57,7 +57,13 @@ module PhotoFS
       end
 
       def to_s
-        "[#{@tags.values.join(', ')}]"
+        "[#{tags.values.join(', ')}]"
+      end
+
+      protected
+
+      def tags
+        @tags
       end
 
       private
@@ -65,7 +71,7 @@ module PhotoFS
       def image_tags_hash
         hash = {}
 
-        @tags.values.each do |tag|
+        tags.values.each do |tag|
           tag.images.each { |i| hash[i] = hash.fetch(i, []) + [tag] }
         end
 

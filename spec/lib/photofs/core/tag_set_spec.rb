@@ -4,40 +4,45 @@ require 'photofs/core/image'
 
 describe PhotoFS::Core::TagSet do
   let(:name) { 'ほっかいど' }
-  let(:tags) { PhotoFS::Core::TagSet.new }
+  let(:tag_set) { PhotoFS::Core::TagSet.new }
+  let(:tags) { Hash.new }
+
+  before(:example) do
+    allow(tag_set).to receive(:tags).and_return(tags)
+  end
 
   describe "#add?" do
     let(:tag) { PhotoFS::Core::Tag.new 'test' }
 
     context 'when tag is already in the set' do
       before(:example) do
-        allow(tags.instance_variable_get(:@tags)).to receive(:has_key?).with(tag.name).and_return(true)
+        allow(tags).to receive(:has_key?).with(tag.name).and_return(true)
       end
 
       it 'should return nil' do
-        expect(tags.add? tag).to be nil
+        expect(tag_set.add? tag).to be nil
       end
 
       it 'should not add tag to the set' do
-        expect(tags.instance_variable_get(:@tags)).not_to receive(:[]=)
+        expect(tags).not_to receive(:[]=)
 
-        tags.add? tag
+        tag_set.add? tag
       end
     end
 
     context 'when tag is not in the set' do
       before(:example) do
-        allow(tags.instance_variable_get(:@tags)).to receive(:has_key?).with(tag.name).and_return(false)
+        allow(tags).to receive(:has_key?).with(tag.name).and_return(false)
       end
 
       it 'should return self' do
-        expect(tags.add? tag).to be tags
+        expect(tag_set.add? tag).to be tag_set
       end
 
       it 'should add tag to the set' do
-        expect(tags.instance_variable_get(:@tags)).to receive(:[]=).with(tag.name, tag)
+        expect(tags).to receive(:[]=).with(tag.name, tag)
 
-        tags.add? tag
+        tag_set.add? tag
       end
     end
   end
@@ -47,42 +52,37 @@ describe PhotoFS::Core::TagSet do
 
     context "passed a non-matching string" do
       it "it should return nil" do
-        expect(tags.find_by_name 'garbage').to be nil
+        expect(tag_set.find_by_name 'garbage').to be nil
       end
     end
 
     context "passed a matching string" do
-      before(:each) do
-        tags.instance_variable_set(:@tags, {tag.name => tag})
-      end
+      let(:tags) { { tag.name => tag } }
 
       it "should return a tag" do
-        expect(tags.find_by_name tag.name).to eq(tag)
+        expect(tag_set.find_by_name tag.name).to eq(tag)
       end
     end
 
     context "passed an empty array" do
       it "should return an empty array" do
-        expect(tags.find_by_name []).to be_empty
+        expect(tag_set.find_by_name []).to be_empty
       end
     end
 
     context "do passed an array of non-matching strings" do
       it "should return an empty array" do
-        expect(tags.find_by_name ['garbage', 'trash']).to be_empty
+        expect(tag_set.find_by_name ['garbage', 'trash']).to be_empty
       end
     end
 
     context "do passed an array of matching strings" do
       let(:tag2) { PhotoFS::Core::Tag.new(name * 2) }
       let(:search_tags) { [tag.name, tag2.name] }
-
-      before(:each) do
-        tags.instance_variable_set(:@tags, {tag.name => tag, tag2.name => tag2})
-      end
+      let(:tags) { {tag.name => tag, tag2.name => tag2} }
 
       it "should return an array of matching tags" do
-        expect(tags.find_by_name search_tags).to contain_exactly(tag, tag2)
+        expect(tag_set.find_by_name search_tags).to contain_exactly(tag, tag2)
       end
     end
   end
@@ -93,21 +93,21 @@ describe PhotoFS::Core::TagSet do
 
     context "when there are no tags" do
       before(:each) do
-        allow(tags).to receive(:image_tags_hash).and_return({})
+        allow(tag_set).to receive(:image_tags_hash).and_return({})
       end
 
       it "should return an empty collection" do
-        expect(tags.find_by_image image).to be_empty
+        expect(tag_set.find_by_image image).to be_empty
       end
     end
 
     context "when passed a single image" do
       before(:each) do
-        allow(tags).to receive(:image_tags_hash).and_return({ image => [tag] })
+        allow(tag_set).to receive(:image_tags_hash).and_return({ image => [tag] })
       end
 
       it "should return the tags for that image" do
-        expect(tags.find_by_image image).to contain_exactly(tag)
+        expect(tag_set.find_by_image image).to contain_exactly(tag)
       end
     end
 
@@ -118,11 +118,11 @@ describe PhotoFS::Core::TagSet do
 
       before(:each) do
         hash = { image => [tag, tag2], image2 => [tag2, tag3] }
-        allow(tags).to receive(:image_tags_hash).and_return(hash)
+        allow(tag_set).to receive(:image_tags_hash).and_return(hash)
       end
 
       it "should return the union of tags from those images" do
-        expect(tags.find_by_image [image, image2]).to contain_exactly(tag, tag2, tag3)
+        expect(tag_set.find_by_image [image, image2]).to contain_exactly(tag, tag2, tag3)
       end
     end
   end
@@ -157,26 +157,20 @@ describe PhotoFS::Core::TagSet do
 
   describe "#image_tags_hash" do
     context "when there are no images" do
-      let :tags_hash do
+      let :tags do
         Hash[ ['a', 'b', 'c'].map { |n| [n, PhotoFS::Core::Tag.new(n)] } ]
       end
 
-      before(:each) do
-        tags.instance_variable_set(:@tags, tags_hash)
-      end
-
       it "should be empty" do
-        expect(tags.send :image_tags_hash).to be_empty
+        expect(tag_set.send :image_tags_hash).to be_empty
       end
     end
 
     context "when there are no tags" do
-      before(:each) do
-        tags.instance_variable_set(:@tags, {})
-      end
+      let(:tags) { Hash.new }
 
       it "should be empty" do
-        expect(tags.send :image_tags_hash).to be_empty
+        expect(tag_set.send :image_tags_hash).to be_empty
       end
     end
 
@@ -189,7 +183,7 @@ describe PhotoFS::Core::TagSet do
       let(:image2) { PhotoFS::Core::Image.new('2') }
       let(:image3) { PhotoFS::Core::Image.new('3') }
 
-      let(:tags_hash) do
+      let(:tags) do
         { tag1.name => tag1, tag2.name => tag2, tag3.name => tag3 }
       end
 
@@ -197,14 +191,12 @@ describe PhotoFS::Core::TagSet do
         allow(tag1).to receive(:images).and_return([image1, image2])
         allow(tag2).to receive(:images).and_return([image2, image3])
         allow(tag3).to receive(:images).and_return([image3])
-
-        tags.instance_variable_set(:@tags, tags_hash)
       end
 
       it "should flip keys and values" do
-        expect((tags.send :image_tags_hash)[image1]).to contain_exactly(tag1)
-        expect((tags.send :image_tags_hash)[image2]).to contain_exactly(tag1, tag2)
-        expect((tags.send :image_tags_hash)[image3]).to contain_exactly(tag2, tag3)
+        expect((tag_set.send :image_tags_hash)[image1]).to contain_exactly(tag1)
+        expect((tag_set.send :image_tags_hash)[image2]).to contain_exactly(tag1, tag2)
+        expect((tag_set.send :image_tags_hash)[image3]).to contain_exactly(tag2, tag3)
       end
     end
   end
@@ -213,9 +205,9 @@ describe PhotoFS::Core::TagSet do
     let(:tag) { PhotoFS::Core::Tag.new 'test' }
 
     it 'proxies the delete call to internal hash storage' do
-      expect(tags.instance_variable_get(:@tags)).to receive(:delete).with(tag.name)
+      expect(tags).to receive(:delete).with(tag.name)
 
-      tags.delete tag
+      tag_set.delete tag
     end
   end
 end
