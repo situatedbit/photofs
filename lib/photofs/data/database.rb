@@ -37,7 +37,7 @@ module PhotoFS
       private
 
       def config_file
-        @config_file ||= YAML::load(IO.read(::File.join(PhotoFS::FS.app_root, 'config', 'database.yml')))
+        @config_file ||= YAML::load(IO.read(::File.join(PhotoFS::FS.app_root, 'db', 'config.yml')))
       end
 
       def configure_db_tasks

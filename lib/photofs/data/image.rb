@@ -11,6 +11,10 @@ module PhotoFS
       validates :jpeg_file, presence: true
       validates :jpeg_file_id, uniqueness: true
 
+      def self.from_image(image)
+        Image.joins(:jpeg_file).where('files.path = ?', image.path).first
+      end
+
       def self.new_from_image(image)
         image_record = Image.new
         image_record.build_jpeg_file(:path => image.path)

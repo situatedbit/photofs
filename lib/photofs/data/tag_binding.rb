@@ -2,8 +2,9 @@ require 'active_record'
 
 module PhotoFS
   module Data
-    class Image < ActiveRecord::Base
-      
+    class TagBinding < ActiveRecord::Base
+      belongs_to :tag
+      belongs_to :image
     end
   end
 end

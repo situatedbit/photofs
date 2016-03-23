@@ -25,7 +25,7 @@ require 'photofs/data/database'
 
 # normally rspec-rails or PhotoFS::Data::Database will do this for us
 environment = 'test'
-configurations = YAML::load(File.open('config/database.yml'))
+configurations = YAML::load(File.open('db/config.yml'))
 ActiveRecord::Base.configurations = configurations
 ActiveRecord::Base.establish_connection(configurations[environment])
 

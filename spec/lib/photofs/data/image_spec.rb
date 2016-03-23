@@ -2,10 +2,16 @@ require 'photofs/data/image'
 require 'photofs/core/image'
 
 describe PhotoFS::Data::Image, type: :model do
+  let(:klass) { PhotoFS::Data::Image }
+
   it { should validate_presence_of(:jpeg_file) }
   it { should validate_uniqueness_of(:jpeg_file_id) }
 
-  describe :new_from_image do
+  describe 'class :from_image' do
+    it 'should be an image record'
+  end
+
+  describe 'class :new_from_image' do
     let(:image) { PhotoFS::Core::Image.new('some-path') }
     let(:file) { build(:file) }
 
@@ -14,11 +20,11 @@ describe PhotoFS::Data::Image, type: :model do
     end
 
     it 'should have a file with the image path' do
-      expect(PhotoFS::Data::Image.new_from_image(image).jpeg_file).to be file
+      expect(klass.new_from_image(image).jpeg_file).to be file
     end
 
     it 'should not be saved' do
-      expect(PhotoFS::Data::Image.new_from_image(image).new_record?).to be true
+      expect(klass.new_from_image(image).new_record?).to be true
     end
   end # :new_from_image
 
