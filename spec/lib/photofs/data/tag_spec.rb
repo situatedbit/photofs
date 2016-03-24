@@ -82,6 +82,10 @@ describe PhotoFS::Data::Tag, type: :model do
     end
   end # :consistent_with?
 
+  describe :to_simple do
+    it 'should return a simple object from this record'
+  end
+
   describe :update_from do
     let(:image1) { instance_double("PhotoFS::Core::Image", :path => '/foo/bar.jpg') }
     let(:image2) { instance_double("PhotoFS::Core::Image", :path => '/foo/bar2.jpg') }

@@ -44,14 +44,7 @@ module PhotoFS
       end
 
       def save!
-        @record_object_map.each_pair do |record, simple_object|
-          if !record.consistent_with?(simple_object)
-            record.update_from(simple_object)
-            record.save!
-          end
-        end
-
-        @record_object_map.rehash
+        PhotoFS::Data.save_record_object_map(@record_object_map)
       end
 
       def size
@@ -61,11 +54,7 @@ module PhotoFS
       protected
 
       def set
-        cached_ids = @record_object_map.keys.map { |record| record.id }
-
-        image_records = Image.where.not(id: cached_ids)
-
-        image_records.all.each { |record| @record_object_map[record] = record.to_simple }
+        PhotoFS::Data.load_all_records(@record_object_map, Image)
 
         @record_object_map.values.to_set
       end

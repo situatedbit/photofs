@@ -1,6 +1,8 @@
 require 'photofs/data/tag_set'
 
 describe PhotoFS::Data::TagSet do
+  let(:tag_set) { PhotoFS::Data::TagSet.new }
+
   describe :add? do
     it 'should check the cache for the tag'
 
@@ -27,12 +29,33 @@ describe PhotoFS::Data::TagSet do
   end
 
   describe :save! do
-    it 'should send :save! to all dirty tags'
+    it 'should call the Data module method' do
+      expect(PhotoFS::Data).to receive(:save_record_object_map).with(tag_set.instance_variable_get(:@record_object_map))
+
+      tag_set.save!
+    end
   end
 
+  # protected
   describe :tags do
-    it 'should cache all records and simple objects'
-    it 'should be an array of all tags as simple objects'
-  end
+    let(:tag_1) { instance_double('PhotoFS::Core::Tag') }
+    let(:tag_2) { instance_double('PhotoFS::Core::Tag') }
+    let(:record_object_map) { tag_set.instance_variable_get(:@record_object_map) }
+
+    before(:example) do
+      allow(PhotoFS::Data).to receive(:load_all_records).with(record_object_map, PhotoFS::Data::Tag)
+      allow(record_object_map).to receive(:values).and_return([tag_1, tag_2])
+    end
+
+    it 'should load all records into the cache' do
+      expect(PhotoFS::Data).to receive(:load_all_records).with(tag_set.instance_variable_get(:@record_object_map), PhotoFS::Data::Tag)
+
+      tag_set.send :tags
+    end
+
+    it 'should be all of the simple objects' do
+      expect(tag_set.send :tags).to contain_exactly(tag_1, tag_2)
+    end
+  end # :tags
 
 end

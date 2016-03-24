@@ -1,4 +1,5 @@
 require 'photofs/core/tag_set'
+require 'photofs/data'
 require 'photofs/data/tag'
 
 module PhotoFS
@@ -12,6 +13,7 @@ module PhotoFS
       end
 
       def add?(tag)
+# consider being smarter about this by querying the database instead of using the cache binding
         if tags.has_key?(tag.name)
           nil
         else
@@ -24,11 +26,16 @@ module PhotoFS
         # find in records, remove via Tags
       end
 
+      def save!
+        PhotoFS::Data.save_record_object_map(@record_object_map)
+      end
+
       protected
 
       def tags
-        # must return all tag simple objects
-        Tags.all
+        PhotoFS::Data.load_all_records(@record_object_map, Tag)
+
+        @record_object_map.values
       end
 
     end
