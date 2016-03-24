@@ -1,10 +1,11 @@
+require 'photofs/data/repository'
 require 'photofs/core/tag_set'
-require 'photofs/data'
 require 'photofs/data/tag'
 
 module PhotoFS
   module Data
     class TagSet < PhotoFS::Core::TagSet
+      include Repository
 
       def initialize
         @record_object_map = {} # maps Data::Tag => Core::Tag
@@ -27,13 +28,13 @@ module PhotoFS
       end
 
       def save!
-        PhotoFS::Data.save_record_object_map(@record_object_map)
+        save_record_object_map(@record_object_map)
       end
 
       protected
 
       def tags
-        PhotoFS::Data.load_all_records(@record_object_map, Tag)
+        load_all_records(@record_object_map, Tag)
 
         @record_object_map.values
       end

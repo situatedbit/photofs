@@ -1,9 +1,11 @@
 require 'photofs/core/image_set'
 require 'photofs/data/image'
+require 'photofs/data/repository'
 
 module PhotoFS
   module Data
     class ImageSet < PhotoFS::Core::ImageSet
+      include Repository
 
       def initialize()
         @record_object_map = {} # maps Data::Image => Core::Image
@@ -44,7 +46,7 @@ module PhotoFS
       end
 
       def save!
-        PhotoFS::Data.save_record_object_map(@record_object_map)
+        save_record_object_map(@record_object_map)
       end
 
       def size
@@ -54,7 +56,7 @@ module PhotoFS
       protected
 
       def set
-        PhotoFS::Data.load_all_records(@record_object_map, Image)
+        load_all_records(@record_object_map, Image)
 
         @record_object_map.values.to_set
       end

@@ -87,7 +87,7 @@ describe PhotoFS::Data::ImageSet do
 
   describe :save! do
     it 'should call the Data module method' do
-      expect(PhotoFS::Data).to receive(:save_record_object_map).with(image_set.instance_variable_get(:@record_object_map))
+      expect(image_set).to receive(:save_record_object_map).with(image_set.instance_variable_get(:@record_object_map))
 
       image_set.save!
     end

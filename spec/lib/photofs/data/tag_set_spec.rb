@@ -30,7 +30,7 @@ describe PhotoFS::Data::TagSet do
 
   describe :save! do
     it 'should call the Data module method' do
-      expect(PhotoFS::Data).to receive(:save_record_object_map).with(tag_set.instance_variable_get(:@record_object_map))
+      expect(tag_set).to receive(:save_record_object_map).with(tag_set.instance_variable_get(:@record_object_map))
 
       tag_set.save!
     end
@@ -43,12 +43,12 @@ describe PhotoFS::Data::TagSet do
     let(:record_object_map) { tag_set.instance_variable_get(:@record_object_map) }
 
     before(:example) do
-      allow(PhotoFS::Data).to receive(:load_all_records).with(record_object_map, PhotoFS::Data::Tag)
+      allow(tag_set).to receive(:load_all_records).with(record_object_map, PhotoFS::Data::Tag)
       allow(record_object_map).to receive(:values).and_return([tag_1, tag_2])
     end
 
     it 'should load all records into the cache' do
-      expect(PhotoFS::Data).to receive(:load_all_records).with(tag_set.instance_variable_get(:@record_object_map), PhotoFS::Data::Tag)
+      expect(tag_set).to receive(:load_all_records).with(tag_set.instance_variable_get(:@record_object_map), PhotoFS::Data::Tag)
 
       tag_set.send :tags
     end
