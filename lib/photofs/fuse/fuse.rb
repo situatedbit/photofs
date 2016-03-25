@@ -131,6 +131,12 @@ module PhotoFS
         save!
       end
 
+      def symlink(context, path, as)
+        log "symlink: #{as} => #{path}"
+
+        raise Errno::EPERM
+      end
+
       def log(s)
         puts s
       end
