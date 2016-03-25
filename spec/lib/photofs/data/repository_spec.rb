@@ -51,6 +51,24 @@ describe PhotoFS::Data::Repository do
   end # :save_record_object_map
 
   describe :load_all_records do
-    it 'should be implemented and tested'
-  end
+    let(:active_record_class) { double('record class') }
+
+    context 'when there are records cached' do
+      let!(:record) { double('record', :id => 42, :path => 'some-path') }
+      let(:object) { double('object', :path => 'some-path') }
+      let!(:uncached_record) { double('record') }
+      let(:uncached_object) { double('object') }
+      let(:record_object_map) { { record => object } }
+      let(:fully_loaded_record_object_map) { { record => object, uncached_record => uncached_object } }
+
+      before(:example) do
+        allow(active_record_class).to receive_message_chain(:where, :not).and_return([uncached_record])
+        allow(uncached_record).to receive(:to_simple).and_return(uncached_object)
+      end
+
+      it 'should fill the cache with all simple objects not already in the cache' do
+        expect(repository.load_all_records record_object_map, active_record_class).to eq(fully_loaded_record_object_map)
+      end
+    end
+  end # :load_all_records
 end

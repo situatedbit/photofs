@@ -14,17 +14,21 @@ module PhotoFS
       end
 
       def add?(tag)
-# consider being smarter about this by querying the database instead of using the cache binding
-        if tags.has_key?(tag.name)
-          nil
-        else
-          tags[tag.name] = tag
-          self
-        end
+        return nil if @record_object_map.has_key?(tag.name) || Tag.find_by_simple_object(tag)
+        
+        record = Tag.new_from_tag tag
+
+        record.save!
+
+        @record_object_map[record] = tag
       end
 
       def delete(tag)
-        # find in records, remove via Tags
+        record = Tag.new_from_tag(tag)
+
+        @record_object_map.delete record
+
+        record.destroy
       end
 
       def save!
@@ -34,9 +38,9 @@ module PhotoFS
       protected
 
       def tags
-        load_all_records(@record_object_map, Tag)
+        @record_object_map = load_all_records(@record_object_map, Tag)
 
-        @record_object_map.values
+        @record_object_map
       end
 
     end

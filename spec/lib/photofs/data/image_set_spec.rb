@@ -1,4 +1,5 @@
 require 'photofs/data/image_set'
+require 'photofs/data/image'
 
 describe PhotoFS::Data::ImageSet do
   let(:image_set) { PhotoFS::Data::ImageSet.new }
@@ -96,40 +97,16 @@ describe PhotoFS::Data::ImageSet do
 # protected
   describe :set do
     context 'when there are items in database' do
-      let(:count) { 2 }
+      let(:images) { PhotoFS::Data::Image.all }
 
       before(:example) do
-        count.times { create(:image) }
+        2.times { create :image }
       end
 
-      it 'should have the same size as count' do
-        expect(image_set.send(:set).size).to eq(count)
-      end
-    end
-
-    context 'when there are images cached' do
-      let!(:image_record) { create :image }
-      let(:image_object) { image_record.to_simple }
-      let!(:uncached_record) { create :image }
-      let(:record_object_map) { { image_record => image_object } }
-
-      before(:example) do
-        image_set.instance_variable_set :@record_object_map, record_object_map
-      end
-
-      it 'should fill the cache with all simple objects not already in the cache' do
-        expect(record_object_map).to receive(:[]=).with(uncached_record, any_args)
-
-        image_set.send :set
-      end
-
-      it 'should not update the cached entries' do
-        expect(record_object_map).not_to receive(:[]=).with(image_record, any_args)
-      end
-
-      it 'should include all images' do
-        expect(image_set.send(:set).to_a).to contain_exactly(image_object, uncached_record.to_simple)
+      it 'should return objects from the records in the database' do
+        expect(image_set.send :set).to contain_exactly(images[0].to_simple, images[1].to_simple)
       end
     end
   end # :set
+
 end

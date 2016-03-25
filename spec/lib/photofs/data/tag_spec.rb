@@ -83,7 +83,20 @@ describe PhotoFS::Data::Tag, type: :model do
   end # :consistent_with?
 
   describe :to_simple do
-    it 'should return a simple object from this record'
+    let(:tag_record) { build :tag_with_image }
+    let(:image_objects) { tag_record.images.map { |i| i.to_simple } }
+
+    before(:example) do
+      tag_record.images << (create :image)
+    end
+
+    it 'should return a simple object with an image for each of the associated image records' do
+      expect(tag_record.to_simple.images).to contain_exactly(*image_objects)
+    end
+  
+    it 'should return a simple object with the same name' do
+      expect(tag_record.to_simple.name).to eq tag_record.name
+    end
   end
 
   describe :update_from do

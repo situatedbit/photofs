@@ -17,7 +17,10 @@ module PhotoFS
 
         records = klass.where.not(id: cached_ids)
 
-        records.each { |r| record_object_map[r] = r.to_simple }
+        loaded_record_object_map = {}
+        records.each { |r| loaded_record_object_map[r] = r.to_simple }
+
+        record_object_map.merge loaded_record_object_map
       end
 
     end

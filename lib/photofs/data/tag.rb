@@ -17,8 +17,22 @@ module PhotoFS
         Tag.new.update_from(tag)
       end
 
+      def self.find_by_simple_object(tag)
+        Tag.find_by :name => tag.name
+      end
+
       def consistent_with?(object)
         name == object.name && PhotoFS::Data.consistent_arrays?(images, object.images)
+      end
+
+      def to_simple
+        tag = PhotoFS::Core::Tag.new name
+
+        images.each do |image_record|
+          tag.add image_record.to_simple
+        end
+
+        tag
       end
 
       def update_from(tag_object)

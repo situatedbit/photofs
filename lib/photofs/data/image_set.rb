@@ -56,7 +56,7 @@ module PhotoFS
       protected
 
       def set
-        load_all_records(@record_object_map, Image)
+        @record_object_map = load_all_records(@record_object_map, Image)
 
         @record_object_map.values.to_set
       end
