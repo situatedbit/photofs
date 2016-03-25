@@ -12,7 +12,7 @@ describe PhotoFS::Data::TagSet do
       tag_set.instance_variable_set(:@record_object_map, record_object_map)
     end
 
-    context 'the tag is not in the cache or database' do
+    context 'the tag is not in the database' do
       let(:new_tag) { instance_double('PhotoFS::Core::Tag', :name => '新しい') }
       let(:new_tag_record) { build :tag, :name => new_tag.name }
 
@@ -53,12 +53,12 @@ describe PhotoFS::Data::TagSet do
   end # :add
 
   describe :delete do
-    let(:tag) { instance_double('PhotoFS::Core::Tag') }
-    let(:tag_record) { build :tag }
+    let(:tag_record) { create :tag }
+    let(:tag) { instance_double('PhotoFS::Core::Tag', :name => tag_record.name) }
     let(:record_object_map) { { tag_record => tag } }
 
     before(:example) do
-      allow(PhotoFS::Data::Tag).to receive(:new_from_tag).with(tag).and_return(tag_record)
+      allow(PhotoFS::Data::Tag).to receive(:from_tag).with(tag).and_return(tag_record)
 
       tag_set.instance_variable_set(:@record_object_map, record_object_map)
     end
@@ -87,14 +87,15 @@ describe PhotoFS::Data::TagSet do
   # protected
   describe :tags do
     context 'when there are tags in the database' do
-      let(:tags) { PhotoFS::Data::Tag.all }
+      let(:tag_records) { PhotoFS::Data::Tag.all }
+      let(:tags) { { tag_records[0].name => tag_records[0].to_simple, tag_records[1].name => tag_records[1].to_simple } }
 
       before(:example) do
         2.times { create :tag }
       end
 
       it 'should return objects from the records in the database' do
-        expect(tag_set.send(:tags).values).to contain_exactly(tags[0].to_simple, tags[1].to_simple)
+        expect(tag_set.send(:tags)).to eq tags
       end
     end
   end # :tags

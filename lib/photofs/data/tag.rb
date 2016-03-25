@@ -11,14 +11,14 @@ module PhotoFS
       validates :name, presence: true
       validates :name, uniqueness: true
 
+      def self.from_tag(tag)
+        Tag.find_by :name => tag.name
+      end
+
       # Assumption: tag's images have already been created and are in the database
       # If they aren't, we raise an exception.
       def self.new_from_tag(tag)
         Tag.new.update_from(tag)
-      end
-
-      def self.find_by_simple_object(tag)
-        Tag.find_by :name => tag.name
       end
 
       def consistent_with?(object)

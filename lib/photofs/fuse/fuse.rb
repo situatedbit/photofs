@@ -1,6 +1,6 @@
 require 'rfuse'
-require 'photofs/core/tag_set'
 require 'photofs/core/image'
+require 'photofs/data/tag_set'
 require 'photofs/data/database'
 require 'photofs/data/image_set'
 require 'photofs/fs'
@@ -27,6 +27,7 @@ module PhotoFS
         @environment = options[:env] || 'production'
 
         @images = PhotoFS::Data::ImageSet.new() # global image set
+        @tags = PhotoFS::Data::TagSet.new
 
         @root = RootDir.new
       end
@@ -36,9 +37,8 @@ module PhotoFS
 
         scan_source_path
 
-        tags = PhotoFS::Core::TagSet.new
-        @root.add MirroredDir.new('o', @source_path, {:tags => tags, :images => @images})
-        @root.add TagDir.new('t', tags, {:images => @images})
+        @root.add MirroredDir.new('o', @source_path, {:tags => @tags, :images => @images})
+        @root.add TagDir.new('t', @tags, {:images => @images})
       end
 
       private
@@ -50,6 +50,7 @@ module PhotoFS
 
       def save!
         @images.save!
+        @tags.save!
       end
 
       def scan_source_path
