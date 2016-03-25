@@ -24,12 +24,12 @@ module PhotoFS
       def ensure_schema
         configure_db_tasks
 
-        unless fs.exist?(@current_config['database'])
+        if fs.exist?(@current_config['database'])
+          DatabaseTasks.migrate
+        else
           DatabaseTasks.create_current(@env)
           DatabaseTasks.load_schema_current(:ruby)
         end
-
-        DatabaseTasks.migrate
 
         self
       end
@@ -37,7 +37,7 @@ module PhotoFS
       private
 
       def config_file
-        @config_file ||= YAML::load(IO.read(::File.join(PhotoFS::FS.app_root, 'db', 'config.yml')))
+        @config_file ||= YAML::load(IO.read(::File.join(PhotoFS::FS.db_config_path, 'config.yml')))
       end
 
       def configure_db_tasks

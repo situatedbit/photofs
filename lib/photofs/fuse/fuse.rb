@@ -39,6 +39,8 @@ module PhotoFS
 
         @root.add MirroredDir.new('o', @source_path, {:tags => @tags, :images => @images})
         @root.add TagDir.new('t', @tags, {:images => @images})
+
+        log "Mounted at #{@source_path}"
       end
 
       private
@@ -54,9 +56,13 @@ module PhotoFS
       end
 
       def scan_source_path
+        log "Scanning files under #{@source_path}"
+
         FileMonitor.new(@source_path).paths.each do |path|
           @images.add PhotoFS::Core::Image.new(path) unless @images.find_by_path(path)
         end
+
+        log "Scanning complete"
       end
 
       def source_path=(value)
