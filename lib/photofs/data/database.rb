@@ -44,8 +44,12 @@ module PhotoFS
         DatabaseTasks.database_configuration = @current_config
         DatabaseTasks.db_dir = PhotoFS::FS.db_config_path
         DatabaseTasks.env = @env
-        DatabaseTasks.migrations_paths = PhotoFS::FS.migration_paths
         DatabaseTasks.root = PhotoFS::FS.app_root
+
+        # ActiveRecord::Migrator paths are used when we load the schema;
+        # DatabaseTasks migrations paths are used for the migrate method (above)
+        DatabaseTasks.migrations_paths = PhotoFS::FS.migration_paths
+        ActiveRecord::Migrator.migrations_paths = PhotoFS::FS.migration_paths
       end
 
       def fs
