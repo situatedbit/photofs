@@ -7,8 +7,13 @@ describe PhotoFS::Data::Image, type: :model do
   it { should validate_presence_of(:jpeg_file) }
   it { should validate_uniqueness_of(:jpeg_file_id) }
 
-  describe 'class :from_image' do
-    it 'should be an image record'
+  describe :from_image do
+    let(:image_record) { create :image }
+    let(:image) { image_record.to_simple }
+
+    it 'should be an image record' do
+      expect(klass.from_image image).to be_an_instance_of(klass)
+    end
   end
 
   describe 'class :new_from_image' do
