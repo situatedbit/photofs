@@ -76,9 +76,7 @@ module PhotoFS
         raise Errno::EPERM unless @images_domain.include? image
         raise Errno::EPERM if images.include? image
 
-        query_tags.each do |tag|
-          tag.add image
-        end
+        tag_image(image)
       end
 
       def stat
@@ -92,6 +90,12 @@ module PhotoFS
         RFuse::Stat.directory(mode, stat_hash)
       end
 
+      def symlink(image, name)
+        raise Errno::EPERM if is_tags_root? || !@images_domain.include?(image)
+
+        tag_image(image)
+      end
+
       protected
 
       def node_hash
@@ -99,6 +103,12 @@ module PhotoFS
       end
 
       private
+
+      def tag_image(image)
+        query_tags.each do |tag|
+          tag.add image
+        end
+      end
 
       def default_options
         { :query_tag_names => [],

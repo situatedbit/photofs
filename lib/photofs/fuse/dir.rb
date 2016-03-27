@@ -57,6 +57,10 @@ module PhotoFS
         RFuse::Stat.directory(Stat::MODE_READ_ONLY, {})
       end
 
+      def symlink(image, name)
+        raise Errno::EPERM
+      end
+
       protected
 
       def node_hash

@@ -112,4 +112,12 @@ describe PhotoFS::Fuse::Dir do
       expect { dir.soft_move 'node', 'name' }.to raise_error(Errno::EPERM)
     end
   end
+
+  describe :symlink do
+    let(:image) { instance_double('PhotoFS::Core::Image') }
+
+    it 'should raise permission error' do
+      expect { dir.symlink image, 'name' }.to raise_error(Errno::EPERM)
+    end
+  end
 end

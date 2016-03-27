@@ -338,7 +338,57 @@ describe PhotoFS::Fuse::TagDir do
     it 'should include size' do
       expect(tag_dir.stat.size).to be size
     end
-  end
+  end # :stat
+
+  describe :symlink do
+    let(:tag_dir) { PhotoFS::Fuse::TagDir.new('日本', PhotoFS::Core::TagSet.new, { :query_tag_names => ['first', 'second'] }) }
+    let(:name) { 'some.jpg' }
+    let(:image) { instance_double('PhotoFS::Core::Image') }
+    let(:images_domain) { instance_double('PhotoFS::Core::ImageSet') }
+
+    before(:example) do
+      tag_dir.instance_variable_set(:@images_domain, images_domain)
+#      allow(tag_dir).to receive(:images).and_return(images)
+    end
+
+    context 'when this is tag root directory' do
+      before(:example) do
+        allow(tag_dir).to receive(:is_tags_root?).and_return(true)
+      end
+
+      it 'should not be permitted' do
+        expect { tag_dir.symlink(image, name) }.to raise_error(Errno::EPERM)
+      end
+    end
+
+    context 'when image is not in tag image set' do
+      before(:example) do
+        allow(images_domain).to receive(:include?).with(image).and_return(false)
+      end
+
+      it 'should not be permitted' do
+        expect { tag_dir.symlink(image, name) }.to raise_error(Errno::EPERM)
+      end
+    end
+
+    context 'when image is in the tag image set' do
+      let(:tag1) { instance_double('PhotoFS::Core::Tag') }
+      let(:tag2) { instance_double('PhotoFS::Core::Tag') }
+      let(:query_tags) { [tag1, tag2] }
+
+      before(:example) do
+        allow(images_domain).to receive(:include?).with(image).and_return(true)
+        allow(tag_dir).to receive(:query_tags).and_return(query_tags)
+      end
+
+      it 'should apply all tags in query list to image' do
+        expect(tag1).to receive(:add).with(image)
+        expect(tag2).to receive(:add).with(image)
+
+        tag_dir.symlink(image, name)
+      end
+    end
+  end # :symlink
 
   describe :node_hash do
     let(:tag_dir) { PhotoFS::Fuse::TagDir.new('nihonbashi', PhotoFS::Core::TagSet.new) }

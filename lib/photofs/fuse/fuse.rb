@@ -137,10 +137,18 @@ module PhotoFS
         save!
       end
 
-      def symlink(context, path, as)
-        log "symlink: #{as} => #{path}"
+      def symlink(context, link_target, as)
+        log "symlink: #{as} => #{link_target}"
 
-        raise Errno::EPERM
+        image = @images.find_by_path(link_target)
+
+        raise Errno::EPERM unless image
+
+        path = RelativePath.new(as)
+
+        search(path.parent).symlink(image, path.name)
+
+        save!
       end
 
       def log(s)

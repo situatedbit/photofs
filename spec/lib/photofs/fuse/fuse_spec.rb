@@ -105,6 +105,48 @@ describe PhotoFS::Fuse::Fuse do
     end
   end # :readdir
 
+  describe :symlink do
+    let(:images) { instance_double('PhotoFS::Data::ImageSet', :save! => nil) }
+    let(:image) { instance_double('PhotoFS::Core::Image') }
+    let(:as) { '/t/good/1.jpg' }
+    let(:as_parent_path) { PhotoFS::Fuse::RelativePath.new('/t/good') }
+    let(:link_target) { '/home/me/photos/date/1.jpg' }
+    let(:target_parent) { instance_double('PhotoFS::Fuse::TagDir') }
+
+    before(:example) do
+      fuse.instance_variable_set(:@images, images)
+
+      allow(images).to receive(:find_by_path).with(link_target).and_return(image)
+      allow(fuse).to receive(:search).with(as_parent_path).and_return(target_parent)
+    end
+
+    context 'when the parent does not exist' do
+      before(:example) do
+        allow(fuse).to receive(:search).with(as_parent_path).and_raise(Errno::ENOENT)
+      end
+
+      it 'should raise no entry error' do
+        expect { fuse.symlink(context, link_target, as) }.to raise_error(Errno::ENOENT)
+      end
+    end
+
+    context 'when the source is not in the image collection' do
+      before(:example) do
+        allow(images).to receive(:find_by_path).with(link_target).and_return(nil)
+      end
+
+      it 'should raise permission error' do
+        expect { fuse.symlink(context, link_target, as) }.to raise_error(Errno::EPERM)
+      end
+    end
+
+    it 'should call symlink on the target parent' do
+      expect(target_parent).to receive(:symlink).with(image, '1.jpg')
+
+      fuse.symlink(context, link_target, as)
+    end
+  end # :symlink
+
   describe :unlink do
     context 'when the file does not exist' do
       before(:example) do

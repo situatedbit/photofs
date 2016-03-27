@@ -17,6 +17,7 @@ require 'rfuse'
 
 describe 'integration for' do
   let(:source_path) { '/home/me/photos' }
+  let(:source_path_prefix) { source_path.sub(/^\//, '').gsub('/', '-') + '-' }
   let(:mountpoint) { '/home/me/p' }
   let(:context) { instance_double('Context', {:gid => 500, :uid => 500}) }
 
@@ -127,63 +128,102 @@ describe 'integration for' do
 
     before(:example) do
       file_system.add({:dirs => image_directories, :files => image_files})
+
+      fuse.mkdir(context, '/t/good', 0)
     end
 
-    context 'there is a good tag' do
+    describe 'with symlink' do
+      # when copying file from o/ to a tag directory with thunar, thunar tries to create a symlink
+      # to the original file.
+      context 'when tagging within a subdirectory with an image from that directory' do
+        let(:target) { '/o/a/tags/good/1a.jpg' }
+        let(:source) { "#{source_path}/a/1a.jpg" }
+
+        it 'should tag the image' do
+          fuse.symlink(context, source, target)
+
+          expect(fuse.getattr(context, "/o/a/tags/good/#{source_path_prefix}a-1a.jpg")).not_to be nil
+        end
+      end
+
+      context 'when tagging within a subdirectory with an image from the global collection' do
+        let(:target) { '/o/a/tags/good/1c.JPG' }
+        let(:source) { "#{source_path}/c/1c.JPG" }
+
+        it 'should raise a permission error' do
+          expect { fuse.symlink(context, source, target) }.to raise_error(Errno::EPERM)
+        end
+      end
+
+      context 'when tagging at the top level with an image in the global collection' do
+        let(:target) { '/t/good/1c.JPG' }
+        let(:source) { "#{source_path}/c/1c.JPG" }
+
+        it 'should tag the image' do
+          fuse.symlink(context, source, target)
+
+          expect(fuse.getattr(context, "/t/good/#{source_path_prefix}c-1c.JPG")).not_to be nil
+        end
+      end
+
+      context 'when the symlink does not reference an image in the global collection' do
+        let(:target) { '/o/a/tags/good/something-else.jpg' }
+        let(:source) { "/some/other/path/something-else.jpg" }
+
+        it 'should raise permission error' do
+          expect { fuse.symlink(context, source, target) }.to raise_error(Errno::EPERM)
+        end
+      end
+    end # 'with symlink'
+
+    describe 'to top-level tag directory' do
+      it 'should result in image link in tag directory' do
+        fuse.rename(context, '/o/a/1a.jpg', '/t/good/1a.jpg')
+
+        expect(fuse.readlink(context, '/t/good/home-me-photos-a-1a.jpg', 0)).to eq("#{source_path}/a/1a.jpg")
+      end
+    end
+
+    describe 'to mirrored directory sub tag directories' do
+      it 'should result in image link to original image in tag sub directory' do
+        fuse.rename(context, '/o/a/1a.jpg', '/o/a/tags/good/1a.jpg')
+
+        expect(fuse.readlink(context, '/o/a/tags/good/home-me-photos-a-1a.jpg', 0)).to eq("#{source_path}/a/1a.jpg")
+      end
+    end
+
+    describe 'tagging multiple images with a single tag' do
       before(:example) do
-        fuse.mkdir(context, '/t/good', 0)
+        fuse.rename(context, '/o/a/1a.jpg', '/o/a/tags/good/1a.jpg')
+        fuse.rename(context, '/o/c/1c.JPG', '/o/c/tags/good/1c.JPG')
       end
 
-      describe 'to top-level tag directory' do
-        it 'should result in image link in tag directory' do
-          fuse.rename(context, '/o/a/1a.jpg', '/t/good/1a.jpg')
+      it 'should result in both images in t/' do
+        expect(fuse.readlink(context, '/t/good/home-me-photos-a-1a.jpg', 0)).to eq("#{source_path}/a/1a.jpg")
+        expect(fuse.readlink(context, '/t/good/home-me-photos-c-1c.JPG', 0)).to eq("#{source_path}/c/1c.JPG")
+      end
+    end
 
-          expect(fuse.readlink(context, '/t/good/home-me-photos-a-1a.jpg', 0)).to eq("#{source_path}/a/1a.jpg")
-        end
+    describe 'an image is tagged twice' do
+      before(:example) do
+        fuse.mkdir(context, '/t/better', 0)
+
+        fuse.rename(context, '/o/a/1a.jpg', '/t/good/1a.jpg')
+        fuse.rename(context, '/o/a/1a.jpg', '/t/better/1a.jpg')
       end
 
-      describe 'to mirrored directory sub tag directories' do
-        it 'should result in image link to original image in tag sub directory' do
-          fuse.rename(context, '/o/a/1a.jpg', '/o/a/tags/good/1a.jpg')
-
-          expect(fuse.readlink(context, '/o/a/tags/good/home-me-photos-a-1a.jpg', 0)).to eq("#{source_path}/a/1a.jpg")
-        end
+      it 'should result in image link in /t/good/better/' do
+        expect(fuse.readlink(context, '/t/good/better/home-me-photos-a-1a.jpg', 0)).to eq("#{source_path}/a/1a.jpg")
       end
 
-      describe 'tagging multiple images with a single tag' do
-        before(:example) do
-          fuse.rename(context, '/o/a/1a.jpg', '/o/a/tags/good/1a.jpg')
-          fuse.rename(context, '/o/c/1c.JPG', '/o/c/tags/good/1c.JPG')
-        end
-
-        it 'should result in both images in t/' do
-          expect(fuse.readlink(context, '/t/good/home-me-photos-a-1a.jpg', 0)).to eq("#{source_path}/a/1a.jpg")
-          expect(fuse.readlink(context, '/t/good/home-me-photos-c-1c.JPG', 0)).to eq("#{source_path}/c/1c.JPG")
-        end
+      it 'should result in image link in /t/better/good/' do
+        expect(fuse.readlink(context, '/t/good/better/home-me-photos-a-1a.jpg', 0)).to eq("#{source_path}/a/1a.jpg")
       end
 
-
-      describe 'an image is tagged twice' do
-        before(:example) do
-          fuse.mkdir(context, '/t/better', 0)
-
-          fuse.rename(context, '/o/a/1a.jpg', '/t/good/1a.jpg')
-          fuse.rename(context, '/o/a/1a.jpg', '/t/better/1a.jpg')
-        end
-
-        it 'should result in image link in /t/good/better/' do
-          expect(fuse.readlink(context, '/t/good/better/home-me-photos-a-1a.jpg', 0)).to eq("#{source_path}/a/1a.jpg")
-        end
-
-        it 'should result in image link in /t/better/good/' do
-          expect(fuse.readlink(context, '/t/good/better/home-me-photos-a-1a.jpg', 0)).to eq("#{source_path}/a/1a.jpg")
-        end
-
-        it 'should result in image link in source tags directory' do
-          expect(fuse.readlink(context, '/o/a/tags/good/better/home-me-photos-a-1a.jpg', 0)).to eq("#{source_path}/a/1a.jpg")
-        end
+      it 'should result in image link in source tags directory' do
+        expect(fuse.readlink(context, '/o/a/tags/good/better/home-me-photos-a-1a.jpg', 0)).to eq("#{source_path}/a/1a.jpg")
       end
-    end # /t/good
+    end
   end # :tagging_images
 
   describe 'untagging images' do
