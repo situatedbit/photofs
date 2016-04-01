@@ -1,4 +1,7 @@
 require 'photofs/core/tag_set'
+require 'photofs/fs'
+require 'photofs/fs/test'
+require 'photofs/fuse/file'
 require 'photofs/fuse/tag_dir'
 require 'photofs/fuse/stat'
 
@@ -395,8 +398,8 @@ describe PhotoFS::Fuse::TagDir do
 
     context 'when there are no files or dirs' do
       before(:example) do
-        allow(tag_dir).to receive(:files).and_return([])
-        allow(tag_dir).to receive(:dirs).and_return([])
+        allow(tag_dir).to receive(:files).and_return({})
+        allow(tag_dir).to receive(:dirs).and_return({})
       end
 
       it 'should return an empty hash' do
@@ -406,15 +409,10 @@ describe PhotoFS::Fuse::TagDir do
 
     context 'when there are files and dirs' do
       let(:node_class) { Struct.new(:name) }
-      let(:files) { [node_class.new('first'), node_class.new('second')] }
-      let(:dirs) { [node_class.new('third'), node_class.new('fourth')] }
+      let(:files) { {'first' => node_class.new('first'), 'second' => node_class.new('second')} }
+      let(:dirs) { {'third' => node_class.new('third'), 'fourth' => node_class.new('fourth')} }
 
-      let(:node_hash) do
-        { files[0].name => files[0],
-          files[1].name => files[1],
-          dirs[0].name => dirs[0],
-          dirs[1].name => dirs[1] }
-      end
+      let(:node_hash) { files.merge dirs }
 
       before(:example) do
         allow(tag_dir).to receive(:files).and_return(files)
@@ -461,6 +459,38 @@ describe PhotoFS::Fuse::TagDir do
       end
     end
   end
+
+  describe :files do
+    let(:tag_dir) { PhotoFS::Fuse::TagDir.new('日本橋', PhotoFS::Core::TagSet.new) }
+    let(:file_class) { PhotoFS::Fuse::File }
+
+    let(:image_a) { instance_double('PhotoFS::Core::Image', :path => '/a/え.jpg') }
+    let(:image_b) { instance_double('PhotoFS::Core::Image', :path => '/b/え.jpg') }
+    let(:image_c) { instance_double('PhotoFS::Core::Image', :path => '/c/え.jpg') }
+    let(:image_d) { instance_double('PhotoFS::Core::Image', :path => '/d/きれい.jpg') }
+
+    let(:images) { [image_a, image_d] }
+    let(:files) { {'え.jpg' => an_instance_of(file_class), 'きれい.jpg' => an_instance_of(file_class)} }
+
+    before(:example) do
+      allow(tag_dir).to receive(:images).and_return(images)
+      allow(PhotoFS::FS).to receive(:file_system).and_return(PhotoFS::FS::Test.new)
+    end
+
+    it 'should return list of files' do
+      expect(tag_dir.send :files).to match files
+    end
+
+    context 'when there are name collisions' do
+      let(:images) { [image_c, image_b, image_a] }
+
+      let(:files) { {'え.jpg' => an_instance_of(file_class), 'え-b.jpg' => an_instance_of(file_class), 'え-c.jpg' => an_instance_of(file_class) } }
+
+      it 'should use the base name for the first instance of that file name and uniqe names for all others' do
+        expect(tag_dir.send :files).to match files
+      end
+    end
+  end # :files
 
   describe :size do
     let(:tag_dir) { PhotoFS::Fuse::TagDir.new('nihonbashi', PhotoFS::Core::TagSet.new) }

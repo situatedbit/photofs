@@ -99,7 +99,7 @@ module PhotoFS
       protected
 
       def node_hash
-        Hash[ (files + dirs).map { |n| [n.name, n] } ]
+        files.merge dirs
       end
 
       private
@@ -116,25 +116,43 @@ module PhotoFS
       end
 
       def dirs
-        dir_tags.map do |tag|
-          TagDir.new(tag.name, @tags, {:query_tag_names => @query_tag_names + [tag.name], :parent => self, :images => @images_domain})
+        dir_name_map = {}
+
+        dir_tags.each do |tag|
+          tag_dir = TagDir.new(tag.name, @tags, {:query_tag_names => @query_tag_names + [tag.name], :parent => self, :images => @images_domain})
+
+          dir_name_map[tag.name] = tag_dir
         end
+
+        dir_name_map
       end
 
       def dir_tags
         if is_tags_root?
           @tags.all
         else
-          @tags.find_by_image(images.to_a) - query_tags
+          @tags.find_by_image(images) - query_tags
         end
       end
 
       def files
-        images.all.map { |image| File.new(image.name, image.path, {:parent => self, :payload => image}) }
+        images_sorted = images.sort { |a, b| a.path <=> b.path }
+
+        file_name_map = {}
+
+        images_sorted.each do |image|
+          basename = ::File.basename image.path
+
+          name = file_name_map[basename] ? unique_image_name(image) : basename
+
+          file_name_map[name] = File.new(name, PhotoFS::FS.file_system.absolute_path(image.path), {:parent => self, :payload => image})
+        end
+
+        file_name_map
       end
 
       def images
-        PhotoFS::Core::TagSet.intersection(query_tags)
+        PhotoFS::Core::TagSet.intersection(query_tags).to_a
       end
 
       def is_tags_root?
@@ -147,6 +165,14 @@ module PhotoFS
 
       def query_tags
         @tags.find_by_name(@query_tag_names)
+      end
+
+      def unique_image_name(image)
+        extension = ::File.extname image.path
+        basename = ::File.basename image.path, extension
+        escaped_path = ::File.dirname(image.path).gsub(::File::SEPARATOR, '-')
+
+        "#{basename}#{escaped_path}#{extension}"
       end
 
     end

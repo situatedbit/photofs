@@ -1,7 +1,7 @@
 # Allows for stubbing local file system in integration tests
 module PhotoFS::FS
   class Test < Local
-    def initialize(file_system)
+    def initialize(file_system = {})
       @dirs = file_system[:dirs] || []
       @files = file_system[:files] || []
       @absolute_paths = file_system[:absolute_paths] || {}

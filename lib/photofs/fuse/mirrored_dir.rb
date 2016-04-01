@@ -92,7 +92,7 @@ module PhotoFS
         if fs.directory?(path)
           MirroredDir.new(entry, path, {:parent => self, :tags => @tags, :images => @images_domain})
         else
-          File.new(entry, path, {:parent => self, :payload => @images_domain.find_by_path(path)})
+          File.new(entry, fs.absolute_path(path), {:parent => self, :payload => @images_domain.find_by_path(path)})
         end
       end
 

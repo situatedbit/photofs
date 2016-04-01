@@ -9,9 +9,7 @@ module PhotoFS
       attr_reader :target_path
 
       def initialize(name, target_path, options = {})
-        @target_path = Fuse.fs.absolute_path target_path
-
-        raise ArgumentError.new('Target path must be a file') unless Fuse.fs.exist?(@target_path)
+        @target_path = target_path
 
         super(name, options)
       end

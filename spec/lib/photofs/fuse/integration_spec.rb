@@ -17,7 +17,6 @@ require 'rfuse'
 
 describe 'integration for' do
   let(:source_path) { '/home/me/photos' }
-  let(:source_path_prefix) { source_path.sub(/^\//, '').gsub('/', '-') + '-' }
   let(:mountpoint) { '/home/me/p' }
   let(:context) { instance_double('Context', {:gid => 500, :uid => 500}) }
 
@@ -123,7 +122,7 @@ describe 'integration for' do
 
   describe :tagging_images do
     let(:image_directories) { ["/a", "/a/b", "/c"].map {|p| "#{source_path}#{p}"} }
-    let(:image_files) { [ '/a/1a.jpg', '/a/2a.jpg', '/a/b/1b.jpg', '/c/1c.JPG'].map {|p| "#{source_path}#{p}"} }
+    let(:image_files) { [ '/a/1a.jpg', '/a/2a.jpg', '/a/b/1b.jpg', '/c/1c.JPG', '/a/photo.jpg', '/c/photo.jpg'].map {|p| "#{source_path}#{p}"} }
     let(:image_monitor) { instance_double('PhotoFS::FileMonitor', :paths => image_files) }
 
     before(:example) do
@@ -142,7 +141,7 @@ describe 'integration for' do
         it 'should tag the image' do
           fuse.symlink(context, source, target)
 
-          expect(fuse.getattr(context, "/o/a/tags/good/#{source_path_prefix}a-1a.jpg")).not_to be nil
+          expect(fuse.getattr(context, "/o/a/tags/good/1a.jpg")).not_to be nil
         end
       end
 
@@ -162,7 +161,7 @@ describe 'integration for' do
         it 'should tag the image' do
           fuse.symlink(context, source, target)
 
-          expect(fuse.getattr(context, "/t/good/#{source_path_prefix}c-1c.JPG")).not_to be nil
+          expect(fuse.getattr(context, "/t/good/1c.JPG")).not_to be nil
         end
       end
 
@@ -180,7 +179,7 @@ describe 'integration for' do
       it 'should result in image link in tag directory' do
         fuse.rename(context, '/o/a/1a.jpg', '/t/good/1a.jpg')
 
-        expect(fuse.readlink(context, '/t/good/home-me-photos-a-1a.jpg', 0)).to eq("#{source_path}/a/1a.jpg")
+        expect(fuse.readlink(context, '/t/good/1a.jpg', 0)).to eq("#{source_path}/a/1a.jpg")
       end
     end
 
@@ -188,7 +187,7 @@ describe 'integration for' do
       it 'should result in image link to original image in tag sub directory' do
         fuse.rename(context, '/o/a/1a.jpg', '/o/a/tags/good/1a.jpg')
 
-        expect(fuse.readlink(context, '/o/a/tags/good/home-me-photos-a-1a.jpg', 0)).to eq("#{source_path}/a/1a.jpg")
+        expect(fuse.readlink(context, '/o/a/tags/good/1a.jpg', 0)).to eq("#{source_path}/a/1a.jpg")
       end
     end
 
@@ -199,8 +198,8 @@ describe 'integration for' do
       end
 
       it 'should result in both images in t/' do
-        expect(fuse.readlink(context, '/t/good/home-me-photos-a-1a.jpg', 0)).to eq("#{source_path}/a/1a.jpg")
-        expect(fuse.readlink(context, '/t/good/home-me-photos-c-1c.JPG', 0)).to eq("#{source_path}/c/1c.JPG")
+        expect(fuse.readlink(context, '/t/good/1a.jpg', 0)).to eq("#{source_path}/a/1a.jpg")
+        expect(fuse.readlink(context, '/t/good/1c.JPG', 0)).to eq("#{source_path}/c/1c.JPG")
       end
     end
 
@@ -213,17 +212,52 @@ describe 'integration for' do
       end
 
       it 'should result in image link in /t/good/better/' do
-        expect(fuse.readlink(context, '/t/good/better/home-me-photos-a-1a.jpg', 0)).to eq("#{source_path}/a/1a.jpg")
+        expect(fuse.readlink(context, '/t/good/better/1a.jpg', 0)).to eq("#{source_path}/a/1a.jpg")
       end
 
       it 'should result in image link in /t/better/good/' do
-        expect(fuse.readlink(context, '/t/good/better/home-me-photos-a-1a.jpg', 0)).to eq("#{source_path}/a/1a.jpg")
+        expect(fuse.readlink(context, '/t/good/better/1a.jpg', 0)).to eq("#{source_path}/a/1a.jpg")
       end
 
       it 'should result in image link in source tags directory' do
-        expect(fuse.readlink(context, '/o/a/tags/good/better/home-me-photos-a-1a.jpg', 0)).to eq("#{source_path}/a/1a.jpg")
+        expect(fuse.readlink(context, '/o/a/tags/good/better/1a.jpg', 0)).to eq("#{source_path}/a/1a.jpg")
       end
     end
+
+    describe 'duplicate base file names within the same tag' do
+      before(:example) do
+        fuse.rename(context, '/o/a/photo.jpg', '/t/good/photo.jpg')
+        fuse.rename(context, '/o/c/photo.jpg', '/t/good/photo.jpg')
+      end
+
+      it 'should result in one image retaining the base name' do
+        expect(fuse.readlink(context, '/t/good/photo.jpg', 0)).to eq("#{source_path}/a/photo.jpg")
+      end
+
+      it 'the second image should include the payload hash' do
+        expect(fuse.readlink(context, '/t/good/photo-home-me-photos-c.jpg', 0)).to eq("#{source_path}/c/photo.jpg")
+      end
+
+      context 'when the image with the base name is removed' do
+        before(:example) do
+          fuse.unlink(context, '/t/good/photo.jpg')
+        end
+
+        it 'should result in an image with the base name pointing to the image formerly with the hashed name' do
+          expect(fuse.readlink(context, '/t/good/photo.jpg', 0)).to eq("#{source_path}/c/photo.jpg")
+        end
+      end
+
+      context 'when the image with the hash is removed' do
+        before(:example) do
+          fuse.unlink(context, '/t/good/photo-home-me-photos-c.jpg')
+        end
+
+        it 'should result in the original image retaining the base name' do
+          expect(fuse.readlink(context, '/t/good/photo.jpg', 0)).to eq("#{source_path}/a/photo.jpg")
+        end
+      end
+    end # duplicate base file names within the same tag
   end # :tagging_images
 
   describe 'untagging images' do
@@ -240,11 +274,11 @@ describe 'integration for' do
 
     context 'when an image is removed from single tag' do
       it 'should not be listed under that tag' do
-        expect(fuse.getattr(context, '/t/good/home-me-photos-a-1a.jpg')).not_to be nil
+        expect(fuse.getattr(context, '/t/good/1a.jpg')).not_to be nil
 
-        fuse.unlink(context, '/t/good/home-me-photos-a-1a.jpg')
+        fuse.unlink(context, '/t/good/1a.jpg')
 
-        expect{ fuse.getattr(context, '/t/good/home-me-photos-a-1a.jpg') }.to raise_error(Errno::ENOENT)
+        expect{ fuse.getattr(context, '/t/good/1a.jpg') }.to raise_error(Errno::ENOENT)
       end
     end
 
@@ -255,13 +289,13 @@ describe 'integration for' do
       end
 
       it 'should not be listed under either tag' do
-        expect(fuse.getattr(context, '/o/a/tags/bad/home-me-photos-a-1a.jpg')).not_to be nil
-        expect(fuse.getattr(context, '/o/a/tags/good/home-me-photos-a-1a.jpg')).not_to be nil
+        expect(fuse.getattr(context, '/o/a/tags/bad/1a.jpg')).not_to be nil
+        expect(fuse.getattr(context, '/o/a/tags/good/1a.jpg')).not_to be nil
 
-        fuse.unlink(context, '/t/good/bad/home-me-photos-a-1a.jpg')
+        fuse.unlink(context, '/t/good/bad/1a.jpg')
 
-        expect{ fuse.getattr(context, '/o/a/tags/bad/home-me-photos-a-1a.jpg') }.to raise_error(Errno::ENOENT)
-        expect{ fuse.getattr(context, '/o/a/tags/good/home-me-photos-a-1a.jpg') }.to raise_error(Errno::ENOENT)
+        expect{ fuse.getattr(context, '/o/a/tags/bad/1a.jpg') }.to raise_error(Errno::ENOENT)
+        expect{ fuse.getattr(context, '/o/a/tags/good/1a.jpg') }.to raise_error(Errno::ENOENT)
       end
     end
   end # untagging images
