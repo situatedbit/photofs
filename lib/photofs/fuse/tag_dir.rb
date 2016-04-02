@@ -152,7 +152,7 @@ module PhotoFS
       end
 
       def images
-        PhotoFS::Core::TagSet.intersection(query_tags).to_a
+        is_tags_root? ? [] : PhotoFS::Core::TagSet.intersection(query_tags + [@images_domain]).to_a
       end
 
       def is_tags_root?

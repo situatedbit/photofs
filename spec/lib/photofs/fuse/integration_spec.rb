@@ -181,6 +181,20 @@ describe 'integration for' do
 
         expect(fuse.readlink(context, '/t/good/1a.jpg', 0)).to eq("#{source_path}/a/1a.jpg")
       end
+
+      it 'should not result in the image showing up at the top-level' do
+        fuse.rename(context, '/o/a/1a.jpg', '/t/good/1a.jpg')
+
+        expect{ fuse.getattr(context, '/t/1a.jpg') }.to raise_error(Errno::ENOENT)
+      end
+
+      it 'should result in the image existing only under the tags subdirectory within its source directory' do
+        fuse.rename(context, '/o/a/1a.jpg', '/t/good/1a.jpg')
+        fuse.rename(context, '/o/c/1c.JPG', '/t/good/1c.JPG')
+
+        expect(fuse.getattr(context, "/o/c/tags/good/1c.JPG")).not_to be nil
+        expect{ fuse.getattr(context, "/o/c/tags/good/1a.jpg") }.to raise_error(Errno::ENOENT)
+      end
     end
 
     describe 'to mirrored directory sub tag directories' do
