@@ -25,6 +25,7 @@ module PhotoFS
         @source_path = options[:source]
         @mountpoint = options[:mountpoint]
         @environment = options[:env] || 'production'
+        @node_cache = {}
 
         @images = PhotoFS::Data::ImageSet.new() # global image set
         @tags = PhotoFS::Data::TagSet.new
@@ -53,6 +54,8 @@ module PhotoFS
       def save!
         @images.save!
         @tags.save!
+
+        @node_cache = {}
       end
 
       def scan_source_path
@@ -72,7 +75,13 @@ module PhotoFS
       end
 
       def search(path)
-        node = @root.search(path)
+        if @node_cache.has_key? path.to_s
+          node = @node_cache[path.to_s]
+        else
+          node = @root.search(path)
+
+          @node_cache[path.to_s] = node
+        end
 
         raise Errno::ENOENT.new(path.to_s) if node.nil?
 
