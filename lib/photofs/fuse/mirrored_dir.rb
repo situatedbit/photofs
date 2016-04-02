@@ -38,6 +38,10 @@ module PhotoFS
         raise Errno::EPERM
       end
 
+      def search(path)
+        entries_search(path) || super(path)
+      end
+
       def stat
         stat_hash = PhotoFS::Fuse::Stat.stat_hash(fs.stat(@source_path))
 
@@ -72,6 +76,12 @@ module PhotoFS
 
       def entries
         fs.entries(source_path) - ['.', '..']
+      end
+
+      def entries_search(path)
+        # this allows us to shortcut building out all of nodes_hash during a search. Only builds
+        # and returns a node if it's an entry within this directory.
+        path.is_name? && entries.include?(path.name) ? new_node(path.name) : nil
       end
 
       def tags_node

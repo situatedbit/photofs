@@ -46,6 +46,10 @@ module PhotoFS
         split.length == 1
       end
 
+      def is_name?
+        split.length == 2
+      end
+
       alias_method :eql?, :==
 
       private 

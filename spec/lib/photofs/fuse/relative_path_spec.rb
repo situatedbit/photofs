@@ -133,6 +133,32 @@ describe PhotoFS::Fuse::RelativePath do
     end
   end
 
+  describe :is_name? do
+    context 'when there is more than one component' do
+      let(:path) { PhotoFS::Fuse::RelativePath.new '/first/second/third' }
+
+      it 'should be false' do
+        expect(path.is_name?).to be false
+      end
+    end
+
+    context 'when there are no components' do
+      let(:path) { PhotoFS::Fuse::RelativePath.new './' }
+
+      it 'should be true' do
+        expect(path.is_name?).to be false
+      end
+    end
+
+    context 'when there is one component' do
+      let(:path) { PhotoFS::Fuse::RelativePath.new './help' }
+
+      it 'should be true' do
+        expect(path.is_name?).to be true
+      end
+    end
+  end # :is_name?
+
   describe '#is_this?' do
     context 'when there is more than one component' do
       let(:path) { PhotoFS::Fuse::RelativePath.new '/first/second/third' }

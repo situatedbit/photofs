@@ -72,8 +72,6 @@ module PhotoFS
       end
 
       def search(path)
-        log("search: #{path.to_s}")
-        
         node = @root.search(path)
 
         raise Errno::ENOENT.new(path.to_s) if node.nil?
