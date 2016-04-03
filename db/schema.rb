@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160222021759) do
+ActiveRecord::Schema.define(version: 20160403010010) do
 
   create_table "files", force: :cascade do |t|
     t.string   "path"
@@ -20,9 +20,9 @@ ActiveRecord::Schema.define(version: 20160222021759) do
   end
 
   create_table "images", force: :cascade do |t|
-    t.datetime "created_at",   null: false
-    t.datetime "updated_at",   null: false
-    t.integer  "jpeg_file_id"
+    t.datetime "created_at",    null: false
+    t.datetime "updated_at",    null: false
+    t.integer  "image_file_id"
   end
 
   create_table "tag_bindings", id: false, force: :cascade do |t|

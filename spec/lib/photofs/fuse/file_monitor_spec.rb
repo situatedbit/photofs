@@ -3,7 +3,7 @@ require 'photofs/core/image_set'
 
 describe PhotoFS::Fuse::FileMonitor do
   let(:path) { '/path' }
-  let(:paths) { ['a/b/c.jpg', '1/2/3.jpg'] }
+  let(:paths) { ['a/b/c.jpg', '1/2/3.jpg', 'a/b/c.txt', '1/2/3.CR2'] }
   let(:image_set) { PhotoFS::Core::ImageSet.new }
   let(:monitor) { PhotoFS::Fuse::FileMonitor.new path }
 
@@ -34,14 +34,17 @@ describe PhotoFS::Fuse::FileMonitor do
   end
 =end
   describe :paths do
-    let(:glob) { ['a/b/c.jpg', '1/2/3.jpg'] }
+    let(:glob) { ['a/b/c.jpg', '1/2/3.jpg', '1/2/3.CR2'] }
+    let(:monitor_paths) do
+      glob.map { |g| "#{path}/#{g}" }
+    end
 
     before(:example) do
       allow(monitor).to receive(:glob).and_return(glob)
     end
 
     it 'should be an array of joined paths' do
-      expect(monitor.paths).to contain_exactly("#{path}/#{glob[0]}", "#{path}/#{glob[1]}")
+      expect(monitor.paths).to contain_exactly(*monitor_paths)
     end
   end
 end

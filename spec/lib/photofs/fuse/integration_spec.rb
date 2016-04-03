@@ -322,7 +322,7 @@ describe 'integration for' do
       let(:image_monitor) { instance_double('PhotoFS::FileMonitor', :paths => image_files) }
 
       it 'should be persisted in the database' do
-        expect(PhotoFS::Data::Image.first.jpeg_file.path).to eq(image_files.first)
+        expect(PhotoFS::Data::Image.first.image_file.path).to eq(image_files.first)
       end
     end
   end # persisting images

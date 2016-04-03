@@ -4,8 +4,8 @@ require 'photofs/core/image'
 describe PhotoFS::Data::Image, type: :model do
   let(:klass) { PhotoFS::Data::Image }
 
-  it { should validate_presence_of(:jpeg_file) }
-  it { should validate_uniqueness_of(:jpeg_file_id) }
+  it { should validate_presence_of(:image_file) }
+  it { should validate_uniqueness_of(:image_file_id) }
 
   describe :from_image do
     let(:image_record) { create :image }
@@ -25,7 +25,7 @@ describe PhotoFS::Data::Image, type: :model do
     end
 
     it 'should have a file with the image path' do
-      expect(klass.new_from_image(image).jpeg_file).to be file
+      expect(klass.new_from_image(image).image_file).to be file
     end
 
     it 'should not be saved' do
@@ -39,7 +39,7 @@ describe PhotoFS::Data::Image, type: :model do
 
     context 'when the path matches jpeg file path' do
       before(:example) do
-        allow(image).to receive(:path).and_return(record.jpeg_file.path)
+        allow(image).to receive(:path).and_return(record.image_file.path)
       end
 
       it 'should be true' do
@@ -49,7 +49,7 @@ describe PhotoFS::Data::Image, type: :model do
 
     context 'when paths do not match' do
       before(:example) do
-        allow(image).to receive(:path).and_return(record.jpeg_file.path + '違う')
+        allow(image).to receive(:path).and_return(record.image_file.path + '違う')
       end
 
       it 'should be false' do
@@ -62,21 +62,21 @@ describe PhotoFS::Data::Image, type: :model do
     let(:record) { build :image }
 
     context 'when the path is the same' do
-      let(:image) { instance_double('PhotoFS::Core::Image', :path => record.jpeg_file.path) }
+      let(:image) { instance_double('PhotoFS::Core::Image', :path => record.image_file.path) }
 
       it 'will not update path' do
-        expect(record).not_to receive(:build_jpeg_file)
+        expect(record).not_to receive(:build_image_file)
 
         record.update_from image
       end
     end
 
     context 'when the path does not match' do
-      let(:different_path) { record.jpeg_file.path + '/違う' }
+      let(:different_path) { record.image_file.path + '/違う' }
       let(:image) { instance_double('PhotoFS::Core::Image', :path => different_path) }
 
-      it 'sets jpeg_file to new file from path' do
-        expect(record).to receive(:build_jpeg_file).with(hash_including(:path => different_path))
+      it 'sets image_file to new file from path' do
+        expect(record).to receive(:build_image_file).with(hash_including(:path => different_path))
 
         record.update_from image
       end

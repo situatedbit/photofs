@@ -15,7 +15,7 @@ module PhotoFS
 
       def glob
         Fuse.fs.chdir(@root) do # restores process working dir when block completes
-          Fuse.fs.glob("**/*.{jpg,jpeg}", Fuse.fs.fnm(:casefold))
+          Fuse.fs.glob("**/*.{jpg,jpeg,cr2}", Fuse.fs.fnm(:casefold))
         end
       end
     end

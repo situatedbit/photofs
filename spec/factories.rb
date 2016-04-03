@@ -13,7 +13,7 @@ FactoryGirl.define do
   end
 
   factory :image, class: PhotoFS::Data::Image do
-    association :jpeg_file, factory: :file, strategy: :build
+    association :image_file, factory: :file, strategy: :build
   end
 
   factory :tag, class: PhotoFS::Data::Tag do
