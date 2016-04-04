@@ -8,14 +8,12 @@ module PhotoFS
       ::File.join ::File.dirname(__FILE__), '..', '..'
     end
 
-    def self.data_path(base_path = '')
-      path = ::File.join(base_path, DATA_DIR)
+    def self.data_path
+      @@data_path || nil
+    end
 
-      unless file_system.exist?(path) && file_system.directory?(path)
-        file_system.mkdir(path)
-      end
-
-      path
+    def self.data_path_join(*children)
+      ::File.join(@@data_path, *children)
     end
 
     def self.db_config_path
@@ -23,11 +21,21 @@ module PhotoFS
     end
 
     def self.file_system
-      PhotoFS::FS::Local.new
+      @@fs ||= PhotoFS::FS::Local.new
     end
 
     def self.migration_paths
       [::File.join(db_config_path, 'migrate')]
+    end
+
+    def self.data_path_parent=(base_path)
+      @@data_path = ::File.join(base_path, DATA_DIR)
+
+      unless file_system.exist?(@@data_path) && file_system.directory?(@@data_path)
+        file_system.mkdir(@@data_path)
+      end
+
+      @@data_path
     end
   end
 end

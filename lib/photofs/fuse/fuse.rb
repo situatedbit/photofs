@@ -16,8 +16,6 @@ module PhotoFS
     class Fuse
       include PhotoFS::Data::Lock
 
-      attr_reader :source_path
-
       def self.fs
         PhotoFS::FS.file_system
       end
@@ -35,7 +33,7 @@ module PhotoFS
 
         @root = RootDir.new
 
-        set_lock_path(::File.join(PhotoFS::FS.data_path(@source_path), 'lockfile'))
+        PhotoFS::FS.data_path_parent = @source_path
       end
 
       def init(context, rfuse_connection_info)
@@ -51,7 +49,7 @@ module PhotoFS
 
       private
       def initialize_database
-        db = PhotoFS::Data::Database.new(@environment, PhotoFS::FS.data_path(@source_path))
+        db = PhotoFS::Data::Database.new(@environment, PhotoFS::FS.data_path)
 
         db.connect.ensure_schema
       end
@@ -71,12 +69,6 @@ module PhotoFS
         end
 
         log "Scanning complete"
-      end
-
-      def source_path=(value)
-        raise RFuse::Error.new("Source is not a directory (#{value})") unless ::File.directory?(value)
-
-        @source_path = File.realpath(value)
       end
 
       def search(path)

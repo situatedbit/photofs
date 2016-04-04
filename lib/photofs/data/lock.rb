@@ -9,7 +9,7 @@ module PhotoFS
       end
 
       def _locked_send(method_name, *args, &block)
-        PhotoFS::FS.file_system.lock(@_lock_path) do
+        PhotoFS::FS.file_system.lock(PhotoFS::FS.data_path_join('photofs.lock')) do
           log "calling #{method_name.to_s}"
 
           return send method_name, *args, &block
