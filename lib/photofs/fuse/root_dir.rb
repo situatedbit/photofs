@@ -10,13 +10,12 @@ module PhotoFS
         super('')
       end
 
-      def add(dir)
-        raise ArgumentError.new("Only directories can be added to a root directory") unless dir.directory?
+      def add(node)
+        @nodes[node.name] = node
 
-        @nodes[dir.name] = dir
-        dir.parent = self
+        node.parent = self
 
-        dir
+        node
       end
 
       def mkdir(name)

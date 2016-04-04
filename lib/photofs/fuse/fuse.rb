@@ -1,16 +1,16 @@
-require 'rfuse'
 require 'photofs/core/image'
-require 'photofs/data/tag_set'
 require 'photofs/data/database'
 require 'photofs/data/image_set'
 require 'photofs/data/lock'
+require 'photofs/data/tag_set'
 require 'photofs/fs'
+require 'photofs/fuse/file_monitor'
+require 'photofs/fuse/mirrored_dir'
+require 'photofs/fuse/relative_path'
+require 'photofs/fuse/root_dir'
 require 'photofs/fuse/search_cache'
-require_relative 'file_monitor'
-require_relative 'relative_path'
-require_relative 'root_dir'
-require_relative 'mirrored_dir'
-require_relative 'tag_dir'
+require 'photofs/fuse/tag_dir'
+require 'rfuse'
 
 module PhotoFS
   module Fuse
@@ -46,6 +46,7 @@ module PhotoFS
 
         @root.add MirroredDir.new('o', @source_path, {:tags => @tags, :images => @images})
         @root.add TagDir.new('t', @tags, {:images => @images})
+        @root.add File.new('.photofs-data-parent', @source_path)
 
         log "Mounted at #{@source_path}"
       end

@@ -7,10 +7,6 @@ describe PhotoFS::Fuse::RootDir do
   describe "#add" do
     let(:dir) { PhotoFS::Fuse::Dir.new('test') }
 
-    it 'sould only accept directories' do
-      expect { root.add PhotoFS::Fuse::Node.new('bad!') }.to raise_error(ArgumentError)
-    end
-
     it 'should set the parent on the dir' do
       expect(dir).to receive(:parent=).with(root)
 

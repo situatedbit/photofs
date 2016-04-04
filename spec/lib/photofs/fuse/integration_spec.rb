@@ -35,6 +35,12 @@ describe 'integration for' do
     fuse.init(context, nil)
   end
 
+  describe 'symlink to data store' do
+    it 'should point to source path' do
+      expect(fuse.readlink(context, '/.photofs-data-parent', 0)).to eq("#{source_path}")
+    end
+  end
+
   describe 'tags ' do
     describe 'top level dir: ' do
       it 'should exist' do
