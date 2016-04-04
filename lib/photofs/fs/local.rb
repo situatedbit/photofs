@@ -72,12 +72,20 @@ module PhotoFS
         ::Dir.mkdir(path, mode)
       end
 
+      def read_file(path)
+        ::File.open(path, 'r') { |file| file.read }
+      end
+
       def separator
         ::File::SEPARATOR
       end
 
       def stat(path)
         ::File.stat path
+      end
+
+      def write_file(path, contents)
+        ::File.open(path, 'w') { |file| file.write contents }
       end
 
     end

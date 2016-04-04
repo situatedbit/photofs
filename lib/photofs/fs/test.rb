@@ -58,6 +58,10 @@ module PhotoFS::FS
       @dirs << path
     end
 
+    def read_file(path)
+      ''
+    end
+
     def stat(path)
       stat = @stats[path]
 
@@ -72,6 +76,9 @@ module PhotoFS::FS
       end
 
       stat
+    end
+
+    def write_file(path, contents)
     end
 
     private

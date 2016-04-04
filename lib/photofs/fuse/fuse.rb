@@ -5,6 +5,7 @@ require 'photofs/data/database'
 require 'photofs/data/image_set'
 require 'photofs/data/lock'
 require 'photofs/fs'
+require 'photofs/fuse/search_cache'
 require_relative 'file_monitor'
 require_relative 'relative_path'
 require_relative 'root_dir'
@@ -15,6 +16,7 @@ module PhotoFS
   module Fuse
     class Fuse
       include PhotoFS::Data::Lock
+      include PhotoFS::Data::Database::WriteCounter
 
       def self.fs
         PhotoFS::FS.file_system
@@ -30,6 +32,7 @@ module PhotoFS
 
         @images = PhotoFS::Data::ImageSet.new() # global image set
         @tags = PhotoFS::Data::TagSet.new
+        @search_cache = SearchCache.new
 
         @root = RootDir.new
 
@@ -48,17 +51,28 @@ module PhotoFS
       end
 
       private
+
       def initialize_database
         db = PhotoFS::Data::Database.new(@environment, PhotoFS::FS.data_path)
 
         db.connect.ensure_schema
       end
 
+      def search_cache
+        cache_counter = database_write_counter
+
+        unless @search_cache.valid? cache_counter
+          @search_cache.invalidate cache_counter
+        end
+
+        @search_cache
+      end
+
       def save!
         @images.save!
         @tags.save!
 
-        @node_cache = {}
+        @search_cache.invalidate increment_database_write_counter
       end
 
       def scan_source_path
@@ -72,13 +86,7 @@ module PhotoFS
       end
 
       def search(path)
-        if @node_cache.has_key? path.to_s
-          node = @node_cache[path.to_s]
-        else
-          node = @root.search(path)
-
-          @node_cache[path.to_s] = node
-        end
+        node = search_cache.fetch(path.to_s) { @root.search(path) }
 
         raise Errno::ENOENT.new(path.to_s) if node.nil?
 
