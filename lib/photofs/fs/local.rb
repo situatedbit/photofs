@@ -1,3 +1,5 @@
+require 'timeout'
+
 # Thin layer on File and Dir for access to local file system.
 module PhotoFS
   module FS
@@ -34,6 +36,18 @@ module PhotoFS
 
       def exist?(path)
         ::File.exist? path
+      end
+
+      def lock(path)
+        ::File.open(path, ::File::RDWR | ::File::CREAT, 0644) do |file|
+          begin
+            Timeout::timeout(1) { file.flock ::File::LOCK_EX } # unlocks when file is closed
+          rescue
+            raise Errno::ENOLCK
+          end
+
+          yield
+        end
       end
 
       def fnm(option)

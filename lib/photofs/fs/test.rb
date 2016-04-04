@@ -50,8 +50,12 @@ module PhotoFS::FS
       path
     end
 
+    def lock(path)
+      yield nil
+    end
+
     def mkdir(path, mode = 0777)
-      @dir << path
+      @dirs << path
     end
 
     def stat(path)

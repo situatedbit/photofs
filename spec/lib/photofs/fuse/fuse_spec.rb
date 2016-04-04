@@ -1,5 +1,7 @@
 require 'rfuse'
 require 'photofs/fuse'
+require 'photofs/fs'
+require 'photofs/fs/test'
 
 describe PhotoFS::Fuse::Fuse do
   let(:context) { instance_double('RFuse::Context') }
@@ -8,6 +10,7 @@ describe PhotoFS::Fuse::Fuse do
 
   before(:example) do
     allow(PhotoFS::Fuse::RootDir).to receive(:new).and_return(root_dir)
+    allow(PhotoFS::FS).to receive(:file_system).and_return(PhotoFS::FS::Test.new)
 
     allow(fuse).to receive(:log) # swallow log messages
   end

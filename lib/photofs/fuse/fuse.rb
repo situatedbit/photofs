@@ -3,6 +3,7 @@ require 'photofs/core/image'
 require 'photofs/data/tag_set'
 require 'photofs/data/database'
 require 'photofs/data/image_set'
+require 'photofs/data/lock'
 require 'photofs/fs'
 require_relative 'file_monitor'
 require_relative 'relative_path'
@@ -13,6 +14,8 @@ require_relative 'tag_dir'
 module PhotoFS
   module Fuse
     class Fuse
+      include PhotoFS::Data::Lock
+
       attr_reader :source_path
 
       def self.fs
@@ -31,6 +34,8 @@ module PhotoFS
         @tags = PhotoFS::Data::TagSet.new
 
         @root = RootDir.new
+
+        set_lock_path(::File.join(PhotoFS::FS.data_path(@source_path), 'lockfile'))
       end
 
       def init(context, rfuse_connection_info)
@@ -172,6 +177,7 @@ module PhotoFS
         save!
       end
 
+      wrap_with_lock :scan_source_path, :readdir, :rename, :getattr, :readlink, :mkdir, :rmdir, :symlink, :unlink
     end
   end
 end # module
