@@ -4,6 +4,9 @@ module PhotoFS::FS
     def initialize(file_system = {})
       @dirs = file_system[:dirs] || []
       @files = file_system[:files] || []
+
+      @dirs = (@dirs + subdirs(@dirs) + subdirs(@files)).uniq
+
       @absolute_paths = file_system[:absolute_paths] || {}
 
       @stats = file_system[:stats] || {}
@@ -16,6 +19,8 @@ module PhotoFS::FS
     def add(fs_mapping)
       @dirs = @dirs + fs_mapping[:dirs] if fs_mapping.has_key? :dirs
       @files = @files + fs_mapping[:files] if fs_mapping.has_key? :files
+      @dirs = (@dirs + subdirs(@dirs) + subdirs(@files)).uniq
+
       @absolute_paths = @absolute_paths.merge(fs_mapping[:absolute_paths]) if fs_mapping.has_key? :absolute_paths
 
       @stats = @stats.merge(fs_mapping[:stats]) if fs_mapping.has_key? :stats
@@ -85,6 +90,26 @@ module PhotoFS::FS
 
     def all
       @dirs + @files
+    end
+
+    # returns an array of paths for each subdir
+    # ['/a/b/c'] => ['/a/b', '/a']
+    def subdirs(paths)
+      all_paths = Set.new
+
+      paths.each do |path|
+        parent = ::File.dirname(path)
+
+        while parent != ::File::SEPARATOR do
+          all_paths << parent
+
+          parent = ::File.dirname(parent)
+        end
+
+        all_paths << ::File::SEPARATOR
+      end
+
+      all_paths.to_a
     end
 
   end

@@ -20,6 +20,15 @@ module PhotoFS
        ::File.join app_root, 'db'
     end
 
+    def self.find_data_parent_path(child_path)
+
+      raise Errno::ENOENT if child_path == ::File::SEPARATOR
+
+      return child_path if file_system.exist?(::File.join(child_path, DATA_DIR))
+
+      return find_data_parent_path(::File.dirname(child_path))
+    end
+
     def self.file_system
       @@fs ||= PhotoFS::FS::Local.new
     end
