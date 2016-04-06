@@ -67,6 +67,10 @@ module PhotoFS::FS
       ''
     end
 
+    def realpath(path)
+      path
+    end
+
     def stat(path)
       stat = @stats[path]
 

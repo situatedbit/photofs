@@ -76,6 +76,10 @@ module PhotoFS
         ::File.open(path, 'r') { |file| file.read }
       end
 
+      def realpath(path)
+        ::File.realpath path
+      end
+
       def separator
         ::File::SEPARATOR
       end
