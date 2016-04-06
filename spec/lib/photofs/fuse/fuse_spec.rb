@@ -12,6 +12,7 @@ describe PhotoFS::Fuse::Fuse do
     allow(PhotoFS::Fuse::RootDir).to receive(:new).and_return(root_dir)
     allow(PhotoFS::FS).to receive(:file_system).and_return(PhotoFS::FS::Test.new)
 
+    allow(fuse).to receive(:initialize_database) # initialization happens within spec helper
     allow(fuse).to receive(:log) # swallow log messages
   end
 

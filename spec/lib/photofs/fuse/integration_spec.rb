@@ -30,6 +30,7 @@ describe 'integration for' do
 
     allow(PhotoFS::Fuse::FileMonitor).to receive(:new).and_return(image_monitor)
 
+    allow(fuse).to receive(:initialize_database) # initialization happens within spec helper
     allow(fuse).to receive(:log) # swallow log messages
 
     fuse.init(context, nil)

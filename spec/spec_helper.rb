@@ -21,7 +21,6 @@ require 'active_record'
 require 'database_cleaner'
 require 'factory_girl'
 require 'shoulda-matchers'
-require 'photofs/data/database'
 
 # normally rspec-rails or PhotoFS::Data::Database will do this for us
 environment = 'test'

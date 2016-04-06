@@ -40,7 +40,7 @@ module PhotoFS
       end
 
       def init(context, rfuse_connection_info)
-        initialize_database unless @environment == 'test'
+        initialize_database
 
         scan_source_path
 
@@ -54,9 +54,7 @@ module PhotoFS
       private
 
       def initialize_database
-        db = PhotoFS::Data::Database.new(@environment, PhotoFS::FS.data_path)
-
-        db.connect.ensure_schema
+        PhotoFS::Data::Database::Connection.new(PhotoFS::FS.data_path).connect.ensure_schema
       end
 
       def search_cache
