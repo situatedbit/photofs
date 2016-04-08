@@ -35,7 +35,7 @@ module PhotoFS
           @config = config_file
           @env = 'production'
           @config[@env]['database'] = ::File.join(db_path, 'photofs.sqlite3') unless db_path.empty?
-          @current_config = @config[env]
+          @current_config = @config[@env]
 
           ActiveRecord::Base.configurations = @config
         end

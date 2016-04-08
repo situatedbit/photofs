@@ -1,33 +1,29 @@
 require 'photofs/cli/command'
+
+# explicitly include all commands so they can register
 require 'photofs/cli/bad_command'
+require 'photofs/cli/tag_command'
 
 module PhotoFS
   module CLI
-    def self.parse(args)
-      matcher = @@commands.keys.select { |pattern| !pattern.match(args.join(' ')).nil? }.first
-
-      if matcher
-        @@commands[matcher].new args
-      else
-        print_usage
-
-        BadCommand.new args
+    def self.execute(args)
+      begin
+        parse(args).execute
+      rescue PhotoFS::CLI::Command::CommandException => e
+        puts "#{e.message}\n"
       end
     end
 
-    def self.register_command(command)
-      @@commands ||= {}
+    def self.parse(args)
+      commands = PhotoFS::CLI::Command.registered_commands
 
-      @@commands[command.matcher] = command 
+      matcher = commands.keys.select { |pattern| !pattern.match(args.join(' ')).nil? }.first
 
-      @@usages ||= []
-
-      @@usages << command.usage
-    end
-
-    def self.print_usage
-      puts "usage: \n"
-      @@usages.each { |usage| puts "  #{usage}\n" }
+      if matcher
+        commands[matcher].new args
+      else
+        BadCommand.new @PhotoFS::CLI::Command.command_usages, args
+      end
     end
   end
 end

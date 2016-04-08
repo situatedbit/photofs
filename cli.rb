@@ -3,4 +3,4 @@ $LOAD_PATH.unshift(libdir) unless $LOAD_PATH.include?(libdir)
 
 require 'photofs/cli'
 
-PhotoFS::CLI.parse(ARGV).execute
+PhotoFS::CLI.execute ARGV

@@ -8,6 +8,24 @@ module PhotoFS
       include PhotoFS::Data::Lock
       include PhotoFS::Data::Database::WriteCounter
 
+      def self.register_command(command)
+        @@commands ||= {}
+
+        @@commands[command.matcher] = command
+
+        @@usages ||= []
+
+        @@usages << command.usage
+      end
+
+      def self.registered_commands
+        @@commands || []
+      end
+
+      def self.command_usages
+        @@usages || []
+      end
+
       def initialize(args)
         @args = args
       end

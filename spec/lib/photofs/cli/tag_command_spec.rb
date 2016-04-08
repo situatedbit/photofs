@@ -20,24 +20,24 @@ describe PhotoFS::CLI::TagCommand do
   end
 
   describe :matcher do
-    it { PhotoFS::CLI::TagCommand.matcher.should match('tag a-tag /some/file/somewhere') }
-    it { PhotoFS::CLI::TagCommand.matcher.should match('tag 1324 ./some/file/somewhere.jpg') }
-    it { PhotoFS::CLI::TagCommand.matcher.should_not match('another tag file') }
-  end
-
-  context 'when the image argument is not a real file' do
-    before(:example) do
-      allow(file_system).to receive(:exist?).and_return(false)
-    end
-
-    it 'should throw an error' do
-      expect { PhotoFS::CLI::TagCommand.new(['tag', 'good', 'image.jpg']) }.to raise_error(Errno::ENOENT)
-    end
+    it { expect(PhotoFS::CLI::TagCommand.matcher).to match('tag a-tag /some/file/somewhere') }
+    it { expect(PhotoFS::CLI::TagCommand.matcher).to match('tag 1324 ./some/file/somewhere.jpg') }
+    it { expect(PhotoFS::CLI::TagCommand.matcher).not_to match('another tag file') }
   end
 
   describe :execute do
     let(:tag) { instance_double('PhotoFS::Core::Tag', :add => nil) }
     let(:image) { instance_double('PhotoFS::Core::Image') }
+
+    context 'when the image argument is not a real file' do
+      before(:example) do
+        allow(file_system).to receive(:exist?).and_return(false)
+      end
+
+      it 'should throw an error' do
+        expect { tag_command.execute }.to raise_error(Errno::ENOENT)
+      end
+    end
 
     context 'when the tag exists' do
       before(:example) do

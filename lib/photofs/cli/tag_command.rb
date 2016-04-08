@@ -19,10 +19,6 @@ module PhotoFS
         @args_tag_name = args[1]
         @args_image_path = args[2]
 
-        raise Errno::ENOENT unless file_system.exist?(@args_image_path) && file_system.realpath(@args_image_path)
-
-        @real_image_path = file_system.realpath @args_image_path
-
         @images = PhotoFS::Data::ImageSet.new
         @tags = PhotoFS::Data::TagSet.new
 
@@ -30,6 +26,12 @@ module PhotoFS
       end
 
       def execute
+        unless file_system.exist?(@args_image_path) && file_system.realpath(@args_image_path)
+          raise Errno::ENOENT, @args_image_path
+        end
+
+        @real_image_path = file_system.realpath @args_image_path
+
         set_data_path @real_image_path
 
         initialize_database
@@ -49,7 +51,7 @@ module PhotoFS
 
           save
         else
-          raise CommandException, "#{@real_image_path} is not in the image repository at #{PhotoFS::FS.data_path}"
+          raise CommandException, "#{@real_image_path} is not a registered image under #{PhotoFS::FS.data_path}"
         end
       end
 
@@ -60,7 +62,7 @@ module PhotoFS
         increment_database_write_counter # within the lock
       end
 
-      PhotoFS::CLI.register_command self
+      Command.register_command self
     end
   end
 end
