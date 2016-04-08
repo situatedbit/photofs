@@ -36,30 +36,32 @@ module PhotoFS
 
         initialize_database
 
-        data_lock { tag_image }
+        tag_image
       end
 
       private
 
-      def tag_image # within lock
-        image = @images.find_by_path @real_image_path
+      def tag_image
+        with_lock(PhotoFS::Data::Synchronize.read_write_lock) do |lock|
+          image = @images.find_by_path @real_image_path
 
-        if image
-          tag = @tags.find_by_name(@args_tag_name) || @tags.add?(PhotoFS::Core::Tag.new @args_tag_name)
+          if image
+            tag = @tags.find_by_name(@args_tag_name) || @tags.add?(PhotoFS::Core::Tag.new @args_tag_name)
 
-          tag.add image
+            tag.add image
 
-          save
-        else
-          raise CommandException, "#{@real_image_path} is not a registered image under #{PhotoFS::FS.data_path}"
-        end
+            save
+
+            lock.increment_count
+          else
+            raise CommandException, "#{@real_image_path} is not a registered image under #{PhotoFS::FS.data_path}"
+          end
+        end # lock
       end
 
       def save
         @images.save!
         @tags.save!
-
-        increment_database_write_counter # within the lock
       end
 
       Command.register_command self

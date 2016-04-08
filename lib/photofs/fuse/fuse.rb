@@ -1,7 +1,7 @@
 require 'photofs/core/image'
 require 'photofs/data/database'
 require 'photofs/data/image_set'
-require 'photofs/data/lock'
+require 'photofs/data/synchronize'
 require 'photofs/data/tag_set'
 require 'photofs/fs'
 require 'photofs/fuse/file_monitor'
@@ -15,8 +15,7 @@ require 'rfuse'
 module PhotoFS
   module Fuse
     class Fuse
-      include PhotoFS::Data::Lock
-      include PhotoFS::Data::Database::WriteCounter
+      include PhotoFS::Data::Synchronize
 
       def self.fs
         PhotoFS::FS.file_system
@@ -58,7 +57,7 @@ module PhotoFS
       end
 
       def search_cache
-        cache_counter = database_write_counter
+        cache_counter = PhotoFS::Data::Synchronize.read_write_lock.count
 
         unless @search_cache.valid? cache_counter
           @search_cache.invalidate cache_counter
@@ -71,7 +70,7 @@ module PhotoFS
         @images.save!
         @tags.save!
 
-        @search_cache.invalidate increment_database_write_counter
+        @search_cache.invalidate PhotoFS::Data::Synchronize.read_write_lock.increment_count
       end
 
       def scan_source_path
@@ -176,7 +175,7 @@ module PhotoFS
         save!
       end
 
-      wrap_with_data_lock :scan_source_path, :readdir, :rename, :getattr, :readlink, :mkdir, :rmdir, :symlink, :unlink
+      wrap_with_lock PhotoFS::Data::Synchronize.read_write_lock, :scan_source_path, :readdir, :rename, :getattr, :readlink, :mkdir, :rmdir, :symlink, :unlink
     end
   end
 end # module

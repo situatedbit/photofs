@@ -4,30 +4,6 @@ require 'photofs/fs'
 module PhotoFS
   module Data
     module Database
-      module WriteCounter
-        WRITE_COUNTER_FILE = 'database-writes'
-
-        def database_write_counter
-          path = PhotoFS::FS.data_path_join(WRITE_COUNTER_FILE)
-
-          PhotoFS::FS.file_system.write_file(path, '0') unless PhotoFS::FS.file_system.exist?(path)
-
-          contents = PhotoFS::FS.file_system.read_file(path)
-
-          (contents.nil? || contents.empty?) ? 0 : Integer(contents)
-        end
-
-        def increment_database_write_counter
-          path = PhotoFS::FS.data_path_join(WRITE_COUNTER_FILE)
-
-          counter = database_write_counter + 1
-
-          PhotoFS::FS.file_system.write_file(path, counter.to_s)
-
-          counter
-        end
-      end # WriteCounter
-
       class Connection
         include ActiveRecord::Tasks
 

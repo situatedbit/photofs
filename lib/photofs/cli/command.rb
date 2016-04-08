@@ -1,12 +1,11 @@
 require 'photofs/fs'
-require 'photofs/data/lock'
+require 'photofs/data/synchronize'
 require 'photofs/data/database'
 
 module PhotoFS
   module CLI
     class Command
-      include PhotoFS::Data::Lock
-      include PhotoFS::Data::Database::WriteCounter
+      include PhotoFS::Data::Synchronize
 
       def self.register_command(command)
         @@commands ||= {}

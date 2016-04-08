@@ -1,3 +1,4 @@
+require 'photofs/data/synchronize'
 require 'photofs/cli/tag_command'
 require 'photofs/core/tag'
 require 'photofs/fs/test'
@@ -12,11 +13,10 @@ describe PhotoFS::CLI::TagCommand do
 
   before(:example) do
     allow(PhotoFS::FS).to receive(:file_system).and_return(file_system)
+    allow(PhotoFS::Data::Synchronize).to receive(:read_write_lock).and_return(PhotoFS::Data::Synchronize::TestLock.new)
 
     allow(tag_command).to receive(:set_data_path) # swallow
     allow(tag_command).to receive(:initialize_database) # swallow
-    allow(tag_command).to receive(:increment_database_write_counter) # swallow
-    allow(tag_command).to receive(:data_lock) { |&block| block.call }
   end
 
   describe :matcher do

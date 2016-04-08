@@ -1,5 +1,6 @@
 require 'photofs/cli'
 require 'photofs/cli/tag_command'
+require 'photofs/data/synchronize'
 require 'photofs/fs/test'
 
 describe 'cli integration' do
@@ -18,8 +19,7 @@ describe 'cli integration' do
       allow(PhotoFS::FS).to receive(:data_path).and_return('/photos')
       allow_any_instance_of(command_class).to receive(:initialize_database)
       allow_any_instance_of(command_class).to receive(:set_data_path)
-      allow_any_instance_of(command_class).to receive(:data_lock) { |&block| block.call }
-      allow_any_instance_of(command_class).to receive(:increment_database_write_counter)
+      allow(PhotoFS::Data::Synchronize).to receive(:read_write_lock).and_return(PhotoFS::Data::Synchronize::TestLock.new)
 
       create :image, :image_file => build(:file, :path => image_path)
     end
