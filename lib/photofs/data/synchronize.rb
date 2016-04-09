@@ -31,20 +31,30 @@ module PhotoFS
       end # ClassMethods
 
       class Lock
+        INITIAL_COUNT_VALUE = 0
+
         def initialize(lock_file)
           @lock_file = lock_file
+          @previous_count = nil
+          @detect_count_increment_callbacks = []
         end
 
         def count
-          PhotoFS::FS.file_system.write_file(count_file, '0') unless PhotoFS::FS.file_system.exist?(count_file)
+          PhotoFS::FS.file_system.write_file(count_file, INITIAL_COUNT_VALUE.to_s) unless PhotoFS::FS.file_system.exist?(count_file)
 
           contents = PhotoFS::FS.file_system.read_file(count_file)
 
-          (contents.nil? || contents.empty?) ? 0 : Integer(contents)
+          (contents.nil? || contents.empty?) ? INITIAL_COUNT_VALUE : Integer(contents)
         end
 
         def grab
           PhotoFS::FS.file_system.lock(lock_file) do
+            new_count = count
+
+            detected_count_increment if @previous_count != new_count
+
+            @previous_count = new_count
+
             yield self
           end
         end
@@ -57,11 +67,19 @@ module PhotoFS
           new_count
         end
 
+        def register_on_detect_count_increment(callback)
+          @detect_count_increment_callbacks << callback
+        end
+
         private
 
         def lock_file
           # built on the fly to avoid early dependencies on setting the data path
           PhotoFS::FS.data_path_join(@lock_file)
+        end
+
+        def detected_count_increment
+          @detect_count_increment_callbacks.each { |callback| callback.call self }
         end
 
         def count_file
