@@ -13,12 +13,6 @@ module PhotoFS
         base.extend ClassMethods
       end
 
-      def with_lock(lock)
-        lock.grab do |lock|
-          yield lock
-        end
-      end
-
       module ClassMethods
         def wrap_with_lock(lock, *methods)
           methods.each do |method|
@@ -30,11 +24,10 @@ module PhotoFS
             # overwrite the original method with a new method that wraps a
             # call back to the original method, but within a lock block.
             define_method(original_method_name) do |*args, &block|
-              with_lock(lock) { return send lock_wrap_method_name, *args, &block }
+              lock.grab { return send lock_wrap_method_name, *args, &block }
             end
           end # each method
         end
-
       end # ClassMethods
 
       class Lock

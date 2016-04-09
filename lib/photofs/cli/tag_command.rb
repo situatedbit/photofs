@@ -42,7 +42,7 @@ module PhotoFS
       private
 
       def tag_image
-        with_lock(PhotoFS::Data::Synchronize.read_write_lock) do |lock|
+        PhotoFS::Data::Synchronize.read_write_lock.grab do |lock|
           image = @images.find_by_path @real_image_path
 
           if image
