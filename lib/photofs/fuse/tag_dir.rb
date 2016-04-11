@@ -40,10 +40,6 @@ module PhotoFS
         @tags.add?(tag)
       end
 
-      def rename(child_name, to_parent, to_name)
-        raise NotImplementedError
-      end
-
       def remove(child_name)
         child = node_hash[child_name]
 

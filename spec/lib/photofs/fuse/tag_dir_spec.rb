@@ -143,10 +143,6 @@ describe PhotoFS::Fuse::TagDir do
     end
   end # :mkdir
 
-  describe :rename do
-    it 'it should be implemented'
-  end
-
   describe :remove do
     let(:dir) { PhotoFS::Fuse::TagDir.new 'じしょ' , {}, {:query_tag_names => []}}
 
