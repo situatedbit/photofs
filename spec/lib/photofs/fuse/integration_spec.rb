@@ -1,4 +1,5 @@
 require 'photofs/data/image'
+require 'photofs/data/synchronize'
 require 'photofs/fs/test'
 require 'photofs/fs'
 require 'photofs/fuse'
@@ -15,7 +16,7 @@ require 'rfuse'
           fuse.readdir(context, '/t', filler, 0, 0)
 =end
 
-describe 'integration for' do
+describe 'integration for', :type => :locking_behavior do
   let(:source_path) { '/home/me/photos' }
   let(:mountpoint) { '/home/me/p' }
   let(:context) { instance_double('Context', {:gid => 500, :uid => 500}) }
@@ -23,13 +24,13 @@ describe 'integration for' do
   let(:file_system) { PhotoFS::FS::Test.new({ :dirs => [source_path, mountpoint], :files => [] }) }
 
   let(:fuse) { PhotoFS::Fuse::Fuse.new({:source => source_path, :mountpoint => mountpoint, :env => 'test'}) }
+
   let(:image_monitor) { instance_double('PhotoFS::FileMonitor', :paths => []) }
 
   before(:example) do
     allow(PhotoFS::FS).to receive(:file_system).and_return(file_system)
 
     allow(PhotoFS::Fuse::FileMonitor).to receive(:new).and_return(image_monitor)
-
     allow(fuse).to receive(:initialize_database) # initialization happens within spec helper
     allow(fuse).to receive(:log) # swallow log messages
 

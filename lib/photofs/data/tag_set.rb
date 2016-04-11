@@ -23,6 +23,10 @@ module PhotoFS
         @record_object_map[new_record] = tag
       end
 
+      def clear_cache
+        @record_object_map = {}
+      end
+
       def delete(tag)
         record = Tag.from_tag tag
 

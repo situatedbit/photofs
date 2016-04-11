@@ -27,11 +27,14 @@ module PhotoFS
         @source_path = options[:source]
         @mountpoint = options[:mountpoint]
         @environment = options[:env] || 'production'
-        @node_cache = {}
 
         @images = PhotoFS::Data::ImageSet.new() # global image set
         @tags = PhotoFS::Data::TagSet.new
         @search_cache = SearchCache.new
+
+        @lock = PhotoFS::Data::Synchronize.read_write_lock
+        @lock.register_on_detect_count_increment(Proc.new { |lock| on_datastore_cache_increment(lock) })
+        @fuse_cache_counter = nil
 
         @root = RootDir.new
 
@@ -56,21 +59,31 @@ module PhotoFS
         PhotoFS::Data::Database::Connection.new(PhotoFS::FS.data_path).connect.ensure_schema
       end
 
-      def search_cache
-        cache_counter = PhotoFS::Data::Synchronize.read_write_lock.count
+      def on_datastore_cache_increment(lock)
+        # called when the lock.grab detects that the datastore counter
+        # has been incremented. examine the counter against our caches.
+        cache_counter = lock.count
 
         unless @search_cache.valid? cache_counter
           @search_cache.invalidate cache_counter
         end
 
-        @search_cache
+        if @fuse_cache_counter != cache_counter
+          ActiveRecord::Base.connection.clear_query_cache
+          @images.clear_cache
+          @tags.clear_cache
+        end
       end
 
       def save!
         @images.save!
         @tags.save!
 
-        @search_cache.invalidate PhotoFS::Data::Synchronize.read_write_lock.increment_count
+        count = @lock.increment_count
+        @search_cache.invalidate count
+
+        # since the change was made within this Fuse module, keep fuse cache counter up to date with lock's
+        @fuse_cache_counter = @lock.increment_count
       end
 
       def scan_source_path
@@ -84,7 +97,7 @@ module PhotoFS
       end
 
       def search(path)
-        node = search_cache.fetch(path.to_s) { @root.search(path) }
+        node = @search_cache.fetch(path.to_s) { @root.search(path) }
 
         raise Errno::ENOENT.new(path.to_s) if node.nil?
 
@@ -175,7 +188,7 @@ module PhotoFS
         save!
       end
 
-      wrap_with_lock PhotoFS::Data::Synchronize.read_write_lock, :scan_source_path, :readdir, :rename, :getattr, :readlink, :mkdir, :rmdir, :symlink, :unlink
+      wrap_with_lock :read_write_lock, :scan_source_path, :readdir, :rename, :getattr, :readlink, :mkdir, :rmdir, :symlink, :unlink
     end
   end
 end # module

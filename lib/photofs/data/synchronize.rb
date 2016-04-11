@@ -14,7 +14,7 @@ module PhotoFS
       end
 
       module ClassMethods
-        def wrap_with_lock(lock, *methods)
+        def wrap_with_lock(lock_name, *methods)
           methods.each do |method|
             original_method_name = method.to_sym
             lock_wrap_method_name = "_with_lock_#{method.to_s}".to_sym
@@ -24,6 +24,9 @@ module PhotoFS
             # overwrite the original method with a new method that wraps a
             # call back to the original method, but within a lock block.
             define_method(original_method_name) do |*args, &block|
+              # defering the lock binding until runtime allows for stubbing in tests
+              lock = PhotoFS::Data::Synchronize.send lock_name
+
               lock.grab { return send lock_wrap_method_name, *args, &block }
             end
           end # each method
@@ -49,11 +52,7 @@ module PhotoFS
 
         def grab
           PhotoFS::FS.file_system.lock(lock_file) do
-            new_count = count
-
-            detected_count_increment if @previous_count != new_count
-
-            @previous_count = new_count
+            check_count_increment
 
             yield self
           end
@@ -78,6 +77,14 @@ module PhotoFS
           PhotoFS::FS.data_path_join(@lock_file)
         end
 
+        def check_count_increment
+            new_count = count
+
+            detected_count_increment if @previous_count != new_count
+
+            @previous_count = new_count
+        end
+
         def detected_count_increment
           @detect_count_increment_callbacks.each { |callback| callback.call self }
         end
@@ -98,6 +105,8 @@ module PhotoFS
         end
 
         def grab
+          check_count_increment
+
           yield self
         end
 

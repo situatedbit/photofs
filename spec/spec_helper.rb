@@ -139,4 +139,17 @@ RSpec.configure do |config|
   # as the one that triggered the failure.
   Kernel.srand config.seed
 =end
+  config.before(:example, :type => :locking_behavior) do
+    module PhotoFS::Data::Synchronize
+      def self.read_write_lock
+        @@lock ||= TestLock.new
+      end
+    end
+  end
+
+  config.after(:example, :type => :locking_behavior) do
+    module PhotoFS::Data::Synchronize
+      @@lock = nil
+    end
+  end
 end

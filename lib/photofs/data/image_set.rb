@@ -23,6 +23,10 @@ module PhotoFS
         @record_object_map[image_record] = image
       end
 
+      def clear_cache
+        @record_object_map = {}
+      end
+
       def empty?
         size == 0
       end
