@@ -48,7 +48,6 @@ module PhotoFS
 
         @root.add MirroredDir.new('o', @source_path, {:tags => @tags, :images => @images})
         @root.add TagDir.new('t', @tags, {:images => @images})
-        @root.add File.new('.photofs-data-parent', @source_path)
 
         log "Mounted at #{@source_path}"
       end
