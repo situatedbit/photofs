@@ -4,10 +4,13 @@ require_relative 'file'
 require 'photofs/core/image_set'
 require 'photofs/fs'
 require 'rfuse'
+#require 'photofs/profiler'
 
 module PhotoFS
   module Fuse
     class MirroredDir < PhotoFS::Fuse::Dir
+#      include PhotoFS::Profiler
+
       attr_reader :source_path
 
       def initialize(name, source_path, options = {})
@@ -20,6 +23,10 @@ module PhotoFS
         raise ArgumentError.new('Source directory must be a directory') unless fs.exist?(@source_path) || fs.directory?(@source_path)
 
         super(name, options)
+      end
+
+      def clear_cache
+        @node_hash = nil
       end
 
       def mkdir(name)
@@ -51,7 +58,7 @@ module PhotoFS
       protected
 
       def node_hash
-        mirrored_nodes.merge tags_node
+        @node_hash ||= mirrored_nodes.merge tags_node
       end
 
       private
@@ -102,7 +109,9 @@ module PhotoFS
         if fs.directory?(path)
           MirroredDir.new(entry, path, {:parent => self, :tags => @tags, :images => @images_domain})
         else
-          File.new(entry, fs.absolute_path(path), {:parent => self, :payload => @images_domain.find_by_path(path)})
+#          profile "#{send :path}: new_node new file" do # fast but called way too often
+            File.new(entry, fs.absolute_path(path), {:parent => self, :payload => @images_domain.find_by_path(path)})
+#          end
         end
       end
 

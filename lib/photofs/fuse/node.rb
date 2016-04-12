@@ -17,6 +17,10 @@ module PhotoFS
         self.equal?(other) || (other.respond_to?(:payload) && self.payload == other.payload)
       end
 
+      def clear_cache
+        # implemented by subclasses
+      end
+
       def directory?
         false
       end

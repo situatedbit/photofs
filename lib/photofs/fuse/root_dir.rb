@@ -18,6 +18,10 @@ module PhotoFS
         node
       end
 
+      def clear_cache
+        @nodes.values.each { |node| node.clear_cache }
+      end
+
       def mkdir(name)
         raise Errno::EPERM.new(name)
       end

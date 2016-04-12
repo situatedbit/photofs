@@ -5,7 +5,7 @@ require 'photofs/fs/test'
 
 describe PhotoFS::Fuse::Fuse do
   let(:context) { instance_double('RFuse::Context') }
-  let(:root_dir) { instance_double('PhotoFS::RootDir') }
+  let(:root_dir) { instance_double('PhotoFS::RootDir', :clear_cache => nil) }
   let(:fuse) { PhotoFS::Fuse::Fuse.new({:source => 'source-path', :mountpoint => 'mount-point'}) }
 
   before(:example) do

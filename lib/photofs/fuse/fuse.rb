@@ -65,6 +65,7 @@ module PhotoFS
 
         unless @search_cache.valid? cache_counter
           @search_cache.invalidate cache_counter
+          @root.clear_cache
         end
 
         if @fuse_cache_counter != cache_counter

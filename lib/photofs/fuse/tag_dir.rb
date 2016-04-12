@@ -30,6 +30,10 @@ module PhotoFS
         end
       end
 
+      def clear_cache
+        @node_hash = nil
+      end
+
       def mkdir(tag_name)
         raise Errno::EPERM.new(tag_name) unless is_tags_root?
 
@@ -95,7 +99,7 @@ module PhotoFS
       protected
 
       def node_hash
-        files.merge dirs
+        @node_hash ||= files.merge dirs
       end
 
       private
