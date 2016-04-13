@@ -11,13 +11,15 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160403010010) do
+ActiveRecord::Schema.define(version: 20160413012017) do
 
   create_table "files", force: :cascade do |t|
     t.string   "path"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
+
+  add_index "files", ["path"], name: "index_files_on_path"
 
   create_table "images", force: :cascade do |t|
     t.datetime "created_at",    null: false
