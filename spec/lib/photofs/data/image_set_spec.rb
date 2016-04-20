@@ -46,45 +46,69 @@ describe PhotoFS::Data::ImageSet do
   end
 
   describe :find_by_path do
-    let(:image_record) { create(:image) }
-    let(:path) { image_record.to_simple.path }
+    let(:path) { 'some/path.jpg' }
+    let(:image_object) { instance_double('PhotoFS::Core::Image') }
 
-    it 'should be an simple image object' do
-      expect(image_set.find_by_path(path).is_a? PhotoFS::Core::Image).to be true
+    it 'should be the dereferenced result from find_by_paths' do
+      allow(image_set).to receive(:find_by_paths).with([path]).and_return({path => image_object})
+
+      expect(image_set.find_by_path path).to be(image_object)
+    end
+  end # :find_by_path
+
+  describe :find_by_paths do
+    let(:image_record_1) { create(:image) }
+    let(:image_record_2) { create(:image) }
+    let(:path_1) { image_record_1.to_simple.path }
+    let(:path_2) { image_record_2.to_simple.path }
+    let(:path_3) { '/not/in/database.jpg' }
+    let(:record_object_map) { image_set.instance_variable_get(:@record_object_map) }
+
+    it 'should be a hash of paths and simple images' do 
+      expect(image_set.find_by_paths([path_1, path_2])[path_1]).to eq(image_record_1.to_simple)
+      expect(image_set.find_by_paths([path_1, path_2])[path_2]).to eq(image_record_2.to_simple)
     end
 
-    it 'should add the returned image to the cache' do
-      expect(image_set.instance_variable_get(:@record_object_map)).to receive(:[]=).with(image_record, image_record.to_simple)
+    it 'should add all returned images to the cache' do
+      expect(record_object_map).to receive(:[]=).with(image_record_1, image_record_1.to_simple)
+      expect(record_object_map).to receive(:[]=).with(image_record_2, image_record_2.to_simple)
 
-      image_set.find_by_path path
+      image_set.find_by_paths [path_1, path_2]
     end
 
-    context 'when the path is not in the database' do
-      let(:path) { image_record.to_simple.path + 'nope' }
+    context 'when one of the paths is not in the database' do
+      let(:paths) { image_set.find_by_paths [path_1, path_3] }
 
-      it 'should be nil' do
-        expect(image_set.find_by_path path).to be nil
+      it 'should include the missing path in hash keys' do
+        expect(paths.has_key? path_3).to be true
+      end
+
+      it 'should include the missing path bound to nil' do
+        expect(paths[path_3]).to be_nil
       end
     end
 
     context 'when an image is already in the cache' do
-      let(:cached_image) { instance_double('PhotoFS::Core::Image') }
+      let(:cached_image) { instance_double('PhotoFS::Core::Image', :path => image_record_1.path) }
+      let(:an_image) { an_instance_of(PhotoFS::Core::Image) }
+      let(:paths) { image_set.find_by_paths [path_1, path_2] }
 
       before(:example) do
-        allow(image_set.instance_variable_get(:@record_object_map)).to receive(:[]).with(image_record).and_return(cached_image)
+        allow(record_object_map).to receive(:[]).with(image_record_1).and_return(cached_image)
+        allow(record_object_map).to receive(:[]).with(image_record_2).and_return(nil)
       end
 
-      it 'should not update the cache' do
-        expect(image_set.instance_variable_get(:@record_object_map)).not_to receive(:[]=)
+      it 'should not update the cache with cached record' do
+        expect(record_object_map).not_to receive(:[]=).with(image_record_1, an_image)
 
-        image_set.find_by_path path
+        image_set.find_by_paths [path_1, path_2]
       end
 
       it 'should return the cached object' do
-        expect(image_set.find_by_path path).to be cached_image
+        expect(paths[path_1]).to eq(cached_image)
       end
     end
-  end # :find_by_path
+  end # :find_by_paths
 
   describe :save! do
     it 'should call the Data module method' do

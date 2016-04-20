@@ -32,21 +32,17 @@ module PhotoFS
       end
 
       def find_by_path(path)
-        image_file = File.where(path: path).first
+        find_by_paths([path])[path]
+      end
 
-        return nil if image_file.nil?
+      def find_by_paths(paths)
+        images_map = Image.find_by_image_file_paths(paths).map do |record|
+          image = record_object_map_fetch(record)
 
-        image_record = Image.find_by_image_file_id(image_file.id)
-
-        return nil if image_record.nil?
-
-        image = @record_object_map[image_record]
-
-        if image
-          image
-        else
-          @record_object_map[image_record] = image_record.to_simple
+          [image.path, image]
         end
+
+        Hash[paths.zip []].merge Hash[images_map]
       end
 
       def save!
@@ -63,6 +59,12 @@ module PhotoFS
         @record_object_map = load_all_records(@record_object_map, Image)
 
         @record_object_map.values.to_set
+      end
+
+      private
+
+      def record_object_map_fetch(record)
+        @record_object_map[record] || @record_object_map[record] = record.to_simple
       end
 
     end

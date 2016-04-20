@@ -39,6 +39,10 @@ module PhotoFS
         return nil
       end
 
+      def find_by_paths(paths)
+        Hash[paths.map { |p| [p, find_by_path(p)] }]
+      end
+
       def include?(image)
         set.include? image
       end

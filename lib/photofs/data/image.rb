@@ -11,6 +11,10 @@ module PhotoFS
       validates :image_file, presence: true
       validates :image_file_id, uniqueness: true
 
+      def self.find_by_image_file_paths(paths)
+        Image.joins(:image_file).where('files.path in (?)', paths)
+      end
+
       def self.from_image(image)
         Image.joins(:image_file).where('files.path = ?', image.path).first
       end
@@ -23,7 +27,11 @@ module PhotoFS
       end
 
       def consistent_with?(image)
-        image_file && image_file.path == image.path
+        image_file && path == image.path
+      end
+
+      def path
+        image_file.path
       end
 
       def to_simple
@@ -31,7 +39,7 @@ module PhotoFS
       end
 
       def update_from(image)
-        if image_file.path != image.path
+        if path != image.path
           build_image_file(:path => image.path)
         end
 
