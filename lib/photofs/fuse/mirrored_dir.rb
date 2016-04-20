@@ -87,11 +87,9 @@ module PhotoFS
 
       def images
         # images for each entry entries corresponding to an image in image domain
-        entries.reduce([]) do |images, entry|
-          image = @images_domain.find_by_path expand_path(entry)
+        paths = entries.map { |e| expand_path e }
 
-          image ? images << image : images
-        end
+        @images_domain.find_by_paths(paths).values.select { |image| image }
       end
 
       def mirrored_dir_nodes(dir_entries)
