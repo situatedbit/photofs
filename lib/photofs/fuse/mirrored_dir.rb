@@ -4,13 +4,10 @@ require_relative 'file'
 require 'photofs/core/image_set'
 require 'photofs/fs'
 require 'rfuse'
-#require 'photofs/profiler'
 
 module PhotoFS
   module Fuse
     class MirroredDir < PhotoFS::Fuse::Dir
-#      include PhotoFS::Profiler
-
       attr_reader :source_path
 
       def initialize(name, source_path, options = {})
@@ -45,10 +42,6 @@ module PhotoFS
         raise Errno::EPERM
       end
 
-      def search(path)
-        entries_search(path) || super(path)
-      end
-
       def stat
         stat_hash = PhotoFS::Fuse::Stat.stat_hash(fs.stat(@source_path))
 
@@ -68,8 +61,28 @@ module PhotoFS
           :images => PhotoFS::Core::ImageSet.new }
       end
 
+      def dir_entries
+        entries.select { |entry| fs.directory? expand_path(entry) }
+      end
+
+      def dir_node(entry, path)
+        MirroredDir.new(entry, path, {:parent => self, :tags => @tags, :images => @images_domain})
+      end
+
+      def entries
+        fs.entries(source_path) - ['.', '..']
+      end
+
       def expand_path(entry)
         fs.join(source_path, entry)
+      end
+
+      def file_entries
+        entries - dir_entries
+      end
+
+      def file_node(entry, path, payload)
+        File.new(entry, fs.absolute_path(path), {:parent => self, :payload => payload})
       end
 
       def images
@@ -81,14 +94,33 @@ module PhotoFS
         end
       end
 
-      def entries
-        fs.entries(source_path) - ['.', '..']
+      def mirrored_dir_nodes(dir_entries)
+        dir_nodes = []
+
+        dir_entries.each_pair do |path, entry|
+          dir_nodes << [entry, dir_node(entry, path)]
+        end
+
+        dir_nodes
       end
 
-      def entries_search(path)
-        # this allows us to shortcut building out all of nodes_hash during a search. Only builds
-        # and returns a node if it's an entry within this directory.
-        path.is_name? && entries.include?(path.name) ? new_node(path.name) : nil
+      def mirrored_file_nodes(file_entries)
+        file_nodes = []
+
+        @images_domain.find_by_paths(file_entries.keys).each_pair do |path, image|
+          entry = file_entries[path]
+
+          file_nodes << [entry, file_node(entry, path, image)]
+        end
+
+        file_nodes
+      end
+
+      def mirrored_nodes
+        files = Hash[file_entries.map { |e| [expand_path(e), e] }]
+        dirs = Hash[dir_entries.map { |e| [expand_path(e), e] }]
+
+        Hash[mirrored_file_nodes(files) + mirrored_dir_nodes(dirs)]
       end
 
       def tags_node
@@ -97,22 +129,6 @@ module PhotoFS
         return {} if @tags.nil? || tag_dir_image_set.empty?
 
         {'tags' => TagDir.new('tags', @tags, {:parent => self, :images => tag_dir_image_set} )}
-      end
-
-      def mirrored_nodes
-        Hash[entries.map { |e| [e, new_node(e)] }]
-      end
-
-      def new_node(entry)
-        path = expand_path(entry)
-
-        if fs.directory?(path)
-          MirroredDir.new(entry, path, {:parent => self, :tags => @tags, :images => @images_domain})
-        else
-#          profile "#{send :path}: new_node new file" do # fast but called way too often
-            File.new(entry, fs.absolute_path(path), {:parent => self, :payload => @images_domain.find_by_path(path)})
-#          end
-        end
       end
 
       private
