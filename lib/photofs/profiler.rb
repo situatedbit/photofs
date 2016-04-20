@@ -13,16 +13,22 @@ module PhotoFS
     end
 
     def self.report
-      @@metrics.values.each do |metric|
+      @@metrics.values.sort.each do |metric|
         metric.report
       end
     end
 
     class ProfiledSnippet
+      include Comparable
+
       def initialize(label, initial_measurement)
         @label = label
         @measurements = initial_measurement
         @calls = 1
+      end
+
+      def <=>(other)
+        to_s <=> other.to_s
       end
 
       def add_metric(measurement)
@@ -41,6 +47,10 @@ module PhotoFS
 
       def report
         puts sprintf("#{@label}      #{@calls}     %#g     #{measurement_report}\n", average_real_time)
+      end
+
+      def to_s
+        @label
       end
     end
 
