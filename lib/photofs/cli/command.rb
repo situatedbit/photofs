@@ -27,22 +27,40 @@ module PhotoFS
 
       def initialize(args)
         @args = args
+
+        after_initialize args
       end
 
-      def initialize_database
-        PhotoFS::Data::Database::Connection.new(PhotoFS::FS.data_path).connect.ensure_schema
-      end
-
-      def set_data_path(data_path_subpath)
-        PhotoFS::FS.data_path_parent = PhotoFS::FS.find_data_parent_path data_path_subpath
+      def after_initialize(args)
       end
 
       def file_system
         PhotoFS::FS.file_system
       end
 
+      def initialize_datastore(data_path_subpath)
+        PhotoFS::FS.data_path_parent = PhotoFS::FS.find_data_parent_path data_path_subpath
+
+        PhotoFS::Data::Database::Connection.new(PhotoFS::FS.data_path).connect.ensure_schema
+      end
+
+      def valid_path(path)
+        unless file_system.exist?(path) && file_system.realpath(path)
+          raise Errno::ENOENT, path
+        end
+
+        file_system.realpath path
+      end
+
       class CommandException < Exception
       end
+
+      module MatcherTemplates
+        def match_path
+          '(\/)?([^\/\0]+(\/)?)+'
+        end
+      end
+
     end
 
   end

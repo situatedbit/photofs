@@ -15,8 +15,7 @@ describe PhotoFS::CLI::TagCommand do
     allow(PhotoFS::FS).to receive(:file_system).and_return(file_system)
     allow(PhotoFS::Data::Synchronize).to receive(:read_write_lock).and_return(PhotoFS::Data::Synchronize::TestLock.new)
 
-    allow(tag_command).to receive(:set_data_path) # swallow
-    allow(tag_command).to receive(:initialize_database) # swallow
+    allow(tag_command).to receive(:initialize_datastore) # swallow
   end
 
   describe :matcher do

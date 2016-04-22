@@ -17,8 +17,7 @@ describe 'cli integration' do
     before(:example) do
       allow(PhotoFS::FS).to receive(:file_system).and_return(file_system)
       allow(PhotoFS::FS).to receive(:data_path).and_return('/photos')
-      allow_any_instance_of(command_class).to receive(:initialize_database)
-      allow_any_instance_of(command_class).to receive(:set_data_path)
+      allow_any_instance_of(command_class).to receive(:initialize_datastore)
       allow(PhotoFS::Data::Synchronize).to receive(:read_write_lock).and_return(PhotoFS::Data::Synchronize::TestLock.new)
 
       create :image, :image_file => build(:file, :path => image_path)

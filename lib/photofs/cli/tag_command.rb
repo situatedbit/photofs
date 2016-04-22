@@ -7,34 +7,28 @@ require 'photofs/data/tag_set'
 module PhotoFS
   module CLI
     class TagCommand < Command
+      extend Command::MatcherTemplates
+
       def self.matcher
-        /tag [^\/\0]+ (\/)?([^\/\0]+(\/)?)+/
+        /tag [^\/\0]+ #{match_path}/
       end
 
       def self.usage
         'tag TAG IMAGE_PATH'
       end
 
-      def initialize(args)
+      def after_initialize(args)
         @args_tag_name = args[1]
         @args_image_path = args[2]
 
         @images = PhotoFS::Data::ImageSet.new
-        @tags = PhotoFS::Data::TagSet.new
-
-        super args
+        @tags = PhotoFS::Data::TagSet.new        
       end
 
       def execute
-        unless file_system.exist?(@args_image_path) && file_system.realpath(@args_image_path)
-          raise Errno::ENOENT, @args_image_path
-        end
+        @real_image_path = valid_path @args_image_path
 
-        @real_image_path = file_system.realpath @args_image_path
-
-        set_data_path @real_image_path
-
-        initialize_database
+        initialize_datastore @real_image_path
 
         tag_image
       end
