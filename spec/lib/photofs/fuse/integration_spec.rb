@@ -1,5 +1,4 @@
 require 'photofs/data/image'
-require 'photofs/data/synchronize'
 require 'photofs/fs/test'
 require 'photofs/fs'
 require 'photofs/fuse'
