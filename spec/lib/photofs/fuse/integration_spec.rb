@@ -3,7 +3,6 @@ require 'photofs/data/synchronize'
 require 'photofs/fs/test'
 require 'photofs/fs'
 require 'photofs/fuse'
-require 'photofs/fuse/file_monitor'
 require 'rfuse'
 
 =begin
@@ -17,6 +16,10 @@ require 'rfuse'
 =end
 
 describe 'integration for', :type => :locking_behavior do
+  def create_images(paths)
+    paths.each { |path| create(:image, :image_file => build(:file, :path => path)) }
+  end
+
   let(:source_path) { '/home/me/photos' }
   let(:mountpoint) { '/home/me/p' }
   let(:context) { instance_double('Context', {:gid => 500, :uid => 500}) }
@@ -25,12 +28,9 @@ describe 'integration for', :type => :locking_behavior do
 
   let(:fuse) { PhotoFS::Fuse::Fuse.new({:source => source_path, :mountpoint => mountpoint, :env => 'test'}) }
 
-  let(:image_monitor) { instance_double('PhotoFS::FileMonitor', :paths => []) }
-
   before(:example) do
     allow(PhotoFS::FS).to receive(:file_system).and_return(file_system)
 
-    allow(PhotoFS::Fuse::FileMonitor).to receive(:new).and_return(image_monitor)
     allow(fuse).to receive(:initialize_database) # initialization happens within spec helper
     allow(fuse).to receive(:log) # swallow log messages
 
@@ -81,9 +81,9 @@ describe 'integration for', :type => :locking_behavior do
     context 'when the tag still has images in it in a different source directory' do
       let(:image_directories) { ['/a', '/b'].map {|p| "#{source_path}#{p}"} }
       let(:image_files) { ['/a/1.jpg', '/b/2.jpg'].map {|p| "#{source_path}#{p}"} }
-      let(:image_monitor) { instance_double('PhotoFS::FileMonitor', :paths => image_files) }
 
       before(:example) do
+        create_images image_files
         file_system.add({:dirs => image_directories, :files => image_files})
 
         fuse.mkdir(context, '/t/good', 0)
@@ -125,9 +125,10 @@ describe 'integration for', :type => :locking_behavior do
   describe :tagging_images do
     let(:image_directories) { ["/a", "/a/b", "/c"].map {|p| "#{source_path}#{p}"} }
     let(:image_files) { [ '/a/1a.jpg', '/a/2a.jpg', '/a/b/1b.jpg', '/c/1c.JPG', '/a/photo.jpg', '/c/photo.jpg'].map {|p| "#{source_path}#{p}"} }
-    let(:image_monitor) { instance_double('PhotoFS::FileMonitor', :paths => image_files) }
 
     before(:example) do
+      create_images image_files
+
       file_system.add({:dirs => image_directories, :files => image_files})
 
       fuse.mkdir(context, '/t/good', 0)
@@ -279,9 +280,9 @@ describe 'integration for', :type => :locking_behavior do
   describe 'untagging images' do
     let(:image_directories) { ["/a", "/a/b", "/c"].map {|p| "#{source_path}#{p}"} }
     let(:image_files) { ['/a/1a.jpg', '/a/2a.jpg', '/c/1c.JPG'].map {|p| "#{source_path}#{p}"} }
-    let(:image_monitor) { instance_double('PhotoFS::FileMonitor', :paths => image_files) }
 
     before(:example) do
+      create_images image_files
       file_system.add({:dirs => image_directories, :files => image_files})
 
       fuse.mkdir(context, '/t/good', 0)
@@ -321,7 +322,10 @@ describe 'integration for', :type => :locking_behavior do
       let(:image_directories) { ['/a'].map {|p| "#{source_path}#{p}"} }
       let(:image_files) { ['/a/1.jpg'].map {|p| "#{source_path}#{p}"} }
       let(:file_system) { PhotoFS::FS::Test.new({ :dirs => [source_path, mountpoint] + image_directories, :files => image_files }) }
-      let(:image_monitor) { instance_double('PhotoFS::FileMonitor', :paths => image_files) }
+
+      before(:example) do
+        create_images image_files
+      end
 
       it 'should be persisted in the database' do
         expect(PhotoFS::Data::Image.first.image_file.path).to eq(image_files.first)

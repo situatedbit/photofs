@@ -4,7 +4,6 @@ require 'photofs/data/image_set'
 require 'photofs/data/synchronize'
 require 'photofs/data/tag_set'
 require 'photofs/fs'
-require 'photofs/fuse/file_monitor'
 require 'photofs/fuse/mirrored_dir'
 require 'photofs/fuse/relative_path'
 require 'photofs/fuse/root_dir'
@@ -44,8 +43,6 @@ module PhotoFS
       def init(context, rfuse_connection_info)
         initialize_database
 
-        scan_source_path
-
         @root.add MirroredDir.new('o', @source_path, {:tags => @tags, :images => @images})
         @root.add TagDir.new('t', @tags, {:images => @images})
 
@@ -84,16 +81,6 @@ module PhotoFS
 
         # since the change was made within this Fuse module, keep fuse cache counter up to date with lock's
         @fuse_cache_counter = @lock.increment_count
-      end
-
-      def scan_source_path
-        log "Scanning files under #{@source_path}"
-
-        FileMonitor.new(@source_path).paths.each do |path|
-          @images.add PhotoFS::Core::Image.new(path) unless @images.find_by_path(path)
-        end
-
-        log "Scanning complete"
       end
 
       def search(path)
@@ -188,7 +175,7 @@ module PhotoFS
         save!
       end
 
-      wrap_with_lock :read_write_lock, :scan_source_path, :readdir, :rename, :getattr, :readlink, :mkdir, :rmdir, :symlink, :unlink
+      wrap_with_lock :read_write_lock, :readdir, :rename, :getattr, :readlink, :mkdir, :rmdir, :symlink, :unlink
     end
   end
 end # module
