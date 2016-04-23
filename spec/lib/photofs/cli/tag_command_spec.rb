@@ -1,9 +1,8 @@
-require 'photofs/data/synchronize'
 require 'photofs/cli/tag_command'
 require 'photofs/core/tag'
 require 'photofs/fs/test'
 
-describe PhotoFS::CLI::TagCommand do
+describe PhotoFS::CLI::TagCommand, :type => :locking_behavior do
   let(:tag_arg) { 'good' }
   let(:image_arg) { '/a/b/c/image.jpg' }
   let(:image_path) { image_arg }
@@ -13,7 +12,6 @@ describe PhotoFS::CLI::TagCommand do
 
   before(:example) do
     allow(PhotoFS::FS).to receive(:file_system).and_return(file_system)
-    allow(PhotoFS::Data::Synchronize).to receive(:read_write_lock).and_return(PhotoFS::Data::Synchronize::TestLock.new)
 
     allow(tag_command).to receive(:initialize_datastore) # swallow
   end
@@ -27,15 +25,15 @@ describe PhotoFS::CLI::TagCommand do
   describe :execute do
     let(:tag) { instance_double('PhotoFS::Core::Tag', :add => nil) }
     let(:image) { instance_double('PhotoFS::Core::Image') }
+    let(:valid_path) { 'a valid path' }
 
-    context 'when the image argument is not a real file' do
-      before(:example) do
-        allow(file_system).to receive(:exist?).and_return(false)
-      end
+    it 'should initialize datastore with valid path' do
+      allow(tag_command).to receive(:valid_path).with(image_arg).and_return(valid_path)
+      allow(tag_command).to receive(:tag_image) # swallow
 
-      it 'should throw an error' do
-        expect { tag_command.execute }.to raise_error(Errno::ENOENT)
-      end
+      expect(tag_command).to receive(:initialize_datastore).with(valid_path)
+
+      tag_command.execute
     end
 
     context 'when the tag exists' do
