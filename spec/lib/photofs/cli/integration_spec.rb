@@ -4,10 +4,11 @@ require 'photofs/fs/test'
 
 describe 'cli integration', :type => :locking_behavior do
   def create_images(paths)
-    paths.each { |path| create(:image, :image_file => build(:file, :path => path)) }
+    paths.map { |path| create(:image, :image_file => build(:file, :path => path)) }
   end
 
   let(:cli) { PhotoFS::CLI }
+  let(:file_system) { PhotoFS::FS::Test.new }
 
   before(:example) do
     allow_any_instance_of(PhotoFS::CLI::Command).to receive(:initialize_datastore)
@@ -47,6 +48,41 @@ describe 'cli integration', :type => :locking_behavior do
       end
     end
   end # :tag
+
+  describe :tag_rename do
+    it 'should raise error when tag does not exist' do
+      expect { cli.execute ['rename', 'tag', 'not-exist', 'will-exist'] }.to output(/tag does not exist/).to_stdout
+    end
+
+    context 'when the tag exists' do
+      let(:from_tag_name) { 'existing-tag' }
+      let(:to_tag_name) { 'new-tag' }
+
+      let!(:images) { create_images ['/a/b/c/1.jpg', '/a/b/c/2.jpg'] }
+      let!(:from_tag) { create :tag, :name => from_tag_name }
+
+      let(:argv) { ['rename', 'tag', from_tag_name, to_tag_name] }
+
+      before(:example) do
+        from_tag.images = images
+        from_tag.save
+
+        cli.execute argv
+      end
+
+      it 'should create a new tag' do
+        expect(PhotoFS::Data::Tag.find_by_name to_tag_name).to be_instance_of(PhotoFS::Data::Tag)
+      end
+
+      it 'should move all images under the new tag' do
+        expect(PhotoFS::Data::Tag.find_by_name(to_tag_name).images).to contain_exactly(*images)
+      end
+
+      it 'should remove the old tag' do
+        expect(PhotoFS::Data::Tag.find_by_name from_tag_name).to be_nil
+      end
+    end
+  end # #tag_rename
 
   describe :import do
     let(:top_path) { '/a/b/c' }

@@ -4,6 +4,7 @@ require 'photofs/cli/command'
 require 'photofs/cli/bad_command'
 require 'photofs/cli/import_command'
 require 'photofs/cli/tag_command'
+require 'photofs/cli/tag_rename_command'
 
 module PhotoFS
   module CLI

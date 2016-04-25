@@ -56,6 +56,14 @@ module PhotoFS
         images.map { |image| hash[image] || [] }.flatten.uniq
       end
 
+      def rename(old_tag, new_tag)
+        old_tag.images.each { |image| new_tag.add image }
+
+        add? new_tag
+
+        delete old_tag
+      end
+
       def to_s
         "[#{tags.values.join(', ')}]"
       end

@@ -81,6 +81,10 @@ module PhotoFS::CLI
       def match_path
         '(\/)?([^\/\0]+(\/)?)+'
       end
+
+      def match_tag
+        '[^\s\/\0]+'
+      end
     end
 
   end

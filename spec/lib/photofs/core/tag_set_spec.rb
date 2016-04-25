@@ -210,4 +210,29 @@ describe PhotoFS::Core::TagSet do
       tag_set.delete tag
     end
   end
+
+  describe :rename do
+    let(:old_tag_images) { [instance_double('Image'), instance_double('Image')] }
+    let(:old_tag) { instance_double('Tag', :name => 'old tag') }
+    let(:new_tag) { instance_double('Tag', :name => 'new tag') }
+
+    after(:example) do
+      allow(new_tag).to receive(:add)
+      allow(old_tag).to receive(:images).and_return(old_tag_images)
+
+      tag_set.rename old_tag, new_tag
+    end
+
+    it 'should move all images from old tag to new tag' do
+      expect(new_tag).to receive(:add).exactly(old_tag_images.size).times
+    end
+
+    it 'should add new tag to the set' do
+      expect(tag_set).to receive(:add?).with(new_tag)
+    end
+
+    it 'should remove old tag from the set' do
+      expect(tag_set).to receive(:delete).with(old_tag)
+    end
+  end # :rename
 end

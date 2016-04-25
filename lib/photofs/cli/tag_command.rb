@@ -10,7 +10,7 @@ module PhotoFS
       extend Command::MatcherTemplates
 
       def self.matcher
-        /tag [^\/\0]+ #{match_path}/
+        /\Atag #{match_tag} #{match_path}\z/
       end
 
       def self.usage

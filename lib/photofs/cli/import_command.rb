@@ -9,7 +9,7 @@ module PhotoFS
       extend Command::MatcherTemplates
 
       def self.matcher
-        /import #{match_path}/
+        /\Aimport #{match_path}\z/
       end
 
       def self.usage
