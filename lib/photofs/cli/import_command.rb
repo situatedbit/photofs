@@ -22,20 +22,22 @@ module PhotoFS
         @images = PhotoFS::Data::ImageSet.new
       end
 
-      def execute
-        @path = valid_path @path
+      def datastore_start_path
+        @path
+      end
 
-        initialize_datastore @path
-
+      def modify_datastore
         puts "Importing images from \"#{@path}\"..."
 
-        PhotoFS::Data::Synchronize.read_write_lock.grab do |lock|
-          @images.import PhotoFS::FS::FileMonitor.new(@path).paths
-
-          lock.increment_count
-        end
+        paths_imported = @images.import PhotoFS::FS::FileMonitor.new(@path).paths
 
         puts "うわった, よ.\n"
+
+        !paths_imported.empty?
+      end
+
+      def validate
+        @path = valid_path @path
       end
 
       Command.register_command self

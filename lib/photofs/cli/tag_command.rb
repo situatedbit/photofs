@@ -25,37 +25,33 @@ module PhotoFS
         @tags = PhotoFS::Data::TagSet.new        
       end
 
-      def execute
+      def datastore_start_path
+        @real_image_path
+      end
+
+      def modify_datastore
+        image = @images.find_by_path @real_image_path
+
+        raise(CommandException, error_message) unless image
+
+        tag = @tags.find_by_name(@args_tag_name) || @tags.add?(PhotoFS::Core::Tag.new @args_tag_name)
+
+        tag.add image
+
+        @images.save!
+        @tags.save!
+
+        return true
+      end
+
+      def validate
         @real_image_path = valid_path @args_image_path
-
-        initialize_datastore @real_image_path
-
-        tag_image
       end
 
       private
 
-      def tag_image
-        PhotoFS::Data::Synchronize.read_write_lock.grab do |lock|
-          image = @images.find_by_path @real_image_path
-
-          if image
-            tag = @tags.find_by_name(@args_tag_name) || @tags.add?(PhotoFS::Core::Tag.new @args_tag_name)
-
-            tag.add image
-
-            save
-
-            lock.increment_count
-          else
-            raise CommandException, "#{@real_image_path} is not a registered image under #{PhotoFS::FS.data_path}"
-          end
-        end # lock
-      end
-
-      def save
-        @images.save!
-        @tags.save!
+      def error_message
+        "#{@real_image_path} is not a registered image. Import the image first."
       end
 
       Command.register_command self
