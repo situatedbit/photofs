@@ -34,32 +34,20 @@ describe PhotoFS::CLI::TagRenameCommand do
   end
 
   describe :modify_datastore do
-    before(:example) do
-      command.instance_variable_set(:@from_tag, from_tag)
-    end
-
-    subject { command.modify_datastore }
-
-    it { should be true }
-
-    it 'should call rename on tag set' do
-      expect(tags).to receive(:rename).with(from_tag, an_instance_of(PhotoFS::Core::Tag))
-
-      subject
-    end
-  end
-
-  describe :validate do
     context 'when from tag exists' do
       before(:example) do
         allow(tags).to receive(:find_by_name).with(from).and_return(from_tag)
         allow(tags).to receive(:find_by_name).with(to).and_return(nil)
       end
 
-      it 'should set tag instance variable' do
-        command.validate
+      it 'should be true' do
+        expect(command.modify_datastore).to be true
+      end
 
-        expect(command.instance_variable_get :@from_tag).to be from_tag
+      it 'should call rename on tag set' do
+        expect(tags).to receive(:rename).with(from_tag, an_instance_of(PhotoFS::Core::Tag))
+
+        command.modify_datastore
       end
     end
 
@@ -69,7 +57,7 @@ describe PhotoFS::CLI::TagRenameCommand do
       end
 
       it 'should raise error' do
-        expect { command.validate }.to raise_error(PhotoFS::CLI::Command::CommandException)
+        expect { command.modify_datastore }.to raise_error(PhotoFS::CLI::Command::CommandException)
       end
     end
 
@@ -80,8 +68,8 @@ describe PhotoFS::CLI::TagRenameCommand do
       end
 
       it 'should raise error' do
-        expect { command.validate }.to raise_error(PhotoFS::CLI::Command::CommandException)
+        expect { command.modify_datastore }.to raise_error(PhotoFS::CLI::Command::CommandException)
       end
     end
-  end # :validate
+  end # :modify_datastore
 end

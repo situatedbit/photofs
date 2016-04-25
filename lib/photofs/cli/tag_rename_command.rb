@@ -28,19 +28,17 @@ module PhotoFS
       end
 
       def modify_datastore
-        @tags.rename @from_tag, PhotoFS::Core::Tag.new(@to_tag_name)
+        from_tag = @tags.find_by_name @from_tag_name
 
-        @tags.save!
-  
-        return true
-      end
-
-      def validate
-        @from_tag = @tags.find_by_name @from_tag_name
-
-        raise(Command::CommandException, "#{@from_tag_name}: tag does not exist") unless @from_tag
+        raise(Command::CommandException, "#{@from_tag_name}: tag does not exist") unless from_tag
 
         raise(Command::CommandException, "#{@to_tag_name}: tag already exists") if @tags.find_by_name(@to_tag_name)
+
+        @tags.rename from_tag, PhotoFS::Core::Tag.new(@to_tag_name)
+
+        @tags.save!
+
+        return true
       end
 
       Command.register_command self
