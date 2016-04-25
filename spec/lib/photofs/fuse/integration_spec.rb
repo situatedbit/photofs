@@ -36,6 +36,12 @@ describe 'integration for', :type => :locking_behavior do
     fuse.init(context, nil)
   end
 
+  describe 'link to .photofs' do
+    it 'should point to source path' do
+      expect(fuse.readlink(context, '/.photofs', 0)).to eq("#{source_path}")
+    end
+  end
+
   describe 'tags ' do
     describe 'top level dir: ' do
       it 'should exist' do
