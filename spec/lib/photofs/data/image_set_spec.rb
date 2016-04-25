@@ -110,6 +110,34 @@ describe PhotoFS::Data::ImageSet do
     end
   end # :find_by_paths
 
+  describe :import do
+    let(:path_1) { '/a/b/1.jpg' }
+    let(:path_2) { '/a/b/2.jpg' }
+    let(:paths) { [path_1, path_2] }
+
+    before(:example) do
+      allow(PhotoFS::Data::Image).to receive(:exist_by_paths).with(paths).and_return([path_1])
+    end
+
+    subject { image_set.import paths }
+
+    it { should contain_exactly(an_instance_of PhotoFS::Core::Image) }
+
+    it { should contain_exactly(have_attributes(:path => path_2)) }
+
+    it 'should add images for paths not in the database' do
+      expect(image_set).to receive(:add).with(have_attributes :path => path_2)
+
+      image_set.import paths
+    end
+
+    it 'should not add images for paths already in the database' do
+      expect(image_set).not_to receive(:add).with(have_attributes(:path => path_1))
+
+      image_set.import paths
+    end
+  end
+
   describe :save! do
     it 'should call the Data module method' do
       expect(image_set).to receive(:save_record_object_map).with(image_set.instance_variable_get(:@record_object_map))

@@ -30,8 +30,8 @@ module PhotoFS
         puts "Importing images from \"#{@path}\"..."
 
         PhotoFS::Data::Synchronize.read_write_lock.grab do |lock|
-          @images.import_paths PhotoFS::FS::FileMonitor.new(@path).paths
-          
+          @images.import PhotoFS::FS::FileMonitor.new(@path).paths
+
           lock.increment_count
         end
 

@@ -26,6 +26,10 @@ module PhotoFS
         image_record
       end
 
+      def self.exist_by_paths(paths)
+        find_by_image_file_paths(paths).all.map { |image| image.path }
+      end
+
       def consistent_with?(image)
         image_file && path == image.path
       end

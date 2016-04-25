@@ -34,7 +34,7 @@ describe PhotoFS::CLI::ImportCommand, :type => :locking_behavior do
       allow(command).to receive(:puts) # swallow
 
       allow(command).to receive(:valid_path).with(path).and_return(valid_path)
-      allow(images).to receive(:import_paths)
+      allow(images).to receive(:import)
     end
 
     it 'should initialize datastore with a valid path' do
@@ -45,7 +45,7 @@ describe PhotoFS::CLI::ImportCommand, :type => :locking_behavior do
     end
 
     it 'should send paths from file monitor to image set' do
-      expect(images).to receive(:import_paths).with(file_monitor.paths)
+      expect(images).to receive(:import).with(file_monitor.paths)
 
       command.execute
     end

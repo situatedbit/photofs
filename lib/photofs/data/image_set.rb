@@ -45,6 +45,14 @@ module PhotoFS
         Hash[paths.zip []].merge Hash[images_map]
       end
 
+      def import(paths)
+        import_paths = paths - Image.exist_by_paths(paths)
+
+        ActiveRecord::Base.transaction do
+          return import_paths.map { |path| add PhotoFS::Core::Image.new(path) }
+        end
+      end
+
       def save!
         save_record_object_map(@record_object_map)
       end

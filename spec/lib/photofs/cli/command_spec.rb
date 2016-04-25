@@ -26,6 +26,6 @@ describe PhotoFS::CLI::Command do
 
     it 'will return the result of realpath' do
       expect(command.valid_path path).to eq(real_path)
-    end    
+    end
   end
 end
