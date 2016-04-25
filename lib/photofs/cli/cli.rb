@@ -2,6 +2,7 @@ require 'photofs/cli/command'
 
 # explicitly include all commands so they can register
 require 'photofs/cli/bad_command'
+require 'photofs/cli/import_command'
 require 'photofs/cli/tag_command'
 
 module PhotoFS
