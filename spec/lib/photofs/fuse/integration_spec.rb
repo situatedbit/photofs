@@ -37,8 +37,8 @@ describe 'integration for', :type => :locking_behavior do
   end
 
   describe 'link to .photofs' do
-    it 'should point to source path' do
-      expect(fuse.readlink(context, '/.photofs', 0)).to eq("#{source_path}")
+    it 'should point to real .photofs' do
+      expect(fuse.readlink(context, '/.photofs', 0)).to eq("#{source_path}/.photofs")
     end
   end
 
