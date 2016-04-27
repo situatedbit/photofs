@@ -21,10 +21,9 @@ module PhotoFS
     end
 
     def self.find_data_parent_path(child_path)
+      raise Errno::ENOENT, "could not find #{DATA_DIR} directory" if child_path == ::File::SEPARATOR
 
-      raise Errno::ENOENT if child_path == ::File::SEPARATOR
-
-      return child_path if file_system.exist?(::File.join(child_path, DATA_DIR))
+      return file_system.realpath(child_path) if file_system.exist?(::File.join(child_path, DATA_DIR))
 
       return find_data_parent_path(::File.dirname(child_path))
     end
