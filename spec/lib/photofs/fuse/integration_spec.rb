@@ -15,10 +15,6 @@ require 'rfuse'
 =end
 
 describe 'integration for', :type => :locking_behavior do
-  def create_images(paths)
-    paths.each { |path| create(:image, :image_file => build(:file, :path => path)) }
-  end
-
   let(:source_path) { '/home/me/photos' }
   let(:mountpoint) { '/home/me/p' }
   let(:context) { instance_double('Context', {:gid => 500, :uid => 500}) }

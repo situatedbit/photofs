@@ -21,6 +21,7 @@ require 'active_record'
 require 'database_cleaner'
 require 'factory_girl'
 require 'shoulda-matchers'
+require 'factory_helpers'
 
 # normally rspec-rails or PhotoFS::Data::Database will do this for us
 environment = 'test'
@@ -150,4 +151,6 @@ RSpec.configure do |config|
       @@lock = nil
     end
   end
+
+  config.include FactoryHelpers
 end

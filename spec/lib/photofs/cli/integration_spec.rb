@@ -3,10 +3,6 @@ require 'photofs/cli/tag_command'
 require 'photofs/fs/test'
 
 describe 'cli integration', :type => :locking_behavior do
-  def create_images(paths)
-    paths.map { |path| create(:image, :image_file => build(:file, :path => path)) }
-  end
-
   let(:cli) { PhotoFS::CLI }
   let(:file_system) { PhotoFS::FS::Test.new }
 
