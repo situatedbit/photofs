@@ -1,8 +1,53 @@
+require 'photofs/core/image_set'
 require 'photofs/data/image_set'
 require 'photofs/data/image'
 
 describe PhotoFS::Data::ImageSet do
   let(:image_set) { PhotoFS::Data::ImageSet.new }
+
+  describe :& do
+    let(:other_set) { PhotoFS::Core::ImageSet.new }
+
+    subject { image_set.&(other_set).to_a }
+
+    context 'when the image set is empty' do
+      before(:example) do
+        allow(PhotoFS::Data::Image).to receive(:from_images).and_return([])
+        other_set.add instance_double('Image', :path => '/a/file.jpg')
+      end
+
+      it { should be_empty }
+    end
+
+    context 'when the parameter is empty' do
+      before(:example) do
+        create :image
+      end
+
+      it { should be_empty }
+    end
+
+    context 'when the intersection is empty' do
+      before(:example) do
+        create_image '/a/b/c.jpg'
+        other_set.add PhotoFS::Core::Image.new('/1/2/3.jpg')
+      end
+
+      it { should be_empty }
+    end
+
+    context 'when there is an intersection' do
+      let!(:image_records) { [create(:image), create(:image)] }
+      let(:intersection) { [image_records[0].to_simple] }
+
+      before(:example) do
+        intersection.each { |i| other_set.add i }
+        other_set.add PhotoFS::Core::Image.new('/a/b/c/some-other-image.jpg')
+      end
+
+      it { should contain_exactly(*intersection) }
+    end
+  end # &
 
   describe :add do
     let(:image) { instance_double('PhotoFS::Core::Image') }

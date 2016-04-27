@@ -19,6 +19,10 @@ module PhotoFS
         Image.joins(:image_file).where('files.path = ?', image.path).first
       end
 
+      def self.from_images(images)
+        find_by_image_file_paths(images.map { |i| i.path })
+      end
+
       def self.new_from_image(image)
         image_record = Image.new
         image_record.build_image_file(:path => image.path)

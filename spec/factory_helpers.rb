@@ -1,6 +1,6 @@
 module FactoryHelpers
   def create_images(paths)
-    paths.each { |path| create_image path }
+    paths.map { |path| create_image path }
   end
 
   def create_image(path)
