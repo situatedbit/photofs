@@ -39,12 +39,16 @@ module PhotoFS::CLI
     end
 
     def execute
-      validate
+      begin
+        validate
 
-      initialize_datastore datastore_start_path
+        initialize_datastore datastore_start_path
 
-      PhotoFS::Data::Synchronize.read_write_lock.grab do |lock|
-        lock.increment_count if modify_datastore
+        PhotoFS::Data::Synchronize.read_write_lock.grab do |lock|
+          lock.increment_count if modify_datastore
+        end
+      rescue => e
+        puts e.message
       end
     end
 

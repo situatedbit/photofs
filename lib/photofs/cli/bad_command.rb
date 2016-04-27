@@ -11,7 +11,7 @@ module PhotoFS
       end
 
       def execute
-        puts "'#{@bad_command}' is not a valid command\n\n"
+        puts "'#{@bad_command}' command did not parse correctly\n\n"
         puts "usage: \n"
         @usages.each { |usage| puts "  #{usage}\n" }
       end
