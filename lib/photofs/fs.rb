@@ -32,6 +32,10 @@ module PhotoFS
       @@fs ||= PhotoFS::FS::Local.new
     end
 
+    def self.log_file
+      data_path_join('log')
+    end
+
     def self.migration_paths
       [::File.join(db_config_path, 'migrate')]
     end

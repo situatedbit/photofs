@@ -163,6 +163,10 @@ module PhotoFS
       end
 
       def log(s)
+        @log ||= Logger.new(PhotoFS::FS.log_file)
+
+        @log.info(s)
+
         puts s
       end
 
