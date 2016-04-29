@@ -13,23 +13,6 @@ module PhotoFS
         super
       end
 
-      def &(image_sets)
-        image_sets = [image_sets].flatten #normalize to array
-
-        return PhotoFS::Core::ImageSet.new if image_sets.empty?
-
-        first_set, remaining_sets = image_sets.first, image_sets[1..-1]
-
-        # implicit intersection between database and first_set
-        first_intersection = Image.from_images(first_set.to_a).map { |i| i.to_simple }
-
-        intersection = remaining_sets.reduce(first_intersection.to_set) do |memo, image_set|
-          memo & image_set.to_set
-        end
-
-        PhotoFS::Core::ImageSet.new(:set => intersection)
-      end
-
       # Note that this will overwrite any cached versions of image, even
       # if the cached version is dirty. Returns simple image object.
       def add(image)
@@ -84,6 +67,10 @@ module PhotoFS
         @record_object_map = load_all_records(@record_object_map, Image)
 
         @record_object_map.values.to_set
+      end
+
+      def intersect(image_set)
+        Image.from_images(image_set.to_a).reduce(Set.new) { |set, i| set << i.to_simple }
       end
 
       private

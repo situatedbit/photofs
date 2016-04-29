@@ -16,7 +16,9 @@ module PhotoFS
 
         return ImageSet.new if image_sets.empty?
 
-        intersection = image_sets.reduce(set) do |memo, image_set|
+        first_set, remaining_sets = image_sets.first, image_sets[1..-1]
+
+        intersection = remaining_sets.reduce(intersect first_set) do |memo, image_set|
           memo & image_set.to_set
         end
 
@@ -64,6 +66,10 @@ module PhotoFS
 
       def set
         @set
+      end
+
+      def intersect(image_set)
+        set & image_set.to_set
       end
 
       private
