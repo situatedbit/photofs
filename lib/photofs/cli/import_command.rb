@@ -9,7 +9,7 @@ module PhotoFS
       extend Command::MatcherTemplates
 
       def self.matcher
-        /\Aimport #{match_path}\z/
+        @@_matcher ||= Parser.new [Parser::Pattern.new(['import', {:path => match_path}])]
       end
 
       def self.usage
@@ -17,7 +17,7 @@ module PhotoFS
       end
 
       def after_initialize(args)
-        @path = args[1]
+        @path = parsed_args[:path]
 
         @images = PhotoFS::Data::ImageSet.new
       end

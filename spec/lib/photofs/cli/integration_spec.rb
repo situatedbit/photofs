@@ -15,8 +15,9 @@ describe 'cli integration', :type => :locking_behavior do
     let(:tag_class) { PhotoFS::Data::Tag }
 
     let(:image_path) { '/photos/src/some-file.jpg' }
+    let(:image2_path) { '/photos/src/another-file.jpg' }
     let(:argv) { ['tag', 'some-tag', image_path] }
-    let(:file_system) { PhotoFS::FS::Test.new( { :files => [image_path, '/photofs/some-other-file.jpg'] } ) }
+    let(:file_system) { PhotoFS::FS::Test.new( { :files => [image_path, image2_path, '/photofs/some-other-file.jpg'] } ) }
 
     before(:example) do
       allow(PhotoFS::FS).to receive(:data_path).and_return('/photos')
@@ -41,6 +42,21 @@ describe 'cli integration', :type => :locking_behavior do
 
       it 'should throw an error' do
         expect { cli.execute argv }.to output(/is not a registered image/).to_stdout
+      end
+    end
+
+    context 'when several images are included' do
+      let(:images) { [image_path, image2_path] }
+      let(:argv) { ['tag', 'good'] + images }
+
+      before(:example) do
+        create :image, :image_file => build(:file, :path => image2_path)
+      end
+
+      it 'should apply tags to several images at once' do
+        cli.execute argv
+
+        expect(tag_class.find_by(:name => 'good').images.map { |i| i.image_file.path }).to contain_exactly(*images)
       end
     end
   end # :tag

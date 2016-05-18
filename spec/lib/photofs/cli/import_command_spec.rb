@@ -4,6 +4,7 @@ require 'photofs/fs/file_monitor'
 require 'photofs/fs/test'
 
 describe PhotoFS::CLI::ImportCommand do
+  let(:klass) { PhotoFS::CLI::ImportCommand }
   let(:path) { 'a/b/c/' }
   let(:valid_path) { '/a/b/c' }
   let(:command) { PhotoFS::CLI::ImportCommand.new(['import', path]) }
@@ -18,14 +19,17 @@ describe PhotoFS::CLI::ImportCommand do
   end
 
   describe :matcher do
-    it { expect(PhotoFS::CLI::ImportCommand.matcher).to match('import .') }
-    it { expect(PhotoFS::CLI::ImportCommand.matcher).to match('import ./some/file/') }
-    it { expect(PhotoFS::CLI::ImportCommand.matcher).to match('import ./some/file') }
-    it { expect(PhotoFS::CLI::ImportCommand.matcher).to match('import some/file') }
-    it { expect(PhotoFS::CLI::ImportCommand.matcher).to match('import ../some/file') }
-    it { expect(PhotoFS::CLI::ImportCommand.matcher).to match('import ../some/file\ spaces') }
-    it { expect(PhotoFS::CLI::ImportCommand.matcher).not_to match('import') }
-    it { expect(PhotoFS::CLI::ImportCommand.matcher).not_to match('something else entirely') }
+    it { expect(klass.match? ['import', '.']).to be true }
+    it { expect(klass.match? ['import', './some/file/']).to be true }
+    it { expect(klass.match? ['import', './some/file']).to be true }
+    it { expect(klass.match? ['import', 'some/file']).to be true }
+    it { expect(klass.match? ['import', '../some/file']).to be true }
+    it { expect(klass.match? ['import', '../some/file\ spaces']).to be true }
+
+    it { expect(klass.match? ['important', 'file']).to be false }
+    it { expect(klass.match? ['important']).to be false }
+    it { expect(klass.match? ['import']).to be false }
+    it { expect(klass.match? ['something', 'else', 'entirely']).to be false }
   end
 
   describe :modify_datastore do

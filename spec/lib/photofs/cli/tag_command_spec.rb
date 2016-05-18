@@ -1,8 +1,10 @@
 require 'photofs/cli/command'
+require 'photofs/cli/tag_command'
 require 'photofs/core/tag'
 require 'photofs/fs/test'
 
 describe PhotoFS::CLI::TagCommand do
+  let(:klass) { PhotoFS::CLI::TagCommand }
   let(:tag_arg) { 'good' }
   let(:image_arg) { '/a/b/c/image.jpg' }
   let(:image_path) { image_arg }
@@ -17,9 +19,10 @@ describe PhotoFS::CLI::TagCommand do
   end
 
   describe :matcher do
-    it { expect(PhotoFS::CLI::TagCommand.matcher).to match('tag a-tag /some/file/somewhere') }
-    it { expect(PhotoFS::CLI::TagCommand.matcher).to match('tag 1324 ./some/file/somewhere.jpg') }
-    it { expect(PhotoFS::CLI::TagCommand.matcher).not_to match('another tag file') }
+    it { expect(klass.match? ['tag', 'a-tag', '/some/file/somewhere']).to be true }
+    it { expect(klass.match? ['tag', '1324', './some/file/somewhere.jpg']).to be true }
+    it { expect(klass.match? ['tag', '1324', './some/file/somewhere.jpg', './some/file/yet another.jpg']).to be true }
+    it { expect(klass.match? ['another', 'tag', 'file']).to be false }
   end
 
   describe :modify_datastore do
@@ -28,7 +31,7 @@ describe PhotoFS::CLI::TagCommand do
     let(:valid_path) { 'a valid path' }
 
     before(:example) do
-      command.instance_variable_set(:@real_image_path, image_path)
+      command.instance_variable_set(:@real_image_paths, [image_path])
     end
 
     context 'when the tag exists' do
@@ -81,7 +84,7 @@ describe PhotoFS::CLI::TagCommand do
         expect { command.modify_datastore }.to raise_error(PhotoFS::CLI::Command::CommandException)
       end
     end
-  end
+  end # :modify_datastore
 
   describe :validate do
     before(:example) do
@@ -90,6 +93,6 @@ describe PhotoFS::CLI::TagCommand do
 
     subject { command.validate }
 
-    it { should eq(image_path) }
+    it { should eq([image_path]) }
   end
 end

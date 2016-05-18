@@ -18,9 +18,9 @@ describe PhotoFS::CLI::TagRenameCommand do
   end
 
   describe :matcher do
-    it { expect(klass.matcher).to match('rename tag some-tag another-tag') }
-    it { expect(klass.matcher).not_to match('rename tag some tag another tag') }
-    it { expect(klass.matcher).not_to match('something else entirely') }
+    it { expect(klass.match? ['rename', 'tag', 'some-tag', 'another-tag']).to be true }
+    it { expect(klass.match? ['rename', 'tag', 'some', 'tag', 'another', 'tag']).to be false }
+    it { expect(klass.match? ['something', 'else', 'entirely']).to be false }
   end
 
   describe :datastore_start_path do

@@ -9,7 +9,7 @@ module PhotoFS
       extend Command::MatcherTemplates
 
       def self.matcher
-        /\Arename tag #{match_tag} #{match_tag}\z/
+        @@_matcher ||= Parser.new([Parser::Pattern.new(['rename', 'tag', {:from_tag_name => match_tag}, {:to_tag_name => match_tag}])])
       end
 
       def self.usage
@@ -17,8 +17,8 @@ module PhotoFS
       end
 
       def after_initialize(args)
-        @from_tag_name = args[2]
-        @to_tag_name = args[3]
+        @from_tag_name = parsed_args[:from_tag_name]
+        @to_tag_name = parsed_args[:to_tag_name]
 
         @tags = PhotoFS::Data::TagSet.new
       end

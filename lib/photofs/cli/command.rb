@@ -1,3 +1,4 @@
+require 'photofs/cli/parser'
 require 'photofs/fs'
 require 'photofs/data/synchronize'
 require 'photofs/data/database'
@@ -6,10 +7,22 @@ module PhotoFS::CLI
   class Command
     include PhotoFS::Data::Synchronize
 
-    def self.register_command(command)
-      @@commands ||= {}
+    def self.command_usages
+      @@usages || []
+    end
 
-      @@commands[command.matcher] = command
+    def self.match?(argv)
+      matcher.match?(argv)
+    end
+
+    def self.matcher
+      raise NotImplementedError
+    end
+
+    def self.register_command(command)
+      @@commands ||= []
+
+      @@commands << command
 
       @@usages ||= []
 
@@ -18,10 +31,6 @@ module PhotoFS::CLI
 
     def self.registered_commands
       @@commands || []
-    end
-
-    def self.command_usages
-      @@usages || []
     end
 
     def initialize(args)
@@ -72,6 +81,10 @@ module PhotoFS::CLI
 
     def modify_datastore
       raise NotImplementedError
+    end
+
+    def parsed_args
+      @parsed_args ||= self.class.matcher.parse(@args)
     end
 
     def validate

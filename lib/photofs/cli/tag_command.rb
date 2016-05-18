@@ -10,7 +10,7 @@ module PhotoFS
       extend Command::MatcherTemplates
 
       def self.matcher
-        /\Atag #{match_tag} #{match_path}\z/
+        @@_matcher ||= Parser.new([Parser::Pattern.new(['tag', {:tag => match_tag}, {:paths => match_path}], :expand_tail => true)])
       end
 
       def self.usage
@@ -18,40 +18,40 @@ module PhotoFS
       end
 
       def after_initialize(args)
-        @args_tag_name = args[1]
-        @args_image_path = args[2]
+        @args_tag_name = parsed_args[:tag]
+        @args_image_paths = parsed_args[:paths]
 
         @images = PhotoFS::Data::ImageSet.new
         @tags = PhotoFS::Data::TagSet.new        
       end
 
       def datastore_start_path
-        @real_image_path
+        @real_image_paths.first
       end
 
       def modify_datastore
-        image = @images.find_by_path @real_image_path
+        images = @real_image_paths.map { |path| @images.find_by_path(path) || raise(CommandException, error_message) }
 
-        raise(CommandException, error_message) unless image
+        images.each do |image|
+          tag = @tags.find_by_name(@args_tag_name) || @tags.add?(PhotoFS::Core::Tag.new @args_tag_name)
 
-        tag = @tags.find_by_name(@args_tag_name) || @tags.add?(PhotoFS::Core::Tag.new @args_tag_name)
+          tag.add image
 
-        tag.add image
-
-        @images.save!
-        @tags.save!
+          @images.save!
+          @tags.save!
+        end
 
         return true
       end
 
       def validate
-        @real_image_path = valid_path @args_image_path
+        @real_image_paths = @args_image_paths.map { |path| valid_path path }
       end
 
       private
 
       def error_message
-        "#{@real_image_path} is not a registered image. Import the image first."
+        "#{@real_image_path} is not a registered image. Import the image first. No images were tagged."
       end
 
       Command.register_command self

@@ -19,10 +19,10 @@ module PhotoFS
     def self.parse(args)
       commands = PhotoFS::CLI::Command.registered_commands
 
-      matcher = commands.keys.select { |pattern| !pattern.match(args.join(' ')).nil? }.first
+      command = commands.select { |command| command.match? args }.first
 
-      if matcher
-        commands[matcher].new args
+      if command
+        command.new args
       else
         BadCommand.new @PhotoFS::CLI::Command.command_usages, args
       end
