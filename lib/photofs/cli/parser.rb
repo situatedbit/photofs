@@ -1,6 +1,6 @@
 module PhotoFS
   module CLI
-    class ArgsParser
+    class Parser
       def initialize(patterns)
         @patterns = patterns
       end

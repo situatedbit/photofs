@@ -1,10 +1,10 @@
-require 'photofs/cli/args_parser'
+require 'photofs/cli/parser'
 
-describe PhotoFS::CLI::ArgsParser do
+describe PhotoFS::CLI::Parser do
 end
 
-describe PhotoFS::CLI::ArgsParser do
-  let(:klass) { PhotoFS::CLI::ArgsParser::Pattern }
+describe PhotoFS::CLI::Parser do
+  let(:klass) { PhotoFS::CLI::Parser::Pattern }
 
   describe :parse do
     let(:args) { ['-r', 'def', 'exec'] }
