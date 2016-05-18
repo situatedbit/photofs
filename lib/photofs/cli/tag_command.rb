@@ -14,7 +14,7 @@ module PhotoFS
       end
 
       def self.usage
-        'tag TAG IMAGE_PATH'
+        'tag TAG_LIST PATH [PATH_2] [PATH_N] where TAG_LIST is a comma-separated list (wrapped in quotes if including spaces)'
       end
 
       def after_initialize(args)
