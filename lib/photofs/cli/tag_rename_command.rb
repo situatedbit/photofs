@@ -13,7 +13,7 @@ module PhotoFS
       end
 
       def self.usage
-        'rename tag OLD_TAG NEW_TAG'
+        ['rename tag OLD_TAG NEW_TAG']
       end
 
       def after_initialize(args)

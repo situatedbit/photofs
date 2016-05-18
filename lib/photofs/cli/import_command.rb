@@ -13,7 +13,7 @@ module PhotoFS
       end
 
       def self.usage
-        'import DIR_PATH'
+        ['import DIR_PATH']
       end
 
       def after_initialize(args)

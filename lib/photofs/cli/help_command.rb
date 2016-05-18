@@ -5,11 +5,11 @@ module PhotoFS
   module CLI
     class HelpCommand < Command
       def self.matcher
-        @@_matcher ||= Parser.new([Parser::Pattern.new(['help'])])
+        @@_matcher ||= Parser.new([Parser::Pattern.new(['help|usage'])])
       end
 
       def self.usage
-        'help'
+        ["help", "usage"]
       end
 
       def execute

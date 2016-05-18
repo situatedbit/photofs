@@ -26,7 +26,7 @@ module PhotoFS::CLI
 
       @@usages ||= []
 
-      @@usages << command.usage
+      command.usage.each { |usage| @@usages << usage }
     end
 
     def self.registered_commands
