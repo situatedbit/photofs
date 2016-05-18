@@ -48,6 +48,20 @@ describe PhotoFS::CLI::Parser do
       it { is_expected.to include(:opt => '-r') }
     end
 
+    context 'when the arg starts with the pattern but does not fully match' do
+      let(:args) { ['attack'] }
+      let(:pattern) { klass.new ['at'] }
+
+      it { is_expected.to be false }
+    end
+
+    context 'when the arg ends with the pattern but does not fully match' do
+      let(:args) { ['meerkat'] }
+      let(:pattern) { klass.new ['at'] }
+
+      it { is_expected.to be false }
+    end
+
     context 'when there are more args than patterns and expand_tail is false' do
       let(:args) { ['tag', 'name', 'path', 'path2'] }
       let(:pattern) { klass.new ['tag', 'name', 'path'] }

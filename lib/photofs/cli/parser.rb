@@ -20,14 +20,12 @@ module PhotoFS
       end
 
       class Pattern
-        Token = Struct.new(:name, :pattern)
+        Token = Struct.new(:name, :pattern) # each arg is matched against one of these
 
         def initialize(tokens, options = {})
-          @tokens = tokens.map do |token|
-            token.respond_to?(:keys) ? Token.new(token.keys.first, token[token.keys.first]) : Token.new(nil, token)
-          end
+          @tokens = tokens.map { |token| token.respond_to?(:keys) ? hash_to_token(token) : string_to_token(token) }
 
-          @opt_expand_tail = options[:expand_tail]
+          @opt_expand_tail = options[:expand_tail] || false
         end
 
         def match?(args)
@@ -60,11 +58,25 @@ module PhotoFS
           end
         end
 
-        private 
+        private
+        def full_string_pattern(pattern)
+          "\\A#{pattern}\\z"
+        end
+
+        def hash_to_token(hash)
+          name = hash.keys.first
+
+          Token.new name, full_string_pattern(hash[name])
+        end
+
         def parse_with_token(args, token, limit_first_arg = false)
           matches = args.map { |arg| arg.match(token.pattern) ? arg : raise(ParseError) }
 
           { token.name => (limit_first_arg ? matches.first : matches) }
+        end
+
+        def string_to_token(str)
+          Token.new nil, full_string_pattern(str)
         end
 
         class ParseError < Exception
