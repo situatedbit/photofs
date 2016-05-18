@@ -22,6 +22,8 @@ describe PhotoFS::CLI::TagCommand do
     it { expect(klass.match? ['tag', 'a-tag', '/some/file/somewhere']).to be true }
     it { expect(klass.match? ['tag', '1324', './some/file/somewhere.jpg']).to be true }
     it { expect(klass.match? ['tag', '1324', './some/file/somewhere.jpg', './some/file/yet another.jpg']).to be true }
+    it { expect(klass.match? ['tag', '1324,good', './some/file/somewhere.jpg', './some/file/yet another.jpg']).to be true }
+    it { expect(klass.match? ['tag', '1324, good', './some/file/somewhere.jpg', './some/file/yet another.jpg']).to be true }
     it { expect(klass.match? ['another', 'tag', 'file']).to be false }
   end
 
@@ -72,6 +74,27 @@ describe PhotoFS::CLI::TagCommand do
 
       it 'should be true' do
         expect(command.modify_datastore).to be true
+      end
+    end
+
+    context 'when there are multiple tags' do
+      let(:tag1) { instance_double('PhotoFS::Core::Tag', :add => nil) }
+      let(:tag2) { instance_double('PhotoFS::Core::Tag', :add => nil) }
+
+      let(:tag_arg) { 'good, bad' }
+
+      before(:example) do
+        allow(command.instance_variable_get(:@tags)).to receive(:find_by_name).with('good').and_return(tag1)
+        allow(command.instance_variable_get(:@tags)).to receive(:find_by_name).with('bad').and_return(tag2)
+
+        allow(command.instance_variable_get(:@images)).to receive(:find_by_path).with(image_path).and_return(image)
+      end
+
+      it 'should tag the image twice' do
+        expect(tag1).to receive(:add).with(image)
+        expect(tag2).to receive(:add).with(image)
+
+        command.modify_datastore
       end
     end
 

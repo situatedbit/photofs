@@ -10,7 +10,7 @@ module PhotoFS
       extend Command::MatcherTemplates
 
       def self.matcher
-        @@_matcher ||= Parser.new([Parser::Pattern.new(['tag', {:tag => match_tag}, {:paths => match_path}], :expand_tail => true)])
+        @@_matcher ||= Parser.new([Parser::Pattern.new(['tag', {:tags => match_comma_delimited_tags}, {:paths => match_path}], :expand_tail => true)])
       end
 
       def self.usage
@@ -18,7 +18,7 @@ module PhotoFS
       end
 
       def after_initialize(args)
-        @args_tag_name = parsed_args[:tag]
+        @args_tag_names = parsed_args[:tags].split(',').map { |tag| tag.strip }
         @args_image_paths = parsed_args[:paths]
 
         @images = PhotoFS::Data::ImageSet.new
@@ -33,12 +33,14 @@ module PhotoFS
         images = @real_image_paths.map { |path| @images.find_by_path(path) || raise(CommandException, error_message) }
 
         images.each do |image|
-          tag = @tags.find_by_name(@args_tag_name) || @tags.add?(PhotoFS::Core::Tag.new @args_tag_name)
+          @args_tag_names.each do |tag_name|
+            tag = @tags.find_by_name(tag_name) || @tags.add?(PhotoFS::Core::Tag.new tag_name)
 
-          tag.add image
+            tag.add image
 
-          @images.save!
-          @tags.save!
+            @images.save!
+            @tags.save!
+          end
         end
 
         return true

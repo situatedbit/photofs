@@ -59,6 +59,22 @@ describe 'cli integration', :type => :locking_behavior do
         expect(tag_class.find_by(:name => 'good').images.map { |i| i.image_file.path }).to contain_exactly(*images)
       end
     end
+
+    context 'when several tags and images are included' do
+      let(:images) { [image_path, image2_path] }
+      let(:argv) { ['tag', 'good,bad'] + images }
+
+      before(:example) do
+        create :image, :image_file => build(:file, :path => image2_path)
+      end
+
+      it 'should apply tags to several images at once' do
+        cli.execute argv
+        ['good', 'bad'].each do |tag|
+          expect(tag_class.find_by(:name => tag).images.map { |i| i.image_file.path }).to contain_exactly(*images)
+        end
+      end
+    end
   end # :tag
 
   describe :tag_rename do
