@@ -41,7 +41,7 @@ describe 'cli integration', :type => :locking_behavior do
       let(:argv) { ['tag', 'some-tag', '/photofs/some-other-file.jpg'] }
 
       it 'should throw an error' do
-        expect { cli.execute argv }.to output(/is not a registered image/).to_stdout
+        expect { cli.execute argv }.to output(/not imported/).to_stdout
       end
     end
 

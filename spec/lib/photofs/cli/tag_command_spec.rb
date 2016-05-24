@@ -39,7 +39,7 @@ describe PhotoFS::CLI::TagCommand do
     context 'when the tag exists' do
       before(:example) do
         allow(command.instance_variable_get(:@tags)).to receive(:find_by_name).with(tag_arg).and_return(tag)
-        allow(command.instance_variable_get(:@images)).to receive(:find_by_path).with(image_path).and_return(image)
+        allow(command.instance_variable_get(:@images)).to receive(:find_by_paths).with([image_path]).and_return({image_path => image})
       end
 
       it 'should tag the image' do
@@ -56,7 +56,7 @@ describe PhotoFS::CLI::TagCommand do
     context 'when the tag does not exist' do
       before(:example) do
         allow(command.instance_variable_get(:@tags)).to receive(:find_by_name).with(tag_arg).and_return(nil)
-        allow(command.instance_variable_get(:@images)).to receive(:find_by_path).with(image_path).and_return(image)
+        allow(command.instance_variable_get(:@images)).to receive(:find_by_paths).with([image_path]).and_return({image_path => image})
         allow(command.instance_variable_get(:@tags)).to receive(:add?).and_return(tag)
       end
 
@@ -87,7 +87,7 @@ describe PhotoFS::CLI::TagCommand do
         allow(command.instance_variable_get(:@tags)).to receive(:find_by_name).with('good').and_return(tag1)
         allow(command.instance_variable_get(:@tags)).to receive(:find_by_name).with('bad').and_return(tag2)
 
-        allow(command.instance_variable_get(:@images)).to receive(:find_by_path).with(image_path).and_return(image)
+        allow(command.instance_variable_get(:@images)).to receive(:find_by_paths).with([image_path]).and_return({image_path => image})
       end
 
       it 'should tag the image twice' do
@@ -100,7 +100,7 @@ describe PhotoFS::CLI::TagCommand do
 
     context 'when the image is not in the repository' do
       before(:example) do
-        allow(command.instance_variable_get(:@images)).to receive(:find_by_path).with(image_path).and_return(nil)
+        allow(command.instance_variable_get(:@images)).to receive(:find_by_paths).with([image_path]).and_return({image_path => nil})
       end
 
       it 'should throw an error' do

@@ -30,7 +30,13 @@ module PhotoFS
       end
 
       def modify_datastore
-        images = @real_image_paths.map { |path| @images.find_by_path(path) || raise(CommandException, error_message) }
+        image_path_pairs = @images.find_by_paths(@real_image_paths)
+
+        images = image_path_pairs.values
+
+        non_imported_paths = image_path_pairs.keys.select { |path| image_path_pairs[path].nil? }
+
+        raise(CommandException, error_message(non_imported_paths)) unless non_imported_paths.empty?
 
         images.each do |image|
           @args_tag_names.each do |tag_name|
@@ -52,8 +58,8 @@ module PhotoFS
 
       private
 
-      def error_message
-        "#{@real_image_path} is not a registered image. Import the image first. No images were tagged."
+      def error_message(missing_paths)
+        "Images not imported: \n" + missing_paths.join("\n") + "\nImport all images first. No images were tagged."
       end
 
       Command.register_command self
