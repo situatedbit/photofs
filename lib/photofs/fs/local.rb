@@ -41,7 +41,7 @@ module PhotoFS
       def lock(path)
         ::File.open(path, ::File::RDWR | ::File::CREAT, 0644) do |file|
           begin
-            Timeout::timeout(1) { file.flock ::File::LOCK_EX } # unlocks when file is closed
+            Timeout::timeout(2) { file.flock ::File::LOCK_EX } # unlocks when file is closed
           rescue
             raise Errno::ENOLCK
           end
