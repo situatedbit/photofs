@@ -38,16 +38,14 @@ module PhotoFS
 
         raise(CommandException, error_message(non_imported_paths)) unless non_imported_paths.empty?
 
-        images.each do |image|
-          @args_tag_names.each do |tag_name|
-            tag = @tags.find_by_name(tag_name) || @tags.add?(PhotoFS::Core::Tag.new tag_name)
+        @args_tag_names.each do |tag_name|
+          tag = @tags.find_by_name(tag_name) || @tags.add?(PhotoFS::Core::Tag.new tag_name)
 
-            tag.add image
-
-            @images.save!
-            @tags.save!
-          end
+          images.each { |image| tag.add image }
         end
+
+        @images.save!
+        @tags.save!
 
         return true
       end
