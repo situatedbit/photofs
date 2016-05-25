@@ -18,6 +18,7 @@
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 
 require 'active_record'
+require 'custom_matchers'
 require 'database_cleaner'
 require 'factory_girl'
 require 'shoulda-matchers'

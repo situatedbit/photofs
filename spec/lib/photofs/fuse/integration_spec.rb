@@ -41,7 +41,7 @@ describe 'integration for', :type => :locking_behavior do
   describe 'tags ' do
     describe 'top level dir: ' do
       it 'should exist' do
-        expect(fuse.getattr(context, '/t')).not_to be nil
+        expect(fuse.getattr(context, '/t')).to be_a_directory
       end
 
       context 'when I try to create /t/good/bad' do
@@ -58,7 +58,7 @@ describe 'integration for', :type => :locking_behavior do
         it 'should exist in the file system' do
           fuse.mkdir(context, '/t/good-tag', 0777)
 
-          expect(fuse.getattr(context, '/t/good-tag').mode & RFuse::Stat::S_IFMT).to equal(RFuse::Stat::S_IFDIR)
+          expect(fuse.getattr(context, '/t/good-tag')).to be_a_directory
         end
       end
 
@@ -107,17 +107,17 @@ describe 'integration for', :type => :locking_behavior do
       end
 
       it 'should list a file for each jpg in its path' do
-        expect(fuse.getattr(context, '/o/a/1a.jpg')).not_to be nil
-        expect(fuse.getattr(context, '/o/a/2a.jpg')).not_to be nil
-        expect(fuse.getattr(context, '/o/a/b/1b.jpg')).not_to be nil
-        expect(fuse.getattr(context, '/o/c/1c.JPG')).not_to be nil
+        expect(fuse.getattr(context, '/o/a/1a.jpg')).to be_a_link
+        expect(fuse.getattr(context, '/o/a/2a.jpg')).to be_a_link
+        expect(fuse.getattr(context, '/o/a/b/1b.jpg')).to be_a_link
+        expect(fuse.getattr(context, '/o/c/1c.JPG')).to be_a_link
         expect{ fuse.getattr(context, '/o/a/not-exist.jpg') }.to raise_error(Errno::ENOENT)
       end
 
       it 'should list a directory for each sub directory in the path' do
-        expect(fuse.getattr(context, '/o/a')).not_to be nil
-        expect(fuse.getattr(context, '/o/a/b')).not_to be nil
-        expect(fuse.getattr(context, '/o/c')).not_to be nil
+        expect(fuse.getattr(context, '/o/a')).to be_a_directory
+        expect(fuse.getattr(context, '/o/a/b')).to be_a_directory
+        expect(fuse.getattr(context, '/o/c')).to be_a_directory
         expect{ fuse.getattr(context, '/o/a/not-exist') }.to raise_error(Errno::ENOENT)
       end
     end
@@ -145,7 +145,7 @@ describe 'integration for', :type => :locking_behavior do
         it 'should tag the image' do
           fuse.symlink(context, source, target)
 
-          expect(fuse.getattr(context, "/o/a/tags/good/1a.jpg")).not_to be nil
+          expect(fuse.getattr(context, "/o/a/tags/good/1a.jpg")).to be_a_link
         end
       end
 
@@ -165,7 +165,7 @@ describe 'integration for', :type => :locking_behavior do
         it 'should tag the image' do
           fuse.symlink(context, source, target)
 
-          expect(fuse.getattr(context, "/t/good/1c.JPG")).not_to be nil
+          expect(fuse.getattr(context, "/t/good/1c.JPG")).to be_a_link
         end
       end
 
@@ -196,7 +196,7 @@ describe 'integration for', :type => :locking_behavior do
         fuse.rename(context, '/o/a/1a.jpg', '/t/good/1a.jpg')
         fuse.rename(context, '/o/c/1c.JPG', '/t/good/1c.JPG')
 
-        expect(fuse.getattr(context, "/o/c/tags/good/1c.JPG")).not_to be nil
+        expect(fuse.getattr(context, "/o/c/tags/good/1c.JPG")).to be_a_link
         expect{ fuse.getattr(context, "/o/c/tags/good/1a.jpg") }.to raise_error(Errno::ENOENT)
       end
     end
@@ -292,7 +292,7 @@ describe 'integration for', :type => :locking_behavior do
 
     context 'when an image is removed from single tag' do
       it 'should not be listed under that tag' do
-        expect(fuse.getattr(context, '/t/good/1a.jpg')).not_to be nil
+        expect(fuse.getattr(context, '/t/good/1a.jpg')).to be_a_link
 
         fuse.unlink(context, '/t/good/1a.jpg')
 
@@ -307,8 +307,8 @@ describe 'integration for', :type => :locking_behavior do
       end
 
       it 'should not be listed under either tag' do
-        expect(fuse.getattr(context, '/o/a/tags/bad/1a.jpg')).not_to be nil
-        expect(fuse.getattr(context, '/o/a/tags/good/1a.jpg')).not_to be nil
+        expect(fuse.getattr(context, '/o/a/tags/bad/1a.jpg')).to be_a_link
+        expect(fuse.getattr(context, '/o/a/tags/good/1a.jpg')).to be_a_link
 
         fuse.unlink(context, '/t/good/bad/1a.jpg')
 
