@@ -10,15 +10,15 @@ module PhotoFS
       extend Command::MatcherTemplates
 
       def self.matcher
-        @@_matcher ||= Parser.new([Parser::Pattern.new(['tag', {:tags => match_comma_delimited_tags}, {:paths => match_path}], :expand_tail => true)])
+        @@_matcher ||= Parser.new([Parser::Pattern.new(['tag', {:tags => match_tag_list}, {:paths => match_path}], :expand_tail => true)])
       end
 
       def self.usage
-        ['tag TAG_LIST PATH [PATH_2] [PATH_N] where TAG_LIST is a comma-separated list (wrapped in quotes if including spaces)']
+        ['tag TAG_LIST PATH [PATH_2] [PATH_N] where TAG_LIST is a space-separated list (wrap in quotes if listing more than one)']
       end
 
       def after_initialize(args)
-        @args_tag_names = parsed_args[:tags].split(',').map { |tag| tag.strip }
+        @args_tag_names = parsed_args[:tags].split.map { |tag| tag.strip }
         @args_image_paths = parsed_args[:paths]
 
         @images = PhotoFS::Data::ImageSet.new

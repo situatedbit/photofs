@@ -95,8 +95,8 @@ module PhotoFS::CLI
     end
 
     module MatcherTemplates
-      def match_comma_delimited_tags
-        "#{match_tag}(\\s*,\\s*#{match_tag})*"
+      def match_tag_list
+        "#{match_tag}(\\s*#{match_tag})*"
       end
 
       def match_path

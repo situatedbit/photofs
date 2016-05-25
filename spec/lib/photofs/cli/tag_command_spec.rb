@@ -22,8 +22,7 @@ describe PhotoFS::CLI::TagCommand do
     it { expect(klass.match? ['tag', 'a-tag', '/some/file/somewhere']).to be true }
     it { expect(klass.match? ['tag', '1324', './some/file/somewhere.jpg']).to be true }
     it { expect(klass.match? ['tag', '1324', './some/file/somewhere.jpg', './some/file/yet another.jpg']).to be true }
-    it { expect(klass.match? ['tag', '1324,good', './some/file/somewhere.jpg', './some/file/yet another.jpg']).to be true }
-    it { expect(klass.match? ['tag', '1324, good', './some/file/somewhere.jpg', './some/file/yet another.jpg']).to be true }
+    it { expect(klass.match? ['tag', '1324 good', './some/file/somewhere.jpg', './some/file/yet another.jpg']).to be true }
     it { expect(klass.match? ['another', 'tag', 'file']).to be false }
   end
 
@@ -81,21 +80,22 @@ describe PhotoFS::CLI::TagCommand do
       let(:tag1) { instance_double('PhotoFS::Core::Tag', :add => nil) }
       let(:tag2) { instance_double('PhotoFS::Core::Tag', :add => nil) }
 
-      let(:tag_arg) { 'good, bad' }
+      let(:tag_arg) { 'good bad' }
+      let(:tags) { command.instance_variable_get :@tags }
 
       before(:example) do
-        allow(command.instance_variable_get(:@tags)).to receive(:find_by_name).with('good').and_return(tag1)
-        allow(command.instance_variable_get(:@tags)).to receive(:find_by_name).with('bad').and_return(tag2)
+        allow(tags).to receive(:find_by_name).with('good').and_return(tag1)
+        allow(tags).to receive(:find_by_name).with('bad').and_return(tag2)
 
         allow(command.instance_variable_get(:@images)).to receive(:find_by_paths).with([image_path]).and_return({image_path => image})
       end
 
-      it 'should tag the image twice' do
-        expect(tag1).to receive(:add).with(image)
-        expect(tag2).to receive(:add).with(image)
-
+      after(:example) do
         command.modify_datastore
       end
+
+      it { expect(tag1).to receive(:add).with(image) }
+      it { expect(tag2).to receive(:add).with(image) }
     end
 
     context 'when the image is not in the repository' do

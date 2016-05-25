@@ -62,7 +62,7 @@ describe 'cli integration', :type => :locking_behavior do
 
     context 'when several tags and images are included' do
       let(:images) { [image_path, image2_path] }
-      let(:argv) { ['tag', 'good,bad'] + images }
+      let(:argv) { ['tag', 'good bad'] + images }
 
       before(:example) do
         create :image, :image_file => build(:file, :path => image2_path)
