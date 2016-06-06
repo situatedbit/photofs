@@ -35,6 +35,14 @@ module PhotoFS
         record.destroy
       end
 
+      # def find_by_images(image_set)
+        # imagine that image_set is data:ImageSet, so all of them
+        # this is where the working is
+          # if I knew that image_set was data::ImageSet, then I'd skip it alltogether and just get all tags
+          # alternatively, I could load all tags and their images, then ....
+        # or, can you somehow hook in to the algorithm provided by core::TagSet?
+      # end
+
       def save!
         save_record_object_map(@record_object_map)
       end

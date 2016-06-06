@@ -137,7 +137,7 @@ describe PhotoFS::Core::TagSet do
         expect(tag_set.find_by_images image_set).to contain_exactly(tag, tag2, tag3)
       end
     end
-  end
+  end # :find_by_images
 
   describe :intersection do
     let(:first) { PhotoFS::Core::Tag.new('first') }
