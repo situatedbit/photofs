@@ -155,6 +155,22 @@ describe PhotoFS::Data::ImageSet do
     end
   end # :find_by_paths
 
+  describe :include? do
+    let(:image) { PhotoFS::Core::Image.new '/1/2/3.jpg' }
+
+    context 'when the image is in the database' do
+      before(:example) do
+        create_image image.path
+      end
+
+      it { expect(image_set.include? image).to be true }
+    end
+
+    context 'when the image is not in the database' do
+      it { expect(image_set.include? image).to be false }
+    end
+  end
+
   describe :import do
     let(:path_1) { '/a/b/1.jpg' }
     let(:path_2) { '/a/b/2.jpg' }

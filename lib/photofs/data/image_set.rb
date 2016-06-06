@@ -45,6 +45,10 @@ module PhotoFS
         Hash[paths.zip []].merge Hash[images_map]
       end
 
+      def include?(image)
+        !!Image.from_image(image)
+      end
+
       def import(paths)
         import_paths = paths - Image.exist_by_paths(paths)
 

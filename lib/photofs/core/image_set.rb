@@ -1,8 +1,11 @@
+require 'forwardable'
 require 'set'
 
 module PhotoFS
   module Core
     class ImageSet
+      extend Forwardable
+
       def initialize(options={})
         @options = default_options.merge options
 
@@ -78,6 +81,9 @@ module PhotoFS
         { :set => Set.new }
       end
 
+      def_delegator :set, :include?, :include?
+      def_delegator :set, :empty?, :empty?
+      def_delegator :set, :size, :size
     end
   end
 end
