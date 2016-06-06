@@ -84,7 +84,7 @@ module PhotoFS
         stat_hash = { :atime => Time.now,
                       :ctime => Time.now,
                       :mtime => Time.now,
-                      :size => size }
+                      :size => 1024 } # arbitrary
 
         mode = Stat.add Stat::MODE_READ_ONLY, Stat::PERM_USER_WRITE
 
@@ -160,10 +160,6 @@ module PhotoFS
 
       def is_tags_root?
         @query_tag_names.empty?
-      end
-
-      def size
-        node_hash.values.reduce(0) { |size, node| size + node.name.length }
       end
 
       def stats_file
