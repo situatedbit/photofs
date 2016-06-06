@@ -8,6 +8,10 @@ module PhotoFS
         @path = path
       end
 
+      def basename
+        ::File.basename path
+      end
+
       def hash
         path.hash
       end

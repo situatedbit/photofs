@@ -93,6 +93,16 @@ module PhotoFS
       end
 
       public
+      def read(context, path, size, offset, ffi)
+        log "read: #{path}"
+
+        file = search RelativePath.new(path)
+
+        raise Errno::EACCES.new(path) if file.directory?
+
+        file.read_contents(size, offset)
+      end
+
       def readdir(context, path, filler, offset, ffi)
         log "readdir: #{path}"
 
@@ -180,7 +190,7 @@ module PhotoFS
         save!
       end
 
-      wrap_with_lock :read_write_lock, :readdir, :rename, :getattr, :readlink, :mkdir, :rmdir, :symlink, :unlink
+      wrap_with_lock :read_write_lock, :read, :readdir, :rename, :getattr, :readlink, :mkdir, :rmdir, :symlink, :unlink
     end
   end
 end # module

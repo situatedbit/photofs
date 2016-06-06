@@ -1,6 +1,6 @@
 require 'photofs/data/image'
-require 'photofs/fs/test'
 require 'photofs/fs'
+require 'photofs/fs/test'
 require 'photofs/fuse'
 require 'rfuse'
 
@@ -333,5 +333,34 @@ describe 'integration for', :type => :locking_behavior do
       end
     end
   end # persisting images
+
+  describe 'stats file' do
+    let(:image_files) { ['/a/1.jpg', '/a/2.jpg', '/a/3.jpg'].map {|path| "#{source_path}#{path}"} }
+    let(:stats_file_path) { '/o/a/tags/stats' }
+
+    before(:example) do
+      create_images image_files
+
+      file_system.add({:files => image_files})
+
+      fuse.mkdir(context, '/t/good', 0)
+      fuse.mkdir(context, '/t/bad', 0)
+    end
+
+    it { expect(fuse.getattr(context, stats_file_path)).to be_a_file }
+
+    it { expect(fuse.read(context, stats_file_path, 1024, 0, nil)).to be_empty }
+
+    context 'when files have been tagged' do
+      before(:example) do
+        fuse.rename(context, '/o/a/1.jpg', '/o/a/tags/good/1.jpg')
+        fuse.rename(context, '/o/a/2.jpg', '/o/a/tags/good/2.jpg')
+        fuse.rename(context, '/o/a/3.jpg', '/o/a/tags/bad/3.jpg')
+      end
+
+      it { expect(fuse.read(context, stats_file_path, 1024, 0, nil)).to include('good: 1.jpg, 2.jpg') }
+      it { expect(fuse.read(context, stats_file_path, 1024, 0, nil)).to include('bad: 3.jpg') }
+    end
+  end # stats file
 
 end

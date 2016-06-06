@@ -1,8 +1,10 @@
+require 'forwardable'
 require 'photofs/core/tag'
 
 module PhotoFS
   module Core
     class TagSet
+      extend Forwardable
 
       # returns image set
       def self.intersection(tags)
@@ -68,6 +70,13 @@ module PhotoFS
         "[#{tags.values.join(', ')}]"
       end
 
+      # a new tag set limited only to tags and images from image_set
+      def limit_to_images(image_set)
+        find_by_image(image_set.all).reduce(TagSet.new) do |new_set, tag|
+          new_set.add?(Tag.new tag.name, :set => (image_set & tag))
+        end
+      end
+
       protected
 
       def tags
@@ -86,6 +95,8 @@ module PhotoFS
         hash
       end
 
+      def_delegators :@tags, :size, :size
+      def_delegators :@tags, :empty?, :empty?
     end
   end
 end

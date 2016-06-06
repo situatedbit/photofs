@@ -1,7 +1,8 @@
-require_relative 'dir'
 require 'photofs/core/tag'
 require 'photofs/core/tag_set'
 require 'photofs/core/image_set'
+require 'photofs/fuse/dir'
+require 'photofs/fuse/stats_file'
 
 module PhotoFS
   module Fuse
@@ -148,7 +149,7 @@ module PhotoFS
           file_name_map[name] = File.new(name, PhotoFS::FS.file_system.absolute_path(image.path), {:parent => self, :payload => image})
         end
 
-        file_name_map
+        is_tags_root? ? file_name_map.merge( {'stats' => stats_file} ) : file_name_map
       end
 
       def images
@@ -163,6 +164,10 @@ module PhotoFS
 
       def size
         node_hash.values.reduce(0) { |size, node| size + node.name.length }
+      end
+
+      def stats_file
+        StatsFile.new 'stats', :tags => @tags.limit_to_images(@images_domain)
       end
 
       def query_tags

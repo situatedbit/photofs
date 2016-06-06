@@ -211,6 +211,42 @@ describe PhotoFS::Core::TagSet do
     end
   end
 
+  describe :limit_to_images do
+    subject { tag_set.limit_to_images image_set }
+
+    let(:image1) { instance_double('Image', :name => '1.jpg') }
+    let(:image2) { instance_double('Image', :name => '2.jpg') }
+    let(:image3) { instance_double('Image', :name => '3.jpg') }
+    let(:image4) { instance_double('Image', :name => '4.jpg') }
+    let(:image_set) { PhotoFS::Core::ImageSet.new(:set => [image1, image2, image3].to_set) }
+
+    let(:tag1) { PhotoFS::Core::Tag.new 'good', :set => [image1, image2, image4].to_set }
+    let(:tag2) { PhotoFS::Core::Tag.new 'bad', :set => [image1].to_set }
+    let(:tag3) { PhotoFS::Core::Tag.new 'ugly' }
+
+    before(:each) do
+      [tag1, tag2, tag3].each { |t| tag_set.add? t }
+    end
+
+    it 'should only contain tags that had images from the site' do
+      expect(subject.all).to include(have_attributes(:name => 'good'), have_attributes(:name => 'bad'))
+    end
+
+    it 'should add previously tagged images to each tag' do
+      expect(subject.find_by_name('good').images).to contain_exactly(image1, image2)
+    end
+
+    it { expect(subject).to be_an_instance_of(PhotoFS::Core::TagSet) }
+
+    context 'when image set does not overlap with images in tags' do
+      before(:each) do
+        allow(tag_set).to receive(:find_by_image).and_return([])
+      end
+
+      it { expect(subject).to be_empty }
+    end
+  end
+
   describe :rename do
     let(:old_tag_images) { [instance_double('Image'), instance_double('Image')] }
     let(:old_tag) { instance_double('Tag', :name => 'old tag') }

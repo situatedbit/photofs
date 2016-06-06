@@ -3,6 +3,15 @@ require 'photofs/core/image'
 describe PhotoFS::Core::Image do
   let(:path) { 'kawaguchiko' }
 
+  describe :basename do
+    let(:image_class) { PhotoFS::Core::Image }
+
+    it { expect(image_class.new('/a/b/c/1.jpg').basename).to eq('1.jpg') }
+    it { expect(image_class.new('1.jpg').basename).to eq('1.jpg') }
+    it { expect(image_class.new('/a/b/c/1').basename).to eq('1') }
+    it { expect(image_class.new('1.jpg.xcf').basename).to eq('1.jpg.xcf') }
+  end
+
   describe :hash do
     let(:left) { PhotoFS::Core::Image.new path }
     let(:right) { PhotoFS::Core::Image.new(path * 2) }

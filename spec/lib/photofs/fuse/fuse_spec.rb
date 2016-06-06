@@ -69,6 +69,42 @@ describe PhotoFS::Fuse::Fuse do
     end
   end
 
+  describe :read do
+    let(:ffi) { instance_double('RFuse::FileInfo') }
+    let(:offset) { instance_double('Fixnum') }
+    let(:size) { instance_double('Fixnum') }
+    let(:path) { '/some/path' }
+    let(:file) { instance_double('Node', :directory? => false) }
+    let(:dir) { instance_double('Node', :directory? => true) }
+
+    subject { fuse.read(context, path, size, offset, ffi) }
+
+    context 'when the path is not a file' do
+      before(:example) do
+        allow(fuse).to receive(:search).and_return(dir)
+      end
+
+      it 'will throw an error' do
+        expect { subject }.to raise_error(Errno::EACCES)
+      end
+    end
+
+    context 'when the path is a file' do
+      before(:example) do
+        allow(fuse).to receive(:search).and_return(file)
+        allow(file).to receive(:read_contents)
+      end
+
+      after(:example) do
+        subject
+      end
+
+      it 'will read contents on the file' do
+        expect(file).to receive(:read_contents).with(size, offset)
+      end
+    end
+  end # :read
+
   describe :readdir do
     let(:filler) { instance_double("filler") }
     let(:dir) { double('search-dir') }
