@@ -358,8 +358,7 @@ describe 'integration for', :type => :locking_behavior do
         fuse.rename(context, '/o/a/3.jpg', '/o/a/tags/bad/3.jpg')
       end
 
-      it { expect(fuse.read(context, stats_file_path, 1024, 0, nil)).to include('good: 1.jpg, 2.jpg') }
-      it { expect(fuse.read(context, stats_file_path, 1024, 0, nil)).to include('bad: 3.jpg') }
+      it { expect(fuse.read(context, stats_file_path, 1024, 0, nil)).to eq("bad: 1\ngood: 2") }
     end
   end # stats file
 

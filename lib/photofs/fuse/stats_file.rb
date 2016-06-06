@@ -10,11 +10,7 @@ module PhotoFS::Fuse
     end
 
     def contents
-      @contents ||= @tags.all.sort_by { |t| t.name }.reduce('') do |contents, tag|
-        file_list = tag.images.map { |i| i.basename }.sort.join ', '
-
-        "#{contents}\n#{tag.name}: #{file_list}"
-      end
+      @contents ||= @tags.all.sort_by { |t| t.name }.map { |t| "#{t.name}: #{t.images.size}" }.join("\n")
     end
 
     def read_contents(size, offset)

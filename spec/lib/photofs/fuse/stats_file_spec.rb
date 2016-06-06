@@ -19,8 +19,8 @@ describe PhotoFS::Fuse::StatsFile do
       allow(tag2).to receive(:images).and_return(tag2_images)
     end
 
-    it { expect(subject).to include('good: a.jpg, b.jpg, c.jpg') }
-    it { expect(subject).to include('bad: a.jpg, d.jpg') }
+    it { expect(subject).to match(/^good: 3$/) }
+    it { expect(subject).to match(/^bad: 2$/) }
 
     context 'when there are no tags' do
       let(:tag_set) { instance_double('TagSet', :all => []) }
@@ -56,5 +56,5 @@ describe PhotoFS::Fuse::StatsFile do
 
     it { expect(subject.mode & PhotoFS::Fuse::Stat::MODE_MASK).to eq(PhotoFS::Fuse::Stat::MODE_READ_ONLY) }
   end
-  
+
 end
