@@ -5,6 +5,7 @@ module PhotoFS
   module Core
     class ImageSet
       extend Forwardable
+      include Enumerable
 
       def initialize(options={})
         @options = default_options.merge options
@@ -30,6 +31,14 @@ module PhotoFS
 
       def add(image)
         set << image
+      end
+
+      def each(&block)
+        return enum_for(__method__) unless block_given?
+
+        set.each &block
+
+        self
       end
 
       def empty?

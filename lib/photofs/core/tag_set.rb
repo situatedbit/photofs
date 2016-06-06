@@ -50,12 +50,10 @@ module PhotoFS
       end
 
       # returns array of tags which tag any of the images
-      def find_by_image(images)
-        images = [images].flatten # normalize to array
-
+      def find_by_images(image_set)
         hash = image_tags_hash
 
-        images.map { |image| hash[image] || [] }.flatten.uniq
+        image_set.map { |image| hash[image] || [] }.flatten.uniq
       end
 
       def rename(old_tag, new_tag)
@@ -72,7 +70,7 @@ module PhotoFS
 
       # a new tag set limited only to tags and images from image_set
       def limit_to_images(image_set)
-        find_by_image(image_set.all).reduce(TagSet.new) do |new_set, tag|
+        find_by_images(image_set).reduce(TagSet.new) do |new_set, tag|
           new_set.add?(Tag.new tag.name, :set => (image_set & tag))
         end
       end

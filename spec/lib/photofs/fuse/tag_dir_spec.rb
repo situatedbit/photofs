@@ -45,12 +45,12 @@ describe PhotoFS::Fuse::TagDir do
     before(:example) do
       dir.instance_variable_set(:@images_domain, images_domain)
 
-      allow(dir).to receive(:images).and_return(instance_double('images', {:include? => false}))
+      allow(dir).to receive(:images).and_return(double('images', {:include? => false}))
     end
 
     context 'when node payload is already in images set' do
       before(:example) do
-        allow(dir).to receive(:images).and_return(instance_double('images', {:include? => true}))
+        allow(dir).to receive(:images).and_return(double('images', {:include? => true}))
       end
 
       it 'should not be permitted' do
@@ -232,7 +232,7 @@ describe PhotoFS::Fuse::TagDir do
 
         context 'but it still contains images' do
           before(:example) do
-            allow(tag).to receive(:images).and_return(instance_double('Array', :empty? => false))
+            allow(tag).to receive(:images).and_return(double('images', :empty? => false))
           end
 
           it 'should raise an error' do
@@ -480,7 +480,7 @@ describe PhotoFS::Fuse::TagDir do
     let(:image_c) { instance_double('PhotoFS::Core::Image', :path => '/c/え.jpg') }
     let(:image_d) { instance_double('PhotoFS::Core::Image', :path => '/d/きれい.jpg') }
 
-    let(:images) { [image_a, image_d] }
+    let(:images) { PhotoFS::Core::ImageSet.new :set => [image_a, image_d].to_set }
     let(:files) { ['stats', 'え.jpg', 'きれい.jpg'] }
 
     before(:example) do
@@ -493,7 +493,7 @@ describe PhotoFS::Fuse::TagDir do
     end
 
     context 'when there are name collisions' do
-      let(:images) { [image_c, image_b, image_a] }
+      let(:images) { PhotoFS::Core::ImageSet.new :set => [image_c, image_b, image_a].to_set }
 
       let(:files) { ['え.jpg', 'え-b.jpg', 'え-c.jpg', 'stats'] }
 

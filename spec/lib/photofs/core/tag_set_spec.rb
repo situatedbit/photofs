@@ -87,42 +87,54 @@ describe PhotoFS::Core::TagSet do
     end
   end
 
-  describe "#find_by_image" do
+  describe :find_by_images do
+    let(:image_set) { PhotoFS::Core::ImageSet.new :set => [image].to_set }
     let(:image) { PhotoFS::Core::Image.new 'ちよだ' }
     let(:tag) { PhotoFS::Core::Tag.new 'タグ' }
 
     context "when there are no tags" do
+      it "should return an empty collection" do
+        expect(tag_set.find_by_images image_set).to be_empty
+      end
+    end
+
+    context 'when there are no images' do
       before(:each) do
-        allow(tag_set).to receive(:image_tags_hash).and_return({})
+        tag.add image
+        tag_set.add? tag
       end
 
-      it "should return an empty collection" do
-        expect(tag_set.find_by_image image).to be_empty
-      end
+      it { expect(tag_set.find_by_images PhotoFS::Core::ImageSet.new).to be_empty }
     end
 
     context "when passed a single image" do
       before(:each) do
-        allow(tag_set).to receive(:image_tags_hash).and_return({ image => [tag] })
+        tag.add image
+        tag_set.add? tag
       end
 
       it "should return the tags for that image" do
-        expect(tag_set.find_by_image image).to contain_exactly(tag)
+        expect(tag_set.find_by_images image_set).to contain_exactly(tag)
       end
     end
 
     context "when there are multiple images" do
-      let(:image2) { 'image2' }
-      let(:tag2) { 'tag2' }
-      let(:tag3) { 'tag3' }
+      let(:image_set) { PhotoFS::Core::ImageSet.new :set => [image, image2].to_set }
+
+      let(:image2) { PhotoFS::Core::Image.new '二.jpg' }
+      let(:tag2) { PhotoFS::Core::Tag.new '三' }
+      let(:tag3) { PhotoFS::Core::Tag.new '四' }
 
       before(:each) do
-        hash = { image => [tag, tag2], image2 => [tag2, tag3] }
-        allow(tag_set).to receive(:image_tags_hash).and_return(hash)
+        [image, image2].each { |i| tag.add i }
+        [image, image2].each { |i| tag2.add i }
+        tag3.add image
+
+        [tag, tag2, tag3].each { |t| tag_set.add? t }
       end
 
       it "should return the union of tags from those images" do
-        expect(tag_set.find_by_image [image, image2]).to contain_exactly(tag, tag2, tag3)
+        expect(tag_set.find_by_images image_set).to contain_exactly(tag, tag2, tag3)
       end
     end
   end
@@ -152,52 +164,6 @@ describe PhotoFS::Core::TagSet do
 
     it "should create an intersection set from the tags that are returned" do
       expect(PhotoFS::Core::TagSet.intersection([first, second]).all).to contain_exactly(PhotoFS::Core::Image.new('3'))
-    end
-  end
-
-  describe "#image_tags_hash" do
-    context "when there are no images" do
-      let :tags do
-        Hash[ ['a', 'b', 'c'].map { |n| [n, PhotoFS::Core::Tag.new(n)] } ]
-      end
-
-      it "should be empty" do
-        expect(tag_set.send :image_tags_hash).to be_empty
-      end
-    end
-
-    context "when there are no tags" do
-      let(:tags) { Hash.new }
-
-      it "should be empty" do
-        expect(tag_set.send :image_tags_hash).to be_empty
-      end
-    end
-
-    context "when there are images with multiple tags" do
-      let(:tag1) { PhotoFS::Core::Tag.new('a') }
-      let(:tag2) { PhotoFS::Core::Tag.new('b') }
-      let(:tag3) { PhotoFS::Core::Tag.new('c') }
-
-      let(:image1) { PhotoFS::Core::Image.new('1') }
-      let(:image2) { PhotoFS::Core::Image.new('2') }
-      let(:image3) { PhotoFS::Core::Image.new('3') }
-
-      let(:tags) do
-        { tag1.name => tag1, tag2.name => tag2, tag3.name => tag3 }
-      end
-
-      before(:each) do
-        allow(tag1).to receive(:images).and_return([image1, image2])
-        allow(tag2).to receive(:images).and_return([image2, image3])
-        allow(tag3).to receive(:images).and_return([image3])
-      end
-
-      it "should flip keys and values" do
-        expect((tag_set.send :image_tags_hash)[image1]).to contain_exactly(tag1)
-        expect((tag_set.send :image_tags_hash)[image2]).to contain_exactly(tag1, tag2)
-        expect((tag_set.send :image_tags_hash)[image3]).to contain_exactly(tag2, tag3)
-      end
     end
   end
 
@@ -240,7 +206,7 @@ describe PhotoFS::Core::TagSet do
 
     context 'when image set does not overlap with images in tags' do
       before(:each) do
-        allow(tag_set).to receive(:find_by_image).and_return([])
+        allow(tag_set).to receive(:find_by_images).and_return([])
       end
 
       it { expect(subject).to be_empty }

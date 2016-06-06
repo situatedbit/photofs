@@ -132,12 +132,12 @@ module PhotoFS
         if is_tags_root?
           @tags.all
         else
-          @tags.find_by_image(images) - query_tags
+          @tags.find_by_images(images) - query_tags
         end
       end
 
       def files
-        images_sorted = images.sort { |a, b| a.path <=> b.path }
+        images_sorted = images.all.sort { |a, b| a.path <=> b.path }
 
         file_name_map = {}
 
@@ -155,7 +155,7 @@ module PhotoFS
       def images
         # put images domain at the front of the array for #intersection call to take advantage of 
         # Data::ImageSet's implementation
-        is_tags_root? ? [] : PhotoFS::Core::TagSet.intersection([@images_domain] + query_tags).to_a
+        is_tags_root? ? PhotoFS::Core::ImageSet.new : PhotoFS::Core::TagSet.intersection([@images_domain] + query_tags)
       end
 
       def is_tags_root?
