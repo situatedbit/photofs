@@ -2,6 +2,10 @@ require 'photofs/fuse/tag_dir'
 
 module PhotoFS::Fuse
   class TagDirRoot < PhotoFS::Fuse::TagDir
+    # Represents tag directory at the top level of a tag
+    # directory tree. It will include other tag dirs as
+    # children.
+
     def add(name, node)
       raise Errno::EPERM
     end
