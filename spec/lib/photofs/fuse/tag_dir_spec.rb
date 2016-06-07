@@ -58,16 +58,6 @@ describe PhotoFS::Fuse::TagDir do
       end
     end
 
-    context 'when dir is tag root' do
-      before(:example) do
-        allow(dir).to receive(:is_tags_root?).and_return(true)
-      end
-
-      it 'should not be permitted' do
-        expect { dir.add('child', node) }.to raise_error(Errno::EPERM)
-      end
-    end
-
     context 'when node image is not in the image domain' do
       before(:example) do
         allow(images_domain).to receive(:include?).and_return(false)
@@ -97,51 +87,10 @@ describe PhotoFS::Fuse::TagDir do
   end # :add
 
   describe :mkdir do
-    let(:tags) { PhotoFS::Core::TagSet.new }
-    let(:dir) { PhotoFS::Fuse::TagDir.new('t', tags) }
-    let(:tag_name) { 'おさか' }
-    let(:tag) { PhotoFS::Core::Tag.new tag_name }
+    let(:tag_dir) { PhotoFS::Fuse::TagDir.new('t', PhotoFS::Core::TagSet.new) }
 
-    context 'when dir is the top-most tag directory' do
-      before(:example) do
-        allow(dir).to receive(:is_tags_root?).and_return(true)
-      end
-
-      context 'when the tag does not exist' do
-        before(:example) do
-          allow(dir).to receive(:dir_tags).and_return([])
-        end
-
-        it 'should create a new tag' do
-          expect(tags).to receive(:add?).with(tag)
-
-          dir.mkdir(tag_name)
-        end
-      end
-
-      context 'when the tag exists' do
-        let(:dir_tags) { [tag] }
-
-        before(:example) do
-          allow(dir).to receive(:dir_tags).and_return(dir_tags)
-        end
-
-        it 'should throw an error' do
-          expect { dir.mkdir tag_name }.to raise_error(Errno::EEXIST)
-        end
-      end
-    end
-
-    context 'when the dir is not the top-most tag directory' do
-      before(:example) do
-        allow(dir).to receive(:is_tags_root?).and_return(false)
-      end
-
-      it 'should throw an error' do
-        expect { dir.mkdir tag_name }.to raise_error(Errno::EPERM)
-      end
-    end
-  end # :mkdir
+    it { expect { tag_dir.mkdir 'new-dir' }.to raise_error(Errno::EPERM) }
+  end
 
   describe :remove do
     let(:dir) { PhotoFS::Fuse::TagDir.new 'じしょ' , {}, {:query_tag_names => []}}
@@ -195,66 +144,12 @@ describe PhotoFS::Fuse::TagDir do
   end # :remove
 
   describe :rmdir do
-    let(:tags) { PhotoFS::Core::TagSet.new }
-    let(:dir) { PhotoFS::Fuse::TagDir.new('t', tags) }
-    let(:dir_tags) { [] }
-    let(:tag_name) { 'ほっかいど' }
-    let(:tag) { PhotoFS::Core::Tag.new tag_name }
+    # this doesn't make sense; you'd delete all of the
+    # children first, once that happens, this dir ceases to exist.
+    let(:dir) { PhotoFS::Fuse::TagDir.new('t', double('TagSet')) }
 
-    context 'when the tag does not exist' do
-      before(:example) do
-        allow(dir).to receive(:dir_tags).and_return(dir_tags)
-        allow(dir_tags).to receive(:include?).with(tag).and_return(false)
-      end
-
-      it 'should throw an error' do
-        expect { dir.rmdir tag_name }.to raise_error(Errno::ENOENT)
-      end
-    end
-
-    context 'when the tag exists' do
-      before(:example) do
-        allow(dir.instance_variable_get(:@tags)).to receive(:find_by_name).with(tag_name).and_return(tag)
-        allow(dir).to receive(:dir_tags).and_return(dir_tags)
-        allow(dir_tags).to receive(:include?).with(tag).and_return(true)
-      end
-
-      context 'and it is at the top level' do
-        before(:example) do
-          allow(dir).to receive(:is_tags_root?).and_return(true)
-        end
-
-        it 'should remove the tag from the tag set' do
-          expect(tags).to receive(:delete).with(tag)
-
-          dir.rmdir tag_name
-        end
-
-        context 'but it still contains images' do
-          before(:example) do
-            allow(tag).to receive(:images).and_return(double('images', :empty? => false))
-          end
-
-          it 'should raise an error' do
-            expect { dir.rmdir tag_name }.to raise_error(Errno::EPERM)
-          end
-        end
-      end # it is at the top level
-
-      context 'when the tag is not at the top level' do
-        # this doesn't make sense; you'd delete all of the
-        # children first, once that happens, this dir ceases to exist.
-
-        before(:example) do
-          allow(dir).to receive(:is_tags_root?).and_return(false)
-        end
-
-        it 'should raise an error' do
-          expect { dir.rmdir tag_name }.to raise_error(Errno::EPERM)
-        end
-      end
-    end # : the tag exists
-  end # :rmdir
+    it { expect { dir.rmdir 'tag-name' }.to raise_error(Errno::EPERM) }
+  end
 
   describe :soft_move do
     let(:tag_set) { PhotoFS::Core::TagSet.new }
@@ -272,7 +167,6 @@ describe PhotoFS::Fuse::TagDir do
       allow(images_domain).to receive(:include?).with(node.payload).and_return(true)
 
       allow(tag_dir).to receive(:images).and_return(PhotoFS::Core::ImageSet.new({:set => []}))
-      allow(tag_dir).to receive(:is_tags_root?).and_return(false)
     end
 
     it 'should apply each query tag to image' do
@@ -285,16 +179,6 @@ describe PhotoFS::Fuse::TagDir do
 
     context 'when node is a directory' do
       let(:node) { instance_double('PhotoFS::Dir', :directory? => true, :payload => nil) }
-
-      it 'should not be permitted' do
-        expect { tag_dir.soft_move(node, name) }.to raise_error(Errno::EPERM)
-      end
-    end
-
-    context 'when dir is tag root' do
-      before(:example) do
-        allow(tag_dir).to receive(:is_tags_root?).and_return(true)
-      end
 
       it 'should not be permitted' do
         expect { tag_dir.soft_move(node, name) }.to raise_error(Errno::EPERM)
@@ -334,28 +218,6 @@ describe PhotoFS::Fuse::TagDir do
     end
   end # :stat
 
-  describe 'stats file' do
-    let(:dir) { PhotoFS::Fuse::TagDir.new('日本', PhotoFS::Core::TagSet.new) }
-    let(:rename_name) { 'to' }
-    let(:rename_parent_node) { instance_double('PhotoFS::Fuse::Dir') }
-
-    before(:example) do
-      allow(dir).to receive(:is_tags_root?).and_return(true)
-    end
-
-    it { expect { dir.rename 'stats', rename_parent_node, rename_name }.to raise_error(Errno::EPERM) }
-
-    it { expect(dir.send :node_hash).to include('stats' => an_instance_of(PhotoFS::Fuse::StatsFile)) }
-
-    context 'when the dir is not tags root' do
-      before(:example) do
-        allow(dir).to receive(:is_tags_root?).and_return(false)
-      end
-
-      it { expect(dir.send :node_hash).not_to include('stats' => an_instance_of(PhotoFS::Fuse::StatsFile)) }
-    end
-  end # stats file
-
   describe :symlink do
     let(:tag_dir) { PhotoFS::Fuse::TagDir.new('日本', PhotoFS::Core::TagSet.new, { :query_tag_names => ['first', 'second'] }) }
     let(:name) { 'some.jpg' }
@@ -364,16 +226,6 @@ describe PhotoFS::Fuse::TagDir do
 
     before(:example) do
       tag_dir.instance_variable_set(:@images_domain, images_domain)
-    end
-
-    context 'when this is tag root directory' do
-      before(:example) do
-        allow(tag_dir).to receive(:is_tags_root?).and_return(true)
-      end
-
-      it 'should not be permitted' do
-        expect { tag_dir.symlink(image, name) }.to raise_error(Errno::EPERM)
-      end
     end
 
     context 'when image is not in tag image set' do
@@ -481,10 +333,12 @@ describe PhotoFS::Fuse::TagDir do
     let(:image_d) { instance_double('PhotoFS::Core::Image', :path => '/d/きれい.jpg') }
 
     let(:images) { PhotoFS::Core::ImageSet.new :set => [image_a, image_d].to_set }
-    let(:files) { ['stats', 'え.jpg', 'きれい.jpg'] }
+    let(:additional_files) { {'some-other-file' => double('File')} }
+    let(:files) { ['some-other-file', 'え.jpg', 'きれい.jpg'] }
 
     before(:example) do
       allow(tag_dir).to receive(:images).and_return(images)
+      allow(tag_dir).to receive(:additional_files).and_return(additional_files)
       allow(PhotoFS::FS).to receive(:file_system).and_return(PhotoFS::FS::Test.new)
     end
 
@@ -495,7 +349,7 @@ describe PhotoFS::Fuse::TagDir do
     context 'when there are name collisions' do
       let(:images) { PhotoFS::Core::ImageSet.new :set => [image_c, image_b, image_a].to_set }
 
-      let(:files) { ['え.jpg', 'え-b.jpg', 'え-c.jpg', 'stats'] }
+      let(:files) { ['え.jpg', 'え-b.jpg', 'え-c.jpg'] }
 
       it 'should use the base name for the first instance of that file name and uniqe names for all others' do
         expect(tag_dir.send :files).to include *files

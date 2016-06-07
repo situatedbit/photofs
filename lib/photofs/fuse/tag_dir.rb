@@ -1,12 +1,14 @@
+require 'photofs/core/image_set'
 require 'photofs/core/tag'
 require 'photofs/core/tag_set'
-require 'photofs/core/image_set'
 require 'photofs/fuse/dir'
 require 'photofs/fuse/stats_file'
 
 module PhotoFS
   module Fuse
     class TagDir < PhotoFS::Fuse::Dir
+      attr_reader :images_domain, :tags
+
       def initialize(name, tags, options = {})
         @tags = tags
         @options = default_options.merge options
@@ -18,8 +20,6 @@ module PhotoFS
       end
 
       def add(name, node)
-        raise Errno::EPERM if is_tags_root?
-
         image = node.payload
 
         raise Errno::EEXIST.new(node.path) if images.include? image
@@ -36,13 +36,7 @@ module PhotoFS
       end
 
       def mkdir(tag_name)
-        raise Errno::EPERM.new(tag_name) unless is_tags_root?
-
-        tag = PhotoFS::Core::Tag.new tag_name
-
-        raise Errno::EEXIST.new(tag_name) if dir_tags.include?(tag)
-
-        @tags.add?(tag)
+        raise Errno::EPERM.new(tag_name)
       end
 
       def remove(child_name)
@@ -59,17 +53,10 @@ module PhotoFS
       end
 
       def rmdir(tag_name)
-        tag = @tags.find_by_name tag_name
-
-        raise Errno::ENOENT.new(tag_name) unless tag && dir_tags.include?(tag)
-        raise Errno::EPERM unless is_tags_root?
-        raise Errno::EPERM unless tag.images.empty?
-
-        @tags.delete tag
+        raise Errno::EPERM
       end
 
       def soft_move(node, name)
-        raise Errno::EPERM if is_tags_root?
         raise Errno::EPERM if node.directory?
 
         image = node.payload
@@ -92,12 +79,30 @@ module PhotoFS
       end
 
       def symlink(image, name)
-        raise Errno::EPERM if is_tags_root? || !@images_domain.include?(image)
+        raise Errno::EPERM unless @images_domain.include?(image)
 
         tag_image(image)
       end
 
       protected
+
+      def additional_files
+        # can be implemented by subclasses
+        {}
+      end
+
+      def dir_tags
+        # can be implemented by subclasses. Tags for which a subdirectory should exist in this dir.
+        @tags.find_by_images(images) - query_tags
+      end
+
+      def images
+        # can be implemented by subclasses. Images to be represented as files in this dir.
+
+        # put images domain at the front of the array for #intersection call to take advantage of
+        # Data::ImageSet's implementation
+        PhotoFS::Core::TagSet.intersection([@images_domain] + query_tags)
+      end
 
       def node_hash
         @node_hash ||= files.merge dirs
@@ -128,14 +133,6 @@ module PhotoFS
         dir_name_map
       end
 
-      def dir_tags
-        if is_tags_root?
-          @tags.all
-        else
-          @tags.find_by_images(images) - query_tags
-        end
-      end
-
       def files
         images_sorted = images.all.sort { |a, b| a.path <=> b.path }
 
@@ -149,21 +146,7 @@ module PhotoFS
           file_name_map[name] = File.new(name, PhotoFS::FS.file_system.absolute_path(image.path), {:parent => self, :payload => image})
         end
 
-        is_tags_root? ? file_name_map.merge( {'stats' => stats_file} ) : file_name_map
-      end
-
-      def images
-        # put images domain at the front of the array for #intersection call to take advantage of 
-        # Data::ImageSet's implementation
-        is_tags_root? ? PhotoFS::Core::ImageSet.new : PhotoFS::Core::TagSet.intersection([@images_domain] + query_tags)
-      end
-
-      def is_tags_root?
-        @query_tag_names.empty?
-      end
-
-      def stats_file
-        StatsFile.new 'stats', :tags => @tags.limit_to_images(@images_domain)
+        file_name_map.merge additional_files
       end
 
       def query_tags

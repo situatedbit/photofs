@@ -8,7 +8,7 @@ require 'photofs/fuse/mirrored_dir'
 require 'photofs/fuse/relative_path'
 require 'photofs/fuse/root_dir'
 require 'photofs/fuse/search_cache'
-require 'photofs/fuse/tag_dir'
+require 'photofs/fuse/tag_dir_root'
 require 'rfuse'
 
 module PhotoFS
@@ -44,7 +44,7 @@ module PhotoFS
         initialize_database
 
         @root.add MirroredDir.new('o', @source_path, {:tags => @tags, :images => @images})
-        @root.add TagDir.new('t', @tags, {:images => @images})
+        @root.add TagDirRoot.new('t', @tags, {:images => @images})
         @root.add File.new('.photofs', PhotoFS::FS.data_path)
 
         log "Mounted at #{@source_path}"

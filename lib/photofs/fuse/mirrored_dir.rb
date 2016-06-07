@@ -126,7 +126,7 @@ module PhotoFS
 
         return {} if @tags.nil? || tag_dir_image_set.empty?
 
-        {'tags' => TagDir.new('tags', @tags, {:parent => self, :images => tag_dir_image_set} )}
+        {'tags' => TagDirRoot.new('tags', @tags, {:parent => self, :images => tag_dir_image_set} )}
       end
 
       private

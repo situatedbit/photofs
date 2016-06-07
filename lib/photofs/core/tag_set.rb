@@ -93,8 +93,9 @@ module PhotoFS
         hash
       end
 
-      def_delegators :@tags, :size, :size
-      def_delegators :@tags, :empty?, :empty?
+      def_delegators :tags, :size, :size
+      def_delegators :tags, :empty?, :empty?
+      def_delegators :tags, :has_value?, :include?
     end
   end
 end
