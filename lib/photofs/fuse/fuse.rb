@@ -23,6 +23,7 @@ module PhotoFS
       def initialize(options)
         raise RFuse::Error, "Missing source option (-o source=path)" unless options[:source]
 
+        @option_log = options.has_key?(:log)
         @source_path = options[:source]
         @mountpoint = options[:mountpoint]
         @environment = options[:env] || 'production'
@@ -175,9 +176,11 @@ module PhotoFS
       def log(s)
         @log ||= Logger.new(PhotoFS::FS.log_file)
 
-        @log.info(s)
+        if @option_log
+          @log.info(s)
 
-        puts s
+          puts s
+        end
       end
 
       def unlink(context, path)

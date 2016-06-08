@@ -2,7 +2,7 @@ require 'photofs/fuse/fuse'
 
 module PhotoFS
   module Fuse
-    MY_OPTIONS = [:daemon, :source]
+    MY_OPTIONS = [:log, :daemon, :source]
     OPTION_USAGE = " -o source=path/to/photos/"
 
     # Usage: #{$0} mountpoint [mount_options] -o source=/path/to/photos
