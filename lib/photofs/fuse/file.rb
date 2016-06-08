@@ -1,6 +1,6 @@
-require_relative 'fuse'
-require_relative 'node'
-require_relative 'stat'
+require 'photofs/fuse/fuse'
+require 'photofs/fuse/node'
+require 'photofs/fuse/stat'
 require 'rfuse'
 
 module PhotoFS

@@ -1,8 +1,8 @@
-require_relative 'dir'
-require_relative 'stat'
-require_relative 'file'
 require 'photofs/core/image_set'
 require 'photofs/fs'
+require 'photofs/fuse/dir'
+require 'photofs/fuse/stat'
+require 'photofs/fuse/file'
 require 'rfuse'
 
 module PhotoFS

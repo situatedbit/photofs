@@ -1,4 +1,4 @@
-require_relative 'fuse'
+require 'photofs/fs'
 
 module PhotoFS
   module Fuse
@@ -62,7 +62,7 @@ module PhotoFS
       end
 
       def separator
-        Fuse.fs.separator
+        PhotoFS::FS.file_system.separator
       end
 
       def split

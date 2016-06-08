@@ -1,4 +1,4 @@
-require_relative 'dir'
+require 'photofs/fuse/dir'
 
 module PhotoFS
   module Fuse
