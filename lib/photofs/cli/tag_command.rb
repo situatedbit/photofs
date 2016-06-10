@@ -1,4 +1,3 @@
-require 'photofs/cli'
 require 'photofs/cli/command'
 require 'photofs/core/tag'
 require 'photofs/data/image_set'

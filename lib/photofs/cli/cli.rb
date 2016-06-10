@@ -5,6 +5,7 @@ require 'photofs/cli/bad_command'
 require 'photofs/cli/help_command'
 require 'photofs/cli/import_command'
 require 'photofs/cli/prune_command'
+require 'photofs/cli/retag_command'
 require 'photofs/cli/tag_command'
 require 'photofs/cli/tag_rename_command'
 

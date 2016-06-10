@@ -171,4 +171,64 @@ describe 'cli integration', :type => :locking_behavior do
       expect(remaining_images).to contain_exactly(path1, path2, path4)
     end
   end # :prune
+
+  describe :retag do
+    let(:path1) { '/a/b/c/1.jpg' }
+    let(:path2) { '/a/b/c/2.jpg' }
+    let(:unimported_file) { '/a/b/c/not-imported.jpg' }
+    let(:image_paths) { [path1, path2] }
+    let(:image_records) { create_images image_paths }
+
+    let(:file_system) { PhotoFS::FS::Test.new( { :files => (image_paths + [unimported_file]) } ) }
+
+    let(:good_tag_record) { create :tag, :name => 'good' }
+    let(:bad_tag_record) { create :tag, :name => 'bad' }
+    let(:tag_records) { [good_tag_record, bad_tag_record] }
+
+    context 'when all images exist' do
+      before(:example) do
+        allow_any_instance_of(PhotoFS::CLI::RetagCommand).to receive(:puts) # swallow output
+
+        image_records
+      end
+
+      context 'old and new tags exist' do
+        before(:each) do
+          tag_records
+
+          good_tag_record.images = image_records
+
+          good_tag_record.save
+        end
+
+        it 'should remove any applications of old tag to images' do
+          cli.execute ['retag', 'good', 'bad', '/a/b/c/1.jpg', '/a/b/c/2.jpg']
+
+          expect(PhotoFS::Data::Tag.from_tag(good_tag_record.to_simple).images).to be_empty
+        end
+
+        it 'should apply new tag to images' do
+          cli.execute ['retag', 'good', 'bad', '/a/b/c/1.jpg', '/a/b/c/2.jpg']
+
+          expect(PhotoFS::Data::Tag.from_tag(bad_tag_record.to_simple).images).to contain_exactly(*image_records)
+        end
+      end
+
+      context 'when new tag does not yet exist' do
+        before(:each) do
+          good_tag_record
+        end
+
+        it 'should create it' do
+          cli.execute ['retag', 'good', 'bad', '/a/b/c/1.jpg', '/a/b/c/2.jpg']
+
+          expect(PhotoFS::Data::Tag.from_tag(double('Tag', :name => 'bad'))).to be_an_instance_of(PhotoFS::Data::Tag)
+        end
+      end
+    end
+
+    context 'if one of the images is not yet imported' do
+      it { expect { cli.execute ['retag', 'good', 'bad', '/a/b/c/1.jpg', unimported_file] }.to output(/not imported/).to_stdout }
+    end
+  end # :retag
 end
