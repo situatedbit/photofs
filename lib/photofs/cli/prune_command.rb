@@ -12,7 +12,7 @@ module PhotoFS
       end
 
       def self.usage
-        ['prune PATH']
+        ['prune PATH where PATH is a directory or file in the image source directory tree']
       end
 
       def after_initialize(args)
