@@ -16,7 +16,7 @@ module PhotoFS
 
       def glob
         @fs.chdir(@root) do # restores process working dir when block completes
-          @fs.glob("**/*.{jpg,jpeg,cr2}", @fs.fnm(:casefold))
+          @fs.glob("**/*.{cr2,gif,jpg,jpeg,png,psd,tiff,tif,xcf}", @fs.fnm(:casefold))
         end
       end
     end
