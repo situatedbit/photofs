@@ -1,5 +1,4 @@
 require 'photofs/cli'
-require 'photofs/cli/tag_command'
 require 'photofs/fs/test'
 
 describe 'cli integration', :type => :locking_behavior do
@@ -22,7 +21,7 @@ describe 'cli integration', :type => :locking_behavior do
     before(:example) do
       allow(PhotoFS::FS).to receive(:data_path).and_return('/photos')
 
-      create :image, :image_file => build(:file, :path => image_path)
+      create_image image_path
     end
 
     it 'should create a tag' do
@@ -50,7 +49,7 @@ describe 'cli integration', :type => :locking_behavior do
       let(:argv) { ['tag', 'good'] + images }
 
       before(:example) do
-        create :image, :image_file => build(:file, :path => image2_path)
+        create_image image2_path
       end
 
       it 'should apply tags to several images at once' do
@@ -76,6 +75,7 @@ describe 'cli integration', :type => :locking_behavior do
       end
     end
   end # :tag
+
 
   describe :tag_rename do
     it 'should raise error when tag does not exist' do
@@ -135,4 +135,40 @@ describe 'cli integration', :type => :locking_behavior do
       expect(PhotoFS::Data::Image.find_by_image_file_paths [path3]).to contain_exactly(an_instance_of PhotoFS::Data::Image)
     end
   end # :import
+
+  describe :prune do
+    let(:path1) { '/a/b/c/1.jpg' }
+    let(:path2) { '/a/b/c/2.jpg' }
+    let(:path3) { '/a/b/c/3.jpg' }
+    let(:path4) { '/a/x/y/z.jpg' }
+    let(:files) { [path1, path2] }
+    let(:images) { [path1, path2, path3, path4] }
+    let(:remaining_images) { PhotoFS::Data::Image.all.map { |i| i.path } }
+
+    let(:file_system) { PhotoFS::FS::Test.new( { :files => files } ) }
+
+    before(:each) do
+      create_images images
+
+      allow_any_instance_of(PhotoFS::CLI::PruneCommand).to receive(:puts) # swallow output
+    end
+
+    it 'should remove images that are missing from the file system' do
+      cli.execute ['prune', '/a/b/c']
+
+      expect(remaining_images).to contain_exactly(path1, path2, path4)
+    end
+
+    it 'should descend the directory tree to prune' do
+      cli.execute ['prune', '/a']
+
+      expect(remaining_images).to contain_exactly(*files)
+    end
+
+    it 'should prune from the path above the file, if given' do
+      cli.execute ['prune', '/a/b/c/1.jpg']
+
+      expect(remaining_images).to contain_exactly(path1, path2, path4)
+    end
+  end # :prune
 end

@@ -1,3 +1,4 @@
+require 'photofs/core/tag'
 require 'photofs/data/tag'
 
 describe PhotoFS::Data::Tag, type: :model do

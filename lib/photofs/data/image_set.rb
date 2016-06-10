@@ -45,6 +45,10 @@ module PhotoFS
         Hash[paths.zip []].merge Hash[images_map]
       end
 
+      def find_by_path_parent(path)
+        Image.find_by_path_parent(path).map { |record| record_object_map_fetch(record) }
+      end
+
       def include?(image)
         !!Image.from_image(image)
       end
@@ -55,6 +59,18 @@ module PhotoFS
         ActiveRecord::Base.transaction do
           return import_paths.map { |path| add PhotoFS::Core::Image.new(path) }
         end
+      end
+
+      def remove(image)
+        record = PhotoFS::Data::Image.from_image image
+
+        return nil unless record
+
+        @record_object_map.delete record
+
+        record.destroy
+
+        image
       end
 
       def save!

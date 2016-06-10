@@ -155,6 +155,31 @@ describe PhotoFS::Data::ImageSet do
     end
   end # :find_by_paths
 
+  describe :find_by_path_parent do
+    let(:image_record1) { create :image }
+    let(:image_record2) { create :image }
+    let(:image_records) { [image_record1, image_record2] }
+    let(:path) { 'some-path/' }
+
+    before(:each) do
+      allow(PhotoFS::Data::Image).to receive(:find_by_path_parent).with(path).and_return(image_records)
+    end
+
+    subject { image_set.find_by_path_parent path }
+
+    it 'should return simple objects from result from Image method' do
+      expect(PhotoFS::Data::Image).to receive(:find_by_path_parent).with(path)
+
+      expect(subject).to include(image_record1.to_simple, image_record2.to_simple)
+    end
+
+    it 'should cache results' do
+      subject
+
+      expect(image_set.instance_variable_get(:@record_object_map)).to include(*image_records)
+    end
+  end # :find_by_path_parent
+
   describe :include? do
     let(:image) { PhotoFS::Core::Image.new '/1/2/3.jpg' }
 
@@ -196,6 +221,36 @@ describe PhotoFS::Data::ImageSet do
       expect(image_set).not_to receive(:add).with(have_attributes(:path => path_1))
 
       image_set.import paths
+    end
+  end
+
+  describe :remove do
+    let(:image) { PhotoFS::Core::Image.new '/a/b/c/1.jpg' }
+
+    subject { image_set.remove image }
+
+    it { expect(subject).to be nil }
+
+    context 'when image is in the set' do
+      let(:image_record) { double('Image', :destroy => nil) }
+
+      before(:each) do
+        allow(PhotoFS::Data::Image).to receive(:from_image).with(image).and_return(image_record)
+      end
+
+      it 'should remove image record from the database' do
+        expect(image_record).to receive(:destroy)
+
+        subject
+      end
+
+      it 'should remove image from the cache' do
+        expect(image_set.instance_variable_get :@record_object_map).to receive(:delete).with(image_record)
+
+        subject
+      end
+
+      it { expect(subject).to eq(image) }
     end
   end
 

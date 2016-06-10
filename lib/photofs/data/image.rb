@@ -6,13 +6,22 @@ require 'photofs/core/image'
 module PhotoFS
   module Data
     class Image < ActiveRecord::Base
-      belongs_to :image_file, { :class_name => 'File', :autosave => true }
+      belongs_to :image_file, { :class_name => 'File', :autosave => true, :dependent => :destroy }
+
+      has_many :tag_bindings, dependent: :delete_all
 
       validates :image_file, presence: true
       validates :image_file_id, uniqueness: true
 
       def self.find_by_image_file_paths(paths)
         Image.joins(:image_file).where('files.path in (?)', paths)
+      end
+
+      def self.find_by_path_parent(path)
+        # must end with / to prevent selecting 2.jpg from '/some/path/1.jpg', '/some/path-to-file/2.jpg'
+        path = path.end_with?(::File::SEPARATOR) ? path : "#{path}#{::File::SEPARATOR}"
+
+        Image.joins(:image_file).where('instr(files.path, (?)) == 1', path)
       end
 
       def self.from_image(image)

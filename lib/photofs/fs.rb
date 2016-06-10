@@ -36,6 +36,12 @@ module PhotoFS
       data_path_join('log')
     end
 
+    def self.nearest_dir(path)
+      return path if path == ::File::SEPARATOR
+      return path if file_system.directory? path
+      return nearest_dir file_system.dirname(path)
+    end
+
     def self.migration_paths
       [::File.join(db_config_path, 'migrate')]
     end
