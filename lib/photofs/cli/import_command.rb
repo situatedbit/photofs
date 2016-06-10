@@ -33,6 +33,10 @@ module PhotoFS
 
         paths_imported = @images.import PhotoFS::FS::FileMonitor.new(@path).paths
 
+        paths_imported.each do |image|
+          puts image.path
+        end
+
         puts "うわった, よ.\n"
 
         !paths_imported.empty?
