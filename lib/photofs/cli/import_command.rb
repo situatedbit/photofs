@@ -1,5 +1,6 @@
 require 'photofs/cli'
 require 'photofs/cli/command'
+require 'photofs/cli/command_validators'
 require 'photofs/core/image'
 require 'photofs/fs/file_monitor'
 
@@ -7,6 +8,7 @@ module PhotoFS
   module CLI
     class ImportCommand < Command
       extend Command::MatcherTemplates
+      include CommandValidators
 
       def self.matcher
         @@_matcher ||= Parser.new [Parser::Pattern.new(['import', {:path => match_path}])]

@@ -1,5 +1,6 @@
 require 'photofs/cli'
 require 'photofs/cli/command'
+require 'photofs/cli/command_validators'
 require 'photofs/data/tag_set'
 require 'photofs/core/tag'
 
@@ -7,6 +8,7 @@ module PhotoFS
   module CLI
     class TagRenameCommand < Command
       extend Command::MatcherTemplates
+      include CommandValidators
 
       def self.matcher
         @@_matcher ||= Parser.new([Parser::Pattern.new(['rename', 'tag', {:from_tag_name => match_tag}, {:to_tag_name => match_tag}])])

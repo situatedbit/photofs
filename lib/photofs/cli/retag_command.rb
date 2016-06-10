@@ -1,4 +1,5 @@
 require 'photofs/cli/command'
+require 'photofs/cli/command_validators'
 require 'photofs/core/tag'
 require 'photofs/data/image_set'
 require 'photofs/data/tag_set'
@@ -7,6 +8,7 @@ module PhotoFS
   module CLI
     class RetagCommand < Command
       extend Command::MatcherTemplates
+      include CommandValidators
 
       def self.matcher
         @@_matcher ||= Parser.new([Parser::Pattern.new(['retag', {:old_tag => match_tag}, {:new_tag => match_tag}, {:paths => match_path}], :expand_tail => true)])
@@ -30,7 +32,7 @@ module PhotoFS
       end
 
       def modify_datastore
-        images = images_from_paths(@images, @real_image_paths)
+        images = valid_images_from_paths @images, @real_image_paths
 
         untag_old_tag(images)
 
@@ -56,18 +58,8 @@ module PhotoFS
         end
       end
 
-      def error_message(missing_paths)
+      def invalid_images_error_message(missing_paths)
         "Images not imported: \n" + missing_paths.join("\n") + "\nImport all images first. No images were tagged or untagged."
-      end
-
-      def images_from_paths(image_set, paths)
-        image_path_pairs = image_set.find_by_paths(paths)
-
-        non_imported_paths = image_path_pairs.keys.select { |path| image_path_pairs[path].nil? }
-
-        raise(CommandException, error_message(non_imported_paths)) unless non_imported_paths.empty?
-
-        image_path_pairs.values
       end
 
       def untag_old_tag(images)

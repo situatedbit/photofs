@@ -1,11 +1,13 @@
 require 'photofs/cli'
 require 'photofs/cli/command'
+require 'photofs/cli/command_validators'
 require 'photofs/fs'
 
 module PhotoFS
   module CLI
     class PruneCommand < Command
       extend Command::MatcherTemplates
+      include CommandValidators
 
       def self.matcher
         @@_matcher ||= Parser.new([Parser::Pattern.new(['prune', {:path => "(/)|#{match_path}"}])])
