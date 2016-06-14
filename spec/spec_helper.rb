@@ -23,6 +23,7 @@ require 'database_cleaner'
 require 'factory_girl'
 require 'shoulda-matchers'
 require 'factory_helpers'
+require 'yaml'
 
 # normally rspec-rails or PhotoFS::Data::Database will do this for us
 environment = 'test'

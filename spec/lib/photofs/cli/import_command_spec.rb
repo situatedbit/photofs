@@ -48,7 +48,7 @@ describe PhotoFS::CLI::ImportCommand do
 
     context 'when images are imported' do
       before(:example) do
-        allow(images).to receive(:import).and_return(['an image'])
+        allow(images).to receive(:import).and_return([double('an image', :path => 'some-path.jpg')])
       end
 
       it { should be true }
