@@ -3,10 +3,10 @@ require 'photofs/fs'
 module PhotoFS
   module Data
     module Synchronize
-      READ_WRITE_LOCK_FILE = 'photofs.lock'
+      WRITE_LOCK_FILE = 'photofs.lock'
 
-      def self.read_write_lock
-        @@lock ||= Lock.new(READ_WRITE_LOCK_FILE)
+      def self.write_lock
+        @@_write_lock ||= Lock.new(WRITE_LOCK_FILE)
       end
 
       def self.included(base)
@@ -31,9 +31,28 @@ module PhotoFS
             end
           end # each method
         end
+
+        def wrap_with_count_check(lock_name, *methods)
+          methods.each do |method|
+            original_method_name = method.to_sym
+            count_check_method_name = "_with_count_check_#{method.to_s}".to_sym
+
+            alias_method count_check_method_name, original_method_name
+
+            define_method(original_method_name) do |*args, &block|
+              lock = PhotoFS::Data::Synchronize.send lock_name
+
+              lock.check_count_increment
+
+              return send count_check_method_name, *args, &block
+            end
+          end # each method
+        end # wrap_with_count_check
       end # ClassMethods
 
       class Lock
+        include PhotoFS::FS::FileSystem
+
         INITIAL_COUNT_VALUE = 0
 
         def initialize(lock_file)
@@ -42,16 +61,24 @@ module PhotoFS
           @detect_count_increment_callbacks = []
         end
 
-        def count
-          PhotoFS::FS.file_system.write_file(count_file, INITIAL_COUNT_VALUE.to_s) unless PhotoFS::FS.file_system.exist?(count_file)
+        def check_count_increment
+            new_count = count
 
-          contents = PhotoFS::FS.file_system.read_file(count_file)
+            detected_count_increment if @previous_count != new_count
+
+            @previous_count = new_count
+        end
+
+        def count
+          contents = file_system.exist?(count_file) ? file_system.read_file(count_file) : nil
 
           (contents.nil? || contents.empty?) ? INITIAL_COUNT_VALUE : Integer(contents)
         end
 
         def grab
-          PhotoFS::FS.file_system.lock(lock_file) do
+          file_system.lock(lock_file) do
+            initialize_count_file # only do this within lock to prevent ordering issues
+
             check_count_increment
 
             yield self
@@ -61,7 +88,7 @@ module PhotoFS
         def increment_count
           new_count = count + 1
 
-          PhotoFS::FS.file_system.write_file(count_file, new_count.to_s)
+          file_system.write_file(count_file, new_count.to_s)
 
           new_count
         end
@@ -77,20 +104,16 @@ module PhotoFS
           PhotoFS::FS.data_path_join(@lock_file)
         end
 
-        def check_count_increment
-            new_count = count
-
-            detected_count_increment if @previous_count != new_count
-
-            @previous_count = new_count
-        end
-
         def detected_count_increment
           @detect_count_increment_callbacks.each { |callback| callback.call self }
         end
 
         def count_file
-          "#{lock_file}.count"
+          @count_file ||= "#{lock_file}.count"
+        end
+
+        def initialize_count_file
+          file_system.write_file(count_file, INITIAL_COUNT_VALUE.to_s) unless file_system.exist?(count_file)
         end
       end # Lock
 

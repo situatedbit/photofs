@@ -2,6 +2,12 @@ require 'photofs/fs/local'
 
 module PhotoFS
   module FS
+    module FileSystem
+      def file_system
+        PhotoFS::FS.file_system
+      end
+    end
+
     DATA_DIR = '.photofs'
 
     def self.app_root

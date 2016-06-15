@@ -52,7 +52,7 @@ module PhotoFS::CLI
 
         initialize_datastore datastore_start_path
 
-        PhotoFS::Data::Synchronize.read_write_lock.grab do |lock|
+        PhotoFS::Data::Synchronize.write_lock.grab do |lock|
           lock.increment_count if modify_datastore
         end
       rescue => e

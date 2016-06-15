@@ -32,7 +32,7 @@ module PhotoFS
         @tags = PhotoFS::Data::TagSet.new
         @search_cache = SearchCache.new
 
-        @lock = PhotoFS::Data::Synchronize.read_write_lock
+        @lock = PhotoFS::Data::Synchronize.write_lock
         @lock.register_on_detect_count_increment(Proc.new { |lock| on_datastore_cache_increment(lock) })
         @fuse_cache_counter = nil
 
@@ -193,7 +193,8 @@ module PhotoFS
         save!
       end
 
-      wrap_with_lock :read_write_lock, :read, :readdir, :rename, :getattr, :readlink, :mkdir, :rmdir, :symlink, :unlink
+      wrap_with_lock :write_lock, :rename, :mkdir, :rmdir, :symlink, :unlink
+      wrap_with_count_check :write_lock, :read, :readdir, :getattr, :readlink
     end
   end
 end # module

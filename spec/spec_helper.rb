@@ -144,13 +144,13 @@ RSpec.configure do |config|
 =end
   config.before(:example, :type => :locking_behavior) do
     module PhotoFS::Data::Synchronize
-      @@lock = TestLock.new
+      @@_write_lock = TestLock.new
     end
   end
 
   config.after(:example, :type => :locking_behavior) do
     module PhotoFS::Data::Synchronize
-      @@lock = nil
+      @@_write_lock = nil
     end
   end
 
