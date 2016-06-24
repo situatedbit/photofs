@@ -27,84 +27,49 @@ describe PhotoFS::CLI::TagCommand do
   end
 
   describe :modify_datastore do
-    let(:tag) { instance_double('PhotoFS::Core::Tag', :add => nil) }
+    let(:tag_set) { command.instance_variable_get(:@tags) }
+    let(:image_set) { command.instance_variable_get(:@images) }
     let(:image) { instance_double('PhotoFS::Core::Image') }
-    let(:valid_path) { 'a valid path' }
+    let(:image_paths) { double('Array') }
+    let(:valid_images) { double('Array') }
+
+    subject { command.modify_datastore }
 
     before(:example) do
-      command.instance_variable_set(:@real_image_paths, [image_path])
+      command.instance_variable_set(:@real_image_paths, image_paths)
+
+      allow(command).to receive(:valid_images_from_paths).with(image_set, image_paths).and_return(valid_images)
+      allow(command).to receive(:tag_images).and_return(nil)
     end
 
-    context 'when the tag exists' do
-      before(:example) do
-        allow(command.instance_variable_get(:@tags)).to receive(:find_by_name).with(tag_arg).and_return(tag)
-        allow(command.instance_variable_get(:@images)).to receive(:find_by_paths).with([image_path]).and_return({image_path => image})
-      end
+    it 'should tag the image' do
+      expect(command).to receive(:tag_images).with(tag_set, tag_arg, valid_images)
 
-      it 'should tag the image' do
-        expect(tag).to receive(:add).with(image)
-
-        command.modify_datastore
-      end
-
-      it 'should be true' do
-        expect(command.modify_datastore).to be true
-      end
+      subject
     end
 
-    context 'when the tag does not exist' do
-      before(:example) do
-        allow(command.instance_variable_get(:@tags)).to receive(:find_by_name).with(tag_arg).and_return(nil)
-        allow(command.instance_variable_get(:@images)).to receive(:find_by_paths).with([image_path]).and_return({image_path => image})
-        allow(command.instance_variable_get(:@tags)).to receive(:add?).and_return(tag)
-      end
-
-      it 'should create the tag' do
-        expect(command.instance_variable_get(:@tags)).to receive(:add?).with(an_instance_of(PhotoFS::Core::Tag))
-
-        command.modify_datastore
-      end
-
-      it 'should tag the image' do
-        expect(tag).to receive(:add).with(image)
-
-        command.modify_datastore
-      end
-
-      it 'should be true' do
-        expect(command.modify_datastore).to be true
-      end
-    end
+    it { expect(subject).to be true }
 
     context 'when there are multiple tags' do
-      let(:tag1) { instance_double('PhotoFS::Core::Tag', :add => nil) }
-      let(:tag2) { instance_double('PhotoFS::Core::Tag', :add => nil) }
-
-      let(:tag_arg) { 'good bad' }
-      let(:tags) { command.instance_variable_get :@tags }
-
-      before(:example) do
-        allow(tags).to receive(:find_by_name).with('good').and_return(tag1)
-        allow(tags).to receive(:find_by_name).with('bad').and_return(tag2)
-
-        allow(command.instance_variable_get(:@images)).to receive(:find_by_paths).with([image_path]).and_return({image_path => image})
-      end
+      let(:tag1) { 'good' }
+      let(:tag2) { 'bad' }
+      let(:tag_arg) { [tag1, tag2].join ' ' }
 
       after(:example) do
-        command.modify_datastore
+        subject
       end
 
-      it { expect(tag1).to receive(:add).with(image) }
-      it { expect(tag2).to receive(:add).with(image) }
+      it { expect(command).to receive(:tag_images).with(tag_set, tag1, valid_images) }
+      it { expect(command).to receive(:tag_images).with(tag_set, tag2, valid_images) }
     end
 
     context 'when the image is not in the repository' do
       before(:example) do
-        allow(command.instance_variable_get(:@images)).to receive(:find_by_paths).with([image_path]).and_return({image_path => nil})
+        allow(command).to receive(:valid_images_from_paths).and_raise(PhotoFS::CLI::Command::CommandException)
       end
 
       it 'should throw an error' do
-        expect { command.modify_datastore }.to raise_error(PhotoFS::CLI::Command::CommandException)
+        expect { subject }.to raise_error(PhotoFS::CLI::Command::CommandException)
       end
     end
   end # :modify_datastore

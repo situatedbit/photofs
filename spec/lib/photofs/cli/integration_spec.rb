@@ -193,7 +193,7 @@ describe 'cli integration', :type => :locking_behavior do
       end
 
       context 'old and new tags exist' do
-        before(:each) do
+        before(:example) do
           tag_records
 
           good_tag_record.images = image_records
@@ -215,7 +215,7 @@ describe 'cli integration', :type => :locking_behavior do
       end
 
       context 'when new tag does not yet exist' do
-        before(:each) do
+        before(:example) do
           good_tag_record
         end
 
@@ -225,6 +225,38 @@ describe 'cli integration', :type => :locking_behavior do
           expect(PhotoFS::Data::Tag.from_tag(double('Tag', :name => 'bad'))).to be_an_instance_of(PhotoFS::Data::Tag)
         end
       end
+
+      context 'when multiple tags are specified' do
+        subject { cli.execute ['retag', 'good better', 'bad worse', '/a/b/c/1.jpg', '/a/b/c/2.jpg'] }
+
+        before(:example) do
+          good_tag_record.images = image_records
+
+          good_tag_record.save
+
+          subject
+        end
+
+        it 'should create the first new tag' do
+          expect(PhotoFS::Data::Tag.from_tag(double('Tag', :name => 'bad'))).to be_an_instance_of(PhotoFS::Data::Tag)
+        end
+
+        it 'should create the second new tag' do
+          expect(PhotoFS::Data::Tag.from_tag(double('Tag', :name => 'worse'))).to be_an_instance_of(PhotoFS::Data::Tag)
+        end
+
+        it 'should add images to first new tag' do
+          expect(PhotoFS::Data::Tag.from_tag(double('Tag', :name => 'bad')).images).to contain_exactly(*image_records)
+        end
+
+        it 'should add images to second new tag' do
+          expect(PhotoFS::Data::Tag.from_tag(double('Tag', :name => 'worse')).images).to contain_exactly(*image_records)
+        end
+
+        it 'should remove any applications of first old tag to images' do
+          expect(PhotoFS::Data::Tag.from_tag(double('Tag', :name => 'good')).images).to be_empty
+        end
+      end # multiple tags
     end
 
     context 'if one of the images is not yet imported' do

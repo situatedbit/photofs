@@ -33,6 +33,12 @@ module PhotoFS
         set << image
       end
 
+      def add_images(images)
+        images.each do |image|
+          add image
+        end
+      end
+
       def each(&block)
         return enum_for(__method__) unless block_given?
 

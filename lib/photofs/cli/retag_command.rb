@@ -1,5 +1,6 @@
 require 'photofs/cli/command'
 require 'photofs/cli/command_validators'
+require 'photofs/cli/data_utilities'
 require 'photofs/core/tag'
 require 'photofs/data/image_set'
 require 'photofs/data/tag_set'
@@ -9,18 +10,19 @@ module PhotoFS
     class RetagCommand < Command
       extend Command::MatcherTemplates
       include CommandValidators
+      include DataUtilities
 
       def self.matcher
-        @@_matcher ||= Parser.new([Parser::Pattern.new(['retag', {:old_tag => match_tag}, {:new_tag => match_tag}, {:paths => match_path}], :expand_tail => true)])
+        @@_matcher ||= Parser.new([Parser::Pattern.new(['retag', {:old_tags => match_tag_list}, {:new_tags => match_tag_list}, {:paths => match_path}], :expand_tail => true)])
       end
 
       def self.usage
-        ['retag OLD_TAG NEW_TAG PATH [PATH_2] [PATH_N]']
+        ['retag OLD_TAG_LIST NEW_TAG_LIST PATH [PATH_2] [PATH_N], where tag lists are space-separated']
       end
 
       def after_initialize(args)
-        @args_old_tag_name = parsed_args[:old_tag]
-        @args_new_tag_name = parsed_args[:new_tag]
+        @args_old_tag_names = parsed_args[:old_tags].split.map { |tag| tag.strip }
+        @args_new_tag_names = parsed_args[:new_tags].split.map { |tag| tag.strip }
         @args_image_paths = parsed_args[:paths]
 
         @images = PhotoFS::Data::ImageSet.new
@@ -34,9 +36,13 @@ module PhotoFS
       def modify_datastore
         images = valid_images_from_paths @images, @real_image_paths
 
-        untag_old_tag(images)
+        @args_old_tag_names.each do |tag_name|
+          untag_images @tags, tag_name, images
+        end
 
-        apply_new_tag(images)
+        @args_new_tag_names.each do |tag_name|
+          tag_images @tags, tag_name, images
+        end
 
         @images.save!
         @tags.save!
@@ -50,22 +56,8 @@ module PhotoFS
 
       private
 
-      def apply_new_tag(images)
-        new_tag = @tags.find_by_name(@args_new_tag_name) || @tags.add?(PhotoFS::Core::Tag.new @args_new_tag_name)
-
-        images.each do |image|
-          new_tag.add image
-        end
-      end
-
       def invalid_images_error_message(missing_paths)
         "Images not imported: \n" + missing_paths.join("\n") + "\nImport all images first. No images were tagged or untagged."
-      end
-
-      def untag_old_tag(images)
-        old_tag = @tags.find_by_name @args_old_tag_name
-
-        old_tag.remove(images) if old_tag
       end
 
       Command.register_command self
