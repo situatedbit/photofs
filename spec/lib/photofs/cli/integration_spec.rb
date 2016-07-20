@@ -5,6 +5,14 @@ describe 'cli integration', :type => :locking_behavior do
   let(:cli) { PhotoFS::CLI }
   let(:file_system) { PhotoFS::FS::Test.new }
 
+  before do
+    $stdout = StringIO.new # Suppress output!
+  end
+
+  after(:all) do
+    $stdout = STDOUT
+  end
+
   before(:example) do
     allow_any_instance_of(PhotoFS::CLI::Command).to receive(:initialize_datastore)
     allow(PhotoFS::FS).to receive(:file_system).and_return(file_system)
@@ -124,8 +132,6 @@ describe 'cli integration', :type => :locking_behavior do
     before(:example) do
       create_images [path1, path2]
 
-      allow_any_instance_of(PhotoFS::CLI::ImportCommand).to receive(:puts) # swallow output
-
       allow(PhotoFS::FS::FileMonitor).to receive(:new).with(top_path).and_return(instance_double('FileMonitor', :paths => files))
     end
 
@@ -149,8 +155,6 @@ describe 'cli integration', :type => :locking_behavior do
 
     before(:each) do
       create_images images
-
-      allow_any_instance_of(PhotoFS::CLI::PruneCommand).to receive(:puts) # swallow output
     end
 
     it 'should remove images that are missing from the file system' do
@@ -187,8 +191,6 @@ describe 'cli integration', :type => :locking_behavior do
 
     context 'when all images exist' do
       before(:example) do
-        allow_any_instance_of(PhotoFS::CLI::RetagCommand).to receive(:puts) # swallow output
-
         image_records
       end
 

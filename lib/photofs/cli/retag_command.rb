@@ -38,10 +38,14 @@ module PhotoFS
 
         @args_old_tag_names.each do |tag_name|
           untag_images @tags, tag_name, images
+
+          @output += images.map { |i| "#{tag_name} ∉ #{i.path}" }
         end
 
         @args_new_tag_names.each do |tag_name|
           tag_images @tags, tag_name, images
+
+          @output += images.map { |i| "#{tag_name} ∈ #{i.path}" }
         end
 
         @images.save!

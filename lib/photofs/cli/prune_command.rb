@@ -36,7 +36,7 @@ module PhotoFS
           @images.remove image
         end
 
-        puts missing_images.empty? ? "No images to prune" : missing_images.map { |i| "Pruned #{i.path}" }.join("\n")
+        @output << (missing_images.empty? ? "No images to prune" : missing_images.map { |i| "Pruned #{i.path}" }.join("\n"))
 
         !missing_images.empty?
       end

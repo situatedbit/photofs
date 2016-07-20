@@ -34,6 +34,7 @@ module PhotoFS::CLI
 
     def initialize(args)
       @args = args
+      @output = []
 
       after_initialize args
     end
@@ -55,6 +56,8 @@ module PhotoFS::CLI
         PhotoFS::Data::Synchronize.write_lock.grab do |lock|
           lock.increment_count if modify_datastore
         end
+
+        puts output
       rescue => e
         puts e.message
       end
@@ -68,6 +71,10 @@ module PhotoFS::CLI
 
     def modify_datastore
       raise NotImplementedError
+    end
+
+    def output
+      @output.join "\n"
     end
 
     def parsed_args

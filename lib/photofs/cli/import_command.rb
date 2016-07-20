@@ -29,15 +29,13 @@ module PhotoFS
       end
 
       def modify_datastore
-        puts "Importing images from \"#{@path}\"..."
+        @output << "Importing images from \"#{@path}\"..."
 
         paths_imported = @images.import PhotoFS::FS::FileMonitor.new(@path).paths
 
-        paths_imported.each do |image|
-          puts image.path
-        end
+        @output += paths_imported.map { |image| image.path }
 
-        puts "うわった, よ.\n"
+        @output << "うわった, よ."
 
         !paths_imported.empty?
       end

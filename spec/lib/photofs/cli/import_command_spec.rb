@@ -34,7 +34,6 @@ describe PhotoFS::CLI::ImportCommand do
 
   describe :modify_datastore do
     before(:example) do
-      allow(command).to receive(:puts) # swallow
       allow(images).to receive(:import).and_return([])
     end
 

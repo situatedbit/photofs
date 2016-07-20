@@ -31,7 +31,7 @@ describe PhotoFS::CLI::TagCommand do
     let(:image_set) { command.instance_variable_get(:@images) }
     let(:image) { instance_double('PhotoFS::Core::Image') }
     let(:image_paths) { double('Array') }
-    let(:valid_images) { double('Array') }
+    let(:valid_images) { [double('Image', :path => image_path)] }
 
     subject { command.modify_datastore }
 
@@ -46,6 +46,12 @@ describe PhotoFS::CLI::TagCommand do
       expect(command).to receive(:tag_images).with(tag_set, tag_arg, valid_images)
 
       subject
+    end
+
+    it 'should output the images that were tagged' do
+      subject
+
+      expect(command.output).to match(/#{tag_arg} ∈ #{image_arg}/)
     end
 
     it { expect(subject).to be true }

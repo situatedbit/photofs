@@ -32,7 +32,7 @@ describe PhotoFS::CLI::RetagCommand do
     let(:image_set) { command.instance_variable_get(:@images) }
     let(:image) { instance_double('PhotoFS::Core::Image') }
     let(:image_paths) { double('Array') }
-    let(:valid_images) { double('Array') }
+    let(:valid_images) { [double('Image', :path => path_arg)] }
 
     subject { command.modify_datastore }
 
@@ -61,12 +61,21 @@ describe PhotoFS::CLI::RetagCommand do
       let(:tag2) { 'bad' }
       let(:new_tag_arg) { [tag1, tag2].join ' ' }
 
-      after(:example) do
+      it 'should output new tags with images to which they now apply' do
         subject
+
+        expect(command.output).to match(/#{tag1} ∈ #{path_arg}/)
+        expect(command.output).to match(/#{tag2} ∈ #{path_arg}/)
       end
 
-      it { expect(command).to receive(:tag_images).with(tag_set, tag1, valid_images) }
-      it { expect(command).to receive(:tag_images).with(tag_set, tag2, valid_images) }
+      context do
+        after(:example) do
+          subject
+        end
+
+        it { expect(command).to receive(:tag_images).with(tag_set, tag1, valid_images) }
+        it { expect(command).to receive(:tag_images).with(tag_set, tag2, valid_images) }
+      end
     end
 
     context 'when there are multiple old tags' do
@@ -74,12 +83,21 @@ describe PhotoFS::CLI::RetagCommand do
       let(:tag2) { 'bad' }
       let(:old_tag_arg) { [tag1, tag2].join ' ' }
 
-      after(:example) do
+      it 'should output old tags with images to which they used to apply' do
         subject
+
+        expect(command.output).to match(/#{tag1} ∉ #{path_arg}/)
+        expect(command.output).to match(/#{tag2} ∉ #{path_arg}/)
       end
 
-      it { expect(command).to receive(:untag_images).with(tag_set, tag1, valid_images) }
-      it { expect(command).to receive(:untag_images).with(tag_set, tag2, valid_images) }
+      context do
+        after(:example) do
+          subject
+        end
+
+        it { expect(command).to receive(:untag_images).with(tag_set, tag1, valid_images) }
+        it { expect(command).to receive(:untag_images).with(tag_set, tag2, valid_images) }
+      end
     end
 
     context 'when the image is not in the repository' do

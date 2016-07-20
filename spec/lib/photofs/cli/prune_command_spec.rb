@@ -60,14 +60,15 @@ describe PhotoFS::CLI::PruneCommand do
       let(:path_arg) { '/a' }
 
       it 'should not remove any images' do
-        allow(command).to receive(:puts)
         expect(image_set).not_to receive(:remove)
 
         command.modify_datastore
       end
 
       it 'should report not removing any images' do
-        expect { command.modify_datastore }.to output(/No images to prune/).to_stdout
+        command.modify_datastore
+
+        expect(command.output).to match(/No images to prune/)
       end
     end
 
@@ -80,7 +81,6 @@ describe PhotoFS::CLI::PruneCommand do
       end
 
       it 'should remove files from database that do not exist under path' do
-        allow(command).to receive(:puts)
         expect(image_set).to receive(:remove).with(i2)
         expect(image_set).to receive(:remove).with(i3)
 
@@ -88,7 +88,9 @@ describe PhotoFS::CLI::PruneCommand do
       end
 
       it 'should report the files removed' do
-        expect { command.modify_datastore }.to output(/#{f2}/).to_stdout
+        command.modify_datastore
+
+        expect(command.output).to match(/#{f2}/)
       end
     end
   end # :modify_datastore

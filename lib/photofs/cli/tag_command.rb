@@ -37,6 +37,8 @@ module PhotoFS
 
         @args_tag_names.each do |tag_name|
           tag_images @tags, tag_name, images
+
+          @output += images.map { |i| "#{tag_name} ∈ #{i.path}" }
         end
 
         @images.save!
