@@ -35,7 +35,7 @@ module PhotoFS
 
         @output += paths_imported.map { |image| image.path }
 
-        @output << "うわった, よ."
+        @output << "おわった, よ."
 
         !paths_imported.empty?
       end
