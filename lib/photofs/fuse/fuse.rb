@@ -4,8 +4,8 @@ require 'photofs/data/image_set'
 require 'photofs/data/synchronize'
 require 'photofs/data/tag_set'
 require 'photofs/fs'
+require 'photofs/fs/relative_path'
 require 'photofs/fuse/mirrored_dir'
-require 'photofs/fuse/relative_path'
 require 'photofs/fuse/root_dir'
 require 'photofs/fuse/search_cache'
 require 'photofs/fuse/tag_dir_top_level'
@@ -97,7 +97,7 @@ module PhotoFS
       def read(context, path, size, offset, ffi)
         log "read: #{path}"
 
-        file = search RelativePath.new(path)
+        file = search PhotoFS::FS::RelativePath.new(path)
 
         raise Errno::EACCES.new(path) if file.directory?
 
@@ -107,7 +107,7 @@ module PhotoFS
       def readdir(context, path, filler, offset, ffi)
         log "readdir: #{path}"
 
-        dir = search RelativePath.new(path)
+        dir = search PhotoFS::FS::RelativePath.new(path)
 
         raise Errno::ENOTDIR.new(path) unless dir.directory?
 
@@ -117,8 +117,8 @@ module PhotoFS
       def rename(context, from, to)
         log "rename #{from} to #{to}"
 
-        from = RelativePath.new from
-        to = RelativePath.new to
+        from = PhotoFS::FS::RelativePath.new from
+        to = PhotoFS::FS::RelativePath.new to
 
         search(from.parent).rename(from.name, search(to.parent), to.name)
 
@@ -128,7 +128,7 @@ module PhotoFS
       def getattr(context, path)
         log "stat: #{path}"
 
-        path = RelativePath.new(path)
+        path = PhotoFS::FS::RelativePath.new(path)
 
         Stat.new({:gid => context.gid, :uid => context.uid}, search(path).stat)
       end
@@ -136,13 +136,13 @@ module PhotoFS
       def readlink(context, path, size)
         log "readlink: #{path}, #{size.to_s}"
 
-        search(RelativePath.new(path)).target_path
+        search(PhotoFS::FS::RelativePath.new(path)).target_path
       end
 
       def mkdir(context, path, mode)
         log "mkdir: #{path}"
 
-        path = RelativePath.new(path)
+        path = PhotoFS::FS::RelativePath.new(path)
 
         search(path.parent).mkdir(path.name)
 
@@ -152,7 +152,7 @@ module PhotoFS
       def rmdir(context, path)
         log "rmdir: #{path}"
 
-        path = RelativePath.new(path)
+        path = PhotoFS::FS::RelativePath.new(path)
 
         search(path.parent).rmdir(path.name)
 
@@ -166,7 +166,7 @@ module PhotoFS
 
         raise Errno::EPERM unless image
 
-        path = RelativePath.new(as)
+        path = PhotoFS::FS::RelativePath.new(as)
 
         search(path.parent).symlink(image, path.name)
 
@@ -186,7 +186,7 @@ module PhotoFS
       def unlink(context, path)
         log "unlink: #{path}"
 
-        path = RelativePath.new(path)
+        path = PhotoFS::FS::RelativePath.new(path)
 
         search(path.parent).remove(path.name)
 

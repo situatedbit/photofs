@@ -1,6 +1,7 @@
 require 'rfuse'
 require 'photofs/fuse'
 require 'photofs/fs'
+require 'photofs/fs/relative_path'
 require 'photofs/fs/test'
 
 describe PhotoFS::Fuse::Fuse do
@@ -19,8 +20,8 @@ describe PhotoFS::Fuse::Fuse do
   describe :rename do
     let(:from) { '/a/b/c/from' }
     let(:to) { '/1/2/3/to' }
-    let(:from_path) { PhotoFS::Fuse::RelativePath.new from }
-    let(:to_path) { PhotoFS::Fuse::RelativePath.new to }
+    let(:from_path) { PhotoFS::FS::RelativePath.new from }
+    let(:to_path) { PhotoFS::FS::RelativePath.new to }
     let(:from_parent_node) { instance_double('PhotoFS::Fuse::Dir', :rename => nil) }
     let(:to_parent_node) { instance_double('PhotoFS::Fuse::Dir') }
 
@@ -149,7 +150,7 @@ describe PhotoFS::Fuse::Fuse do
     let(:images) { instance_double('PhotoFS::Data::ImageSet', :save! => nil) }
     let(:image) { instance_double('PhotoFS::Core::Image') }
     let(:as) { '/t/good/1.jpg' }
-    let(:as_parent_path) { PhotoFS::Fuse::RelativePath.new('/t/good') }
+    let(:as_parent_path) { PhotoFS::FS::RelativePath.new('/t/good') }
     let(:link_target) { '/home/me/photos/date/1.jpg' }
     let(:target_parent) { instance_double('PhotoFS::Fuse::TagDir') }
 
@@ -200,7 +201,7 @@ describe PhotoFS::Fuse::Fuse do
 
     context 'when the file does exist' do
       let(:parent_node) { instance_double('PhotoFS::Fuse::Dir', :remove => nil) }
-      let(:parent_path) { PhotoFS::Fuse::RelativePath.new('/t/good') }
+      let(:parent_path) { PhotoFS::FS::RelativePath.new('/t/good') }
 
       before(:example) do
         allow(fuse).to receive(:search).with(parent_path).and_return(parent_node)

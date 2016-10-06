@@ -1,5 +1,5 @@
+require 'photofs/fs/relative_path'
 require 'photofs/fuse/dir'
-require 'photofs/fuse/relative_path'
 require 'photofs/fuse/stat'
 
 describe PhotoFS::Fuse::Dir do
@@ -63,14 +63,14 @@ describe PhotoFS::Fuse::Dir do
   describe :search do
     context 'when path is empty' do
       it 'should return itself' do
-        expect(dir.search(PhotoFS::Fuse::RelativePath.new('./'))).to eq(dir)
+        expect(dir.search(PhotoFS::FS::RelativePath.new('./'))).to eq(dir)
       end
     end
 
     context 'when the matching node is a directory' do
-      let(:search_path) { PhotoFS::Fuse::RelativePath.new('ikebukuro/shinjuku') }
+      let(:search_path) { PhotoFS::FS::RelativePath.new('ikebukuro/shinjuku') }
       let(:found_node_name) { search_path.top_name }
-      let(:truncated_search_path) { PhotoFS::Fuse::RelativePath.new('./shinjuku') }
+      let(:truncated_search_path) { PhotoFS::FS::RelativePath.new('./shinjuku') }
       let(:found_node) { PhotoFS::Fuse::Dir.new(found_node_name, {:parent => dir}) }
 
       before(:each) do
@@ -92,7 +92,7 @@ describe PhotoFS::Fuse::Dir do
       end
 
       it 'should return that node' do      
-        expect(dir.search(PhotoFS::Fuse::RelativePath.new(file_name))).to eq(file)
+        expect(dir.search(PhotoFS::FS::RelativePath.new(file_name))).to eq(file)
       end
     end
 
@@ -102,7 +102,7 @@ describe PhotoFS::Fuse::Dir do
       end
 
       it 'should return nil' do
-        expect(dir.search(PhotoFS::Fuse::RelativePath.new('garbage'))).to be nil
+        expect(dir.search(PhotoFS::FS::RelativePath.new('garbage'))).to be nil
       end
     end
   end # :search

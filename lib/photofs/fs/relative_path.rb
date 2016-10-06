@@ -1,7 +1,7 @@
 require 'photofs/fs'
 
 module PhotoFS
-  module Fuse
+  module FS
     class RelativePath
       def initialize(path)
         # normalize path to start with ./
