@@ -9,7 +9,7 @@ module PhotoFS
     def self.mount
       RFuse.main(ARGV, MY_OPTIONS, OPTION_USAGE, nil, $0) do |options|
         # get path before daemonizing, after which we'd lose CWD, relatives paths like ~
-        options[:source] = options.has_key?(:source) ? ::File.expand_path(options[:source]) : nil
+        options[:source] = options.has_key?(:source) ? ::File.realpath(options[:source]) : nil
 
         Process.daemon if options[:daemon]
 
