@@ -15,11 +15,11 @@ module PhotoFS
     end
 
     def self.data_path
-      @@data_path || nil
+      images_path ? ::File.join(images_path, DATA_DIR) : nil
     end
 
     def self.data_path_join(*children)
-      ::File.join(@@data_path, *children)
+      ::File.join(data_path, *children)
     end
 
     def self.db_config_path
@@ -38,6 +38,10 @@ module PhotoFS
       @@fs ||= PhotoFS::FS::Local.new
     end
 
+    def self.images_path
+      @@images_path || nil
+    end
+
     def self.log_file
       data_path_join('log')
     end
@@ -53,13 +57,13 @@ module PhotoFS
     end
 
     def self.data_path_parent=(base_path)
-      @@data_path = ::File.join(base_path, DATA_DIR)
+      @@images_path = base_path
 
-      unless file_system.exist?(@@data_path) && file_system.directory?(@@data_path)
-        file_system.mkdir(@@data_path)
+      unless file_system.exist?(data_path) && file_system.directory?(data_path)
+        file_system.mkdir(data_path)
       end
 
-      @@data_path
+      data_path
     end
   end
 end
