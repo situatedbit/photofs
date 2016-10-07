@@ -4,8 +4,8 @@ module PhotoFS
   module FS
     class RelativePath
       def initialize(path)
-        # normalize path to start with ./
-        @path = '.' + separator + path.sub(/^(.$|\.\/|\/)/, '')
+        # normalize path to start with the first component, stripping leading slashes or ./ or .
+        @path = path.sub(/^(\.$|\.\/|\/)/, '').strip
       end
 
       def ==(other)
@@ -15,13 +15,13 @@ module PhotoFS
       def descend
         return nil if is_this?
 
-        RelativePath.new (['.'] + split[2..-1]).join(separator)
+        RelativePath.new split[1..-1].join(separator)
       end
 
       def top_name
         return nil if is_this?
 
-        split[1]
+        split[0]
       end
 
       def hash
@@ -43,18 +43,18 @@ module PhotoFS
       end
 
       def is_this?
-        split.length == 1
+        split.length == 0
       end
 
       def is_name?
-        split.length == 2
+        split.length == 1
       end
 
       alias_method :eql?, :==
 
       private 
       def components
-        @components ||= split.select { |c| c.length > 0 && c != '.' }
+        @components ||= split.select { |c| c.length }
       end
 
       def length
