@@ -1,28 +1,19 @@
-require 'photofs/fs'
 require 'photofs/fs/relative_path'
 
 module PhotoFS
   module FS
     class NormalizedPath
-      attr_accessor :raw, :root
+      attr_accessor :real_path, :root_path, :path
 
-      def initialize(raw_path, options = {})
-        @root = options[:root] || PhotoFS::FS.images_path
-        @fs = options[:file_system] || PhotoFS::FS.file_system
+      def initialize(options)
+        raise ArgumentError unless options.has_key?(:real) && options.has_key?(:root)
 
-        @raw = raw_path
-      end
+        @root_path = options[:root]
+        @real_path = options[:real]
 
-      def path
-        begin
-          realpath = @fs.realpath(raw)
-        rescue Exception
-          raise NormalizedPathException
-        end
+        raise NormalizedPathException, "path '#{real_path}' is not within root path '#{root_path}'" unless real_path.start_with?(root_path)
 
-        raise NormalizedPathException unless realpath.start_with?(root)
-
-        RelativePath.new realpath.sub(root, '')
+        @path = RelativePath.new real_path.sub(root_path, '')
       end
 
       def to_s
