@@ -33,6 +33,19 @@ describe PhotoFS::FS::RelativePath do
     end
   end
 
+  describe :== do
+    it { expect(klass.new 't').to eq(klass.new 't') }
+    it { expect(klass.new 't').to eq('t') }
+
+    it { expect(klass.new 'f').to_not eq('t') }
+
+    context 'when the objects are the same' do
+      let(:path) { klass.new 't' }
+
+      it { expect(path).to eq(path) }
+    end
+  end
+
   describe :descend do
     context 'when there is more than one component' do
       let(:path) { klass.new '/first/second/third' }

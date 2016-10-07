@@ -9,7 +9,7 @@ module PhotoFS
       end
 
       def ==(other)
-        other.is_a?(RelativePath) && (hash == other.hash)
+        (other.is_a?(RelativePath) && (hash == other.hash)) || (other.to_s == to_s)
       end
 
       def descend
