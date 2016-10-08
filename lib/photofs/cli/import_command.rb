@@ -2,6 +2,7 @@ require 'photofs/cli'
 require 'photofs/cli/command'
 require 'photofs/cli/command_validators'
 require 'photofs/core/image'
+require 'photofs/fs'
 require 'photofs/fs/file_monitor'
 
 module PhotoFS
@@ -31,7 +32,10 @@ module PhotoFS
       def modify_datastore
         @output << "Importing images from \"#{@path}\"..."
 
-        paths_imported = @images.import PhotoFS::FS::FileMonitor.new(@path).paths
+        file_monitor = PhotoFS::FS::FileMonitor.new({ :images_root_path => PhotoFS::FS.images_path,
+                                                      :search_path => @path,
+                                                      :file_system => PhotoFS::FS.file_system })
+        paths_imported = @images.import file_monitor.paths
 
         @output += paths_imported.map { |image| image.path }
 

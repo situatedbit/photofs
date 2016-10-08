@@ -121,22 +121,25 @@ describe 'cli integration', :type => :locking_behavior do
   end # #tag_rename
 
   describe :import do
-    let(:top_path) { '/a/b/c' }
-    let(:path1) { '/a/b/c/1.jpg' }
-    let(:path2) { '/a/b/c/2.jpg' }
-    let(:path3) { '/a/b/c/3.jpg' }
-    let(:files) { [path1, path2, path3] }
+    let(:images_root) { '/home/usr/photos' }
+    let(:search_path) { '/home/usr/photos/a' }
+    let(:path1) { 'a/b/c/1.jpg' }
+    let(:path2) { 'a/b/c/2.jpg' }
+    let(:path3) { 'a/b/c/3.jpg' }
+    let(:paths) { [path1, path2, path3] }
+    let(:files) { paths.map { |p| [images_root, p].join('/') } }
 
     let(:file_system) { PhotoFS::FS::Test.new( { :files => files } ) }
 
     before(:example) do
       create_images [path1, path2]
 
-      allow(PhotoFS::FS::FileMonitor).to receive(:new).with(top_path).and_return(instance_double('FileMonitor', :paths => files))
+      allow(PhotoFS::FS).to receive(:images_path).and_return(images_root)
+      allow(PhotoFS::FS::FileMonitor).to receive(:new).and_return(instance_double('FileMonitor', :paths => paths))
     end
 
     it 'should add images under the path that are not in the database' do
-      cli.execute ['import', top_path]
+      cli.execute ['import', search_path]
 
       expect(PhotoFS::Data::Image.find_by_image_file_paths [path3]).to contain_exactly(an_instance_of PhotoFS::Data::Image)
     end

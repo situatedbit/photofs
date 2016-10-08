@@ -1,42 +1,16 @@
+require 'photofs/fs'
 require 'photofs/fs/file_monitor'
-require 'photofs/core/image_set'
 
 describe PhotoFS::FS::FileMonitor do
-  let(:path) { '/path' }
-  let(:paths) { ['a/b/c.jpg', '1/2/3.jpg', 'a/b/c.txt', '1/2/3.CR2'] }
-  let(:image_set) { PhotoFS::Core::ImageSet.new }
-  let(:monitor) { PhotoFS::FS::FileMonitor.new path }
+  let(:images_root_path) { '/home/user/photos' }
+  let(:search_path) { '/home/user/photos/subfolder' }
+  let(:file_system) { PhotoFS::FS.file_system }
+  let(:monitor) { PhotoFS::FS::FileMonitor.new({ search_path: search_path, images_root_path: images_root_path, file_system: file_system }) }
 
-  before(:example) do
-    allow(File).to receive(:expand_path).with(path).and_return(path)
-  end
-
-=begin
-  describe :scan do
-    before(:example) do
-      allow(image_set).to receive(:find_by_path).with(paths[0]).and_return(nil)
-      allow(image_set).to receive(:find_by_path).with(paths[1]).and_return(PhotoFS::Image.new(paths[1]))
-
-      allow(monitor).to receive(:paths).and_return(paths)
-    end
-
-    it 'should add new images for paths not in set' do
-      expect(image_set).to receive(:add).with(PhotoFS::Image.new(paths[0]))
-
-      monitor.scan
-    end
-
-    it 'should ignore paths that are already in the set' do
-      expect(image_set).not_to receive(:add).with(PhotoFS::Image.new(paths[1]))
-
-      monitor.scan
-    end
-  end
-=end
   describe :paths do
     let(:glob) { ['a/b/c.jpg', '1/2/3.jpg', '1/2/3.CR2'] }
     let(:monitor_paths) do
-      glob.map { |g| "#{path}/#{g}" }
+      glob.map { |g| "subfolder/#{g}" }
     end
 
     before(:example) do

@@ -14,6 +14,7 @@ describe PhotoFS::CLI::ImportCommand do
 
   before(:example) do
     allow(PhotoFS::FS).to receive(:file_system).and_return(file_system)
+    allow(PhotoFS::FS).to receive(:images_path).and_return('/arbitrary/root/path')
     allow(PhotoFS::FS::FileMonitor).to receive(:new).and_return(file_monitor)
     allow(PhotoFS::Data::ImageSet).to receive(:new).and_return(images)
   end

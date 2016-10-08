@@ -1,21 +1,28 @@
-require 'photofs/fs'
+require 'photofs/fs/normalized_path'
 
 module PhotoFS
   module FS
     class FileMonitor
-      def initialize(root)
-        @fs = PhotoFS::FS.file_system
-        @root = @fs.expand_path root
+      def initialize(options)
+        raise ArgumentError unless options.has_key?(:search_path) && options.has_key?(:images_root_path) && options.has_key?(:file_system)
+
+        @fs = options[:file_system]
+        @search_path = options[:search_path]
+        @images_root_path = options[:images_root_path]
       end
 
       def paths
-        glob.map { |path| @fs.join(@root, path) }
+        glob.map do |path|
+          real_path = @fs.join(@search_path, path)
+
+          PhotoFS::FS::NormalizedPath.new(:root => @images_root_path, :real => real_path).to_s
+        end
       end
 
       private
 
       def glob
-        @fs.chdir(@root) do # restores process working dir when block completes
+        @fs.chdir(@search_path) do # restores process working dir when block completes
           @fs.glob("**/*.{cr2,gif,jpg,jpeg,png,psd,tiff,tif,xcf}", @fs.fnm(:casefold))
         end
       end
