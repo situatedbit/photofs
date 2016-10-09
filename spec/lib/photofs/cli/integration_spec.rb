@@ -4,6 +4,7 @@ require 'photofs/fs/test'
 describe 'cli integration', :type => :locking_behavior do
   let(:cli) { PhotoFS::CLI }
   let(:file_system) { PhotoFS::FS::Test.new }
+  let(:images_root) { '/home/usr/photos' }
 
   before do
     $stdout = StringIO.new # Suppress output!
@@ -16,6 +17,7 @@ describe 'cli integration', :type => :locking_behavior do
   before(:example) do
     allow_any_instance_of(PhotoFS::CLI::Command).to receive(:initialize_datastore)
     allow(PhotoFS::FS).to receive(:file_system).and_return(file_system)
+    PhotoFS::FS.data_path_parent = images_root
   end
 
   describe :tag do
@@ -121,7 +123,6 @@ describe 'cli integration', :type => :locking_behavior do
   end # #tag_rename
 
   describe :import do
-    let(:images_root) { '/home/usr/photos' }
     let(:search_path) { '/home/usr/photos/a' }
     let(:path1) { 'a/b/c/1.jpg' }
     let(:path2) { 'a/b/c/2.jpg' }
@@ -146,11 +147,11 @@ describe 'cli integration', :type => :locking_behavior do
   end # :import
 
   describe :prune do
-    let(:path1) { '/a/b/c/1.jpg' }
-    let(:path2) { '/a/b/c/2.jpg' }
-    let(:path3) { '/a/b/c/3.jpg' }
-    let(:path4) { '/a/x/y/z.jpg' }
-    let(:files) { [path1, path2] }
+    let(:path1) { 'a/b/c/1.jpg' }
+    let(:path2) { 'a/b/c/2.jpg' }
+    let(:path3) { 'a/b/c/3.jpg' }
+    let(:path4) { 'a/x/y/z.jpg' }
+    let(:files) { [path1, path2].map { |p| [images_root, p].join('/') } }
     let(:images) { [path1, path2, path3, path4] }
     let(:remaining_images) { PhotoFS::Data::Image.all.map { |i| i.path } }
 
@@ -161,19 +162,19 @@ describe 'cli integration', :type => :locking_behavior do
     end
 
     it 'should remove images that are missing from the file system' do
-      cli.execute ['prune', '/a/b/c']
+      cli.execute ['prune', [images_root, 'a/b/c'].join('/') ]
 
       expect(remaining_images).to contain_exactly(path1, path2, path4)
     end
 
     it 'should descend the directory tree to prune' do
-      cli.execute ['prune', '/a']
+      cli.execute ['prune', [images_root, 'a'].join('/') ]
 
-      expect(remaining_images).to contain_exactly(*files)
+      expect(remaining_images).to contain_exactly(path1, path2)
     end
 
     it 'should prune from the path above the file, if given' do
-      cli.execute ['prune', '/a/b/c/1.jpg']
+      cli.execute ['prune', [images_root, 'a/b/c/1.jpg'].join('/') ]
 
       expect(remaining_images).to contain_exactly(path1, path2, path4)
     end

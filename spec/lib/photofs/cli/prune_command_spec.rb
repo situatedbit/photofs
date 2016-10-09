@@ -3,6 +3,7 @@ require 'photofs/cli/prune_command'
 
 describe PhotoFS::CLI::PruneCommand do
   let(:klass) { PhotoFS::CLI::PruneCommand }
+  let(:images_root) { '/a' }
   let(:path_arg) { '/a/b/c' }
   let(:command) { PhotoFS::CLI::PruneCommand.new(['prune', path_arg]) }
 
@@ -10,6 +11,7 @@ describe PhotoFS::CLI::PruneCommand do
 
   before(:example) do
     allow(PhotoFS::FS).to receive(:file_system).and_return(file_system)
+    allow(PhotoFS::FS).to receive(:images_path).and_return(images_root)
 
     allow(command).to receive(:initialize_datastore) # swallow
   end
@@ -35,9 +37,10 @@ describe PhotoFS::CLI::PruneCommand do
   end
 
   describe :modify_datastore do
-    let(:f1) { '/a/b/c/2.jpg' }
-    let(:f2) { '/a/b/1.jpg' }
-    let(:f3) { '/a/0.jpg' }
+    let(:f1) { 'b/c/2.jpg' }
+    let(:f2) { 'b/1.jpg' }
+    let(:f3) { '0.jpg' }
+    let(:files) { [f1, f2, f3].map { |f| "#{images_root}/#{f}" } }
 
     let(:i1) { double('Image', :path => f1) }
     let(:i2) { double('Image', :path => f2) }
@@ -48,13 +51,12 @@ describe PhotoFS::CLI::PruneCommand do
     before(:each) do
       command.instance_variable_set(:@images, image_set)
       command.instance_variable_set(:@prune_path, path_arg)
-
-      allow(image_set).to receive(:find_by_path_parent).with(path_arg).and_return([i1, i2, i3])
     end
 
     context 'when all images under path exist' do
       before(:each) do
-        [f1, f2, f3].each { |f| allow(file_system).to receive(:exist?).with(f).and_return(true) }
+        files.each { |f| allow(file_system).to receive(:exist?).with(f).and_return(true) }
+        allow(image_set).to receive(:find_by_path_parent).with('').and_return([i1, i2, i3])
       end
 
       let(:path_arg) { '/a' }
@@ -74,10 +76,11 @@ describe PhotoFS::CLI::PruneCommand do
 
     context 'when some images do not exist under the path' do
       before(:each) do
-        allow(file_system).to receive(:exist?).with(f1).and_return(true)
+        allow(file_system).to receive(:exist?).with(files[0]).and_return(true)
         allow(image_set).to receive(:remove)
 
-        [f2, f3].each { |f| allow(file_system).to receive(:exist?).with(f).and_return(false) }
+        files[1..2].each { |f| allow(file_system).to receive(:exist?).with(f).and_return(false) }
+        allow(image_set).to receive(:find_by_path_parent).with('b/c').and_return([i1, i2, i3])
       end
 
       it 'should remove files from database that do not exist under path' do
