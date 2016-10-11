@@ -4,6 +4,7 @@ require 'photofs/cli/data_utilities'
 require 'photofs/core/tag'
 require 'photofs/data/image_set'
 require 'photofs/data/tag_set'
+require 'photofs/fs/normalized_path'
 
 module PhotoFS
   module CLI
@@ -34,7 +35,7 @@ module PhotoFS
       end
 
       def modify_datastore
-        images = valid_images_from_paths @images, @real_image_paths
+        images = valid_images_from_paths @images, normalized_image_paths(@real_image_paths)
 
         @args_old_tag_names.each do |tag_name|
           untag_images @tags, tag_name, images

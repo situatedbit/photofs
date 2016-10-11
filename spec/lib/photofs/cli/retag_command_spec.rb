@@ -37,7 +37,7 @@ describe PhotoFS::CLI::RetagCommand do
     subject { command.modify_datastore }
 
     before(:example) do
-      command.instance_variable_set(:@real_image_paths, image_paths)
+      allow(command).to receive(:normalized_image_paths).and_return(image_paths)
 
       allow(command).to receive(:valid_images_from_paths).with(image_set, image_paths).and_return(valid_images)
 

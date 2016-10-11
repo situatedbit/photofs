@@ -34,7 +34,7 @@ module PhotoFS
       end
 
       def modify_datastore
-        images = valid_images_from_paths @images, normalized_image_paths
+        images = valid_images_from_paths @images, normalized_image_paths(@real_image_paths)
 
         @args_tag_names.each do |tag_name|
           tag_images @tags, tag_name, images
@@ -56,12 +56,6 @@ module PhotoFS
 
       def invalid_images_error_message(missing_paths)
         "Images not imported: \n" + missing_paths.join("\n") + "\nImport all images first. No images were tagged."
-      end
-
-      def normalized_image_paths
-        @real_image_paths.map do |path|
-          PhotoFS::FS::NormalizedPath.new(real: path, root: PhotoFS::FS.images_path).to_s
-        end
       end
 
       Command.register_command self

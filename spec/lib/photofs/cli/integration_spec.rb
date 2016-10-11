@@ -182,13 +182,14 @@ describe 'cli integration', :type => :locking_behavior do
   end # :prune
 
   describe :retag do
-    let(:path1) { '/a/b/c/1.jpg' }
-    let(:path2) { '/a/b/c/2.jpg' }
-    let(:unimported_file) { '/a/b/c/not-imported.jpg' }
-    let(:image_paths) { [path1, path2] }
+    let(:image_path1) { 'a/b/c/1.jpg' }
+    let(:image_path2) { 'a/b/c/2.jpg' }
+    let(:unimported_file) { [images_root, 'a/b/c/not-imported.jpg'].join('/') }
+    let(:image_paths) { [image_path1, image_path2] }
+    let(:files) { image_paths.map { |p| [images_root, p].join('/') } + [unimported_file] }
     let(:image_records) { create_images image_paths }
 
-    let(:file_system) { PhotoFS::FS::Test.new( { :files => (image_paths + [unimported_file]) } ) }
+    let(:file_system) { PhotoFS::FS::Test.new(files: files) }
 
     let(:good_tag_record) { create :tag, :name => 'good' }
     let(:bad_tag_record) { create :tag, :name => 'bad' }
@@ -209,13 +210,13 @@ describe 'cli integration', :type => :locking_behavior do
         end
 
         it 'should remove any applications of old tag to images' do
-          cli.execute ['retag', 'good', 'bad', '/a/b/c/1.jpg', '/a/b/c/2.jpg']
+          cli.execute ['retag', 'good', 'bad', files[0], files[1]]
 
           expect(PhotoFS::Data::Tag.from_tag(good_tag_record.to_simple).images).to be_empty
         end
 
         it 'should apply new tag to images' do
-          cli.execute ['retag', 'good', 'bad', '/a/b/c/1.jpg', '/a/b/c/2.jpg']
+          cli.execute ['retag', 'good', 'bad',  files[0], files[1]]
 
           expect(PhotoFS::Data::Tag.from_tag(bad_tag_record.to_simple).images).to contain_exactly(*image_records)
         end
@@ -227,14 +228,14 @@ describe 'cli integration', :type => :locking_behavior do
         end
 
         it 'should create it' do
-          cli.execute ['retag', 'good', 'bad', '/a/b/c/1.jpg', '/a/b/c/2.jpg']
+          cli.execute ['retag', 'good', 'bad',  files[0], files[1]]
 
           expect(PhotoFS::Data::Tag.from_tag(double('Tag', :name => 'bad'))).to be_an_instance_of(PhotoFS::Data::Tag)
         end
       end
 
       context 'when multiple tags are specified' do
-        subject { cli.execute ['retag', 'good better', 'bad worse', '/a/b/c/1.jpg', '/a/b/c/2.jpg'] }
+        subject { cli.execute ['retag', 'good better', 'bad worse',  files[0], files[1]] }
 
         before(:example) do
           good_tag_record.images = image_records
@@ -267,7 +268,7 @@ describe 'cli integration', :type => :locking_behavior do
     end
 
     context 'if one of the images is not yet imported' do
-      it { expect { cli.execute ['retag', 'good', 'bad', '/a/b/c/1.jpg', unimported_file] }.to output(/not imported/).to_stdout }
+      it { expect { cli.execute ['retag', 'good', 'bad', files[0], unimported_file] }.to output(/not imported/).to_stdout }
     end
   end # :retag
 end
