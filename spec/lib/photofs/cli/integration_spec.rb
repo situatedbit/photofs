@@ -23,14 +23,13 @@ describe 'cli integration', :type => :locking_behavior do
   describe :tag do
     let(:tag_class) { PhotoFS::Data::Tag }
 
-    let(:image_path) { '/photos/src/some-file.jpg' }
-    let(:image2_path) { '/photos/src/another-file.jpg' }
-    let(:argv) { ['tag', 'some-tag', image_path] }
-    let(:file_system) { PhotoFS::FS::Test.new( { :files => [image_path, image2_path, '/photofs/some-other-file.jpg'] } ) }
+    let(:image_path) { 'src/some-file.jpg' }
+    let(:image2_path) { 'src/another-file.jpg' }
+    let(:files) { [image_path, image2_path, 'some-other-file.jpg'].map { |p| [images_root, p].join('/') } }
+    let(:argv) { ['tag', 'some-tag', files[0]] }
+    let(:file_system) { PhotoFS::FS::Test.new(files: files) }
 
     before(:example) do
-      allow(PhotoFS::FS).to receive(:data_path).and_return('/photos')
-
       create_image image_path
     end
 
@@ -47,7 +46,7 @@ describe 'cli integration', :type => :locking_behavior do
     end
 
     context 'when the image is not in the library' do
-      let(:argv) { ['tag', 'some-tag', '/photofs/some-other-file.jpg'] }
+      let(:argv) { ['tag', 'some-tag', '/home/usr/photos/some-other-file.jpg'] }
 
       it 'should throw an error' do
         expect { cli.execute argv }.to output(/not imported/).to_stdout
@@ -56,7 +55,8 @@ describe 'cli integration', :type => :locking_behavior do
 
     context 'when several images are included' do
       let(:images) { [image_path, image2_path] }
-      let(:argv) { ['tag', 'good'] + images }
+      let(:files) { images.map { |p| [images_root, p].join('/') } }
+      let(:argv) { ['tag', 'good'] + files }
 
       before(:example) do
         create_image image2_path
@@ -71,7 +71,8 @@ describe 'cli integration', :type => :locking_behavior do
 
     context 'when several tags and images are included' do
       let(:images) { [image_path, image2_path] }
-      let(:argv) { ['tag', 'good bad'] + images }
+      let(:files) { images.map { |p| [images_root, p].join('/') } }
+      let(:argv) { ['tag', 'good bad'] + files }
 
       before(:example) do
         create :image, :image_file => build(:file, :path => image2_path)

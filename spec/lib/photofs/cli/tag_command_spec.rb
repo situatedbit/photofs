@@ -6,11 +6,12 @@ require 'photofs/fs/test'
 describe PhotoFS::CLI::TagCommand do
   let(:klass) { PhotoFS::CLI::TagCommand }
   let(:tag_arg) { 'good' }
-  let(:image_arg) { '/a/b/c/image.jpg' }
+  let(:images_root) { '/home/usr/photos' }
+  let(:image_arg) { 'a/b/c/image.jpg' }
   let(:image_path) { image_arg }
   let(:command) { PhotoFS::CLI::TagCommand.new(['tag', tag_arg, image_arg]) }
 
-  let(:file_system) { PhotoFS::FS::Test.new( { :files => [image_arg] } )}
+  let(:file_system) { PhotoFS::FS::Test.new( { :files => [[images_root, image_arg].join('/')] } )}
 
   before(:example) do
     allow(PhotoFS::FS).to receive(:file_system).and_return(file_system)
@@ -36,8 +37,7 @@ describe PhotoFS::CLI::TagCommand do
     subject { command.modify_datastore }
 
     before(:example) do
-      command.instance_variable_set(:@real_image_paths, image_paths)
-
+      allow(command).to receive(:normalized_image_paths).and_return(image_paths)
       allow(command).to receive(:valid_images_from_paths).with(image_set, image_paths).and_return(valid_images)
       allow(command).to receive(:tag_images).and_return(nil)
     end
