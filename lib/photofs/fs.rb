@@ -26,6 +26,10 @@ module PhotoFS
        ::File.join app_root, 'db'
     end
 
+    def self.expand_path(normalized_path)
+      [images_path, normalized_path.to_s].join(file_system.separator)
+    end
+
     def self.find_data_parent_path(child_path)
       raise Errno::ENOENT, "could not find #{DATA_DIR} directory" if child_path == ::File::SEPARATOR
 

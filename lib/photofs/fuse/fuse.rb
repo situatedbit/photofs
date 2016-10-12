@@ -4,6 +4,7 @@ require 'photofs/data/image_set'
 require 'photofs/data/synchronize'
 require 'photofs/data/tag_set'
 require 'photofs/fs'
+require 'photofs/fs/normalized_path'
 require 'photofs/fs/relative_path'
 require 'photofs/fuse/mirrored_dir'
 require 'photofs/fuse/root_dir'
@@ -162,7 +163,11 @@ module PhotoFS
       def symlink(context, link_target, as)
         log "symlink: #{as} => #{link_target}"
 
-        image = @images.find_by_path(link_target)
+        begin
+          image = @images.find_by_path PhotoFS::FS::NormalizedPath.new(real: link_target, root: PhotoFS::FS::images_path).to_s
+        rescue PhotoFS::FS::NormalizedPathException
+          raise Errno::EPERM
+        end
 
         raise Errno::EPERM unless image
 

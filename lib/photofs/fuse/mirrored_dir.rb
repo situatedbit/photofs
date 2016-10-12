@@ -1,8 +1,10 @@
 require 'photofs/core/image_set'
 require 'photofs/fs'
+require 'photofs/fs/normalized_path'
+require 'photofs/fs/relative_path'
 require 'photofs/fuse/dir'
-require 'photofs/fuse/stat'
 require 'photofs/fuse/file'
+require 'photofs/fuse/stat'
 require 'rfuse'
 
 module PhotoFS
@@ -66,7 +68,7 @@ module PhotoFS
       end
 
       def dir_node(entry, path)
-        MirroredDir.new(entry, path, {:parent => self, :tags => @tags, :images => @images_domain})
+        MirroredDir.new(entry, path, {parent: self, tags: @tags, images: @images_domain})
       end
 
       def entries
@@ -82,47 +84,42 @@ module PhotoFS
       end
 
       def file_node(entry, path, payload)
-        File.new(entry, fs.absolute_path(path), {:parent => self, :payload => payload})
+        File.new(entry, fs.absolute_path(path), {parent: self, payload: payload})
       end
 
       def images
-        # images for each entry entries corresponding to an image in image domain
-        paths = entries.map { |e| expand_path e }
+        paths = entries.map { |e| normalized_path(expand_path e) }
 
         @images_domain.find_by_paths(paths).values.select { |image| image }
       end
 
-      def mirrored_dir_nodes(dir_entries)
-        dir_nodes = []
-
-        dir_entries.each_pair do |path, entry|
-          dir_nodes << [entry, dir_node(entry, path)]
-        end
-
-        dir_nodes
+      def mirrored_dir_nodes
+        dir_entries.map { |entry| [entry, dir_node(entry, expand_path(entry))] }
       end
 
-      def mirrored_file_nodes(file_entries)
+      def mirrored_file_nodes
         file_nodes = []
 
-        @images_domain.find_by_paths(file_entries.keys).each_pair do |path, image|
-          entry = file_entries[path]
+        paths = file_entries.map { |e| normalized_path(expand_path e) }
 
-          file_nodes << [entry, file_node(entry, path, image)]
+        @images_domain.find_by_paths(paths).each_pair do |path, image|
+          entry = PhotoFS::FS::RelativePath.new(path).name
+          file_nodes << [entry, file_node(entry, expand_path(entry), image)]
         end
 
         file_nodes
       end
 
       def mirrored_nodes
-        files = Hash[file_entries.map { |e| [expand_path(e), e] }]
-        dirs = Hash[dir_entries.map { |e| [expand_path(e), e] }]
+        Hash[mirrored_file_nodes + mirrored_dir_nodes]
+      end
 
-        Hash[mirrored_file_nodes(files) + mirrored_dir_nodes(dirs)]
+      def normalized_path(real_path)
+        PhotoFS::FS::NormalizedPath.new(real: real_path, root: PhotoFS::FS.images_path).to_s
       end
 
       def tags_node
-        tag_dir_image_set = PhotoFS::Core::ImageSet.new({set: Set.new(images)})
+        tag_dir_image_set = PhotoFS::Core::ImageSet.new(set: Set.new(images))
 
         return {} if @tags.nil? || tag_dir_image_set.empty?
 

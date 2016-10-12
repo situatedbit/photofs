@@ -143,7 +143,7 @@ module PhotoFS
 
           name = file_name_map[basename] ? unique_image_name(image) : basename
 
-          file_name_map[name] = File.new(name, PhotoFS::FS.file_system.absolute_path(image.path), {:parent => self, :payload => image})
+          file_name_map[name] = File.new(name, PhotoFS::FS.expand_path(image.path), {:parent => self, :payload => image})
         end
 
         file_name_map.merge additional_files
@@ -156,7 +156,7 @@ module PhotoFS
       def unique_image_name(image)
         extension = ::File.extname image.path
         basename = ::File.basename image.path, extension
-        escaped_path = ::File.dirname(image.path).gsub(::File::SEPARATOR, '-')
+        escaped_path = "-" + ::File.dirname(image.path).gsub(::File::SEPARATOR, '-')
 
         "#{basename}#{escaped_path}#{extension}"
       end

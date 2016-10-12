@@ -327,10 +327,10 @@ describe PhotoFS::Fuse::TagDir do
   describe :files do
     let(:tag_dir) { PhotoFS::Fuse::TagDir.new('日本橋', PhotoFS::Core::TagSet.new) }
 
-    let(:image_a) { instance_double('PhotoFS::Core::Image', :path => '/a/え.jpg') }
-    let(:image_b) { instance_double('PhotoFS::Core::Image', :path => '/b/え.jpg') }
-    let(:image_c) { instance_double('PhotoFS::Core::Image', :path => '/c/え.jpg') }
-    let(:image_d) { instance_double('PhotoFS::Core::Image', :path => '/d/きれい.jpg') }
+    let(:image_a) { instance_double('PhotoFS::Core::Image', :path => 'a/え.jpg') }
+    let(:image_b) { instance_double('PhotoFS::Core::Image', :path => 'b/え.jpg') }
+    let(:image_c) { instance_double('PhotoFS::Core::Image', :path => 'c/え.jpg') }
+    let(:image_d) { instance_double('PhotoFS::Core::Image', :path => 'd/きれい.jpg') }
 
     let(:images) { PhotoFS::Core::ImageSet.new :set => [image_a, image_d].to_set }
     let(:additional_files) { {'some-other-file' => double('File')} }
@@ -339,11 +339,12 @@ describe PhotoFS::Fuse::TagDir do
     before(:example) do
       allow(tag_dir).to receive(:images).and_return(images)
       allow(tag_dir).to receive(:additional_files).and_return(additional_files)
+      allow(PhotoFS::FS).to receive(:images_path).and_return('/home/usr/photos')
       allow(PhotoFS::FS).to receive(:file_system).and_return(PhotoFS::FS::Test.new)
     end
 
-    it 'should return list of files' do
-      expect(tag_dir.send :files).to include *files
+    it 'should return hash of files' do
+      expect(tag_dir.send(:files).keys).to include *files
     end
 
     context 'when there are name collisions' do
@@ -352,7 +353,7 @@ describe PhotoFS::Fuse::TagDir do
       let(:files) { ['え.jpg', 'え-b.jpg', 'え-c.jpg'] }
 
       it 'should use the base name for the first instance of that file name and uniqe names for all others' do
-        expect(tag_dir.send :files).to include *files
+        expect(tag_dir.send(:files).keys).to include *files
       end
     end
   end # :files

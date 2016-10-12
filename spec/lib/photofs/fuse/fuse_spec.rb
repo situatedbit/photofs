@@ -7,7 +7,8 @@ require 'photofs/fs/test'
 describe PhotoFS::Fuse::Fuse do
   let(:context) { instance_double('RFuse::Context') }
   let(:root_dir) { instance_double('PhotoFS::RootDir', :clear_cache => nil) }
-  let(:fuse) { PhotoFS::Fuse::Fuse.new({:source => 'source-path', :mountpoint => 'mount-point'}) }
+  let(:images_path) { '/home/usr/photos' }
+  let(:fuse) { PhotoFS::Fuse::Fuse.new(source: images_path, mountpoint: 'mount-point') }
 
   before(:example) do
     allow(PhotoFS::Fuse::RootDir).to receive(:new).and_return(root_dir)
@@ -151,13 +152,14 @@ describe PhotoFS::Fuse::Fuse do
     let(:image) { instance_double('PhotoFS::Core::Image') }
     let(:as) { '/t/good/1.jpg' }
     let(:as_parent_path) { PhotoFS::FS::RelativePath.new('/t/good') }
-    let(:link_target) { '/home/me/photos/date/1.jpg' }
+    let(:link_target) { [images_path, link_image].join('/') }
+    let(:link_image) { 'date/1.jpg' }
     let(:target_parent) { instance_double('PhotoFS::Fuse::TagDir') }
 
     before(:example) do
       fuse.instance_variable_set(:@images, images)
 
-      allow(images).to receive(:find_by_path).with(link_target).and_return(image)
+      allow(images).to receive(:find_by_path).with('date/1.jpg').and_return(image)
       allow(fuse).to receive(:search).with(as_parent_path).and_return(target_parent)
     end
 
@@ -173,7 +175,7 @@ describe PhotoFS::Fuse::Fuse do
 
     context 'when the source is not in the image collection' do
       before(:example) do
-        allow(images).to receive(:find_by_path).with(link_target).and_return(nil)
+        allow(images).to receive(:find_by_path).with(link_image).and_return(nil)
       end
 
       it 'should raise permission error' do

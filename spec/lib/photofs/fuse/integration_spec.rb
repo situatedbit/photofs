@@ -19,9 +19,9 @@ describe 'integration for', :type => :locking_behavior do
   let(:mountpoint) { '/home/me/p' }
   let(:context) { instance_double('Context', {:gid => 500, :uid => 500}) }
 
-  let(:file_system) { PhotoFS::FS::Test.new({ :dirs => [source_path, mountpoint], :files => [] }) }
+  let(:file_system) { PhotoFS::FS::Test.new(dirs: [source_path, mountpoint]) }
 
-  let(:fuse) { PhotoFS::Fuse::Fuse.new({:source => source_path, :mountpoint => mountpoint, :env => 'test'}) }
+  let(:fuse) { PhotoFS::Fuse::Fuse.new(source: source_path, mountpoint: mountpoint, env: 'test') }
 
   before(:example) do
     allow(PhotoFS::FS).to receive(:file_system).and_return(file_system)
@@ -80,12 +80,12 @@ describe 'integration for', :type => :locking_behavior do
     end # :tags:top_level_dir
 
     context 'when the tag still has images in it in a different source directory' do
-      let(:image_directories) { ['/a', '/b'].map {|p| "#{source_path}#{p}"} }
-      let(:image_files) { ['/a/1.jpg', '/b/2.jpg'].map {|p| "#{source_path}#{p}"} }
+      let(:image_paths) { ['a/1.jpg', 'b/2.jpg'] }
+      let(:image_files) { image_paths.map {|p| "#{source_path}/#{p}"} }
 
       before(:example) do
-        create_images image_files
-        file_system.add({:dirs => image_directories, :files => image_files})
+        create_images image_paths
+        file_system.add(files: image_files)
 
         fuse.mkdir(context, '/t/good', 0)
         fuse.rename(context, '/o/a/1.jpg', '/o/a/tags/good/1.jpg')
@@ -99,11 +99,10 @@ describe 'integration for', :type => :locking_behavior do
 
   describe :mirrored_dirs do
     describe 'initialization' do
-      let(:image_directories) { ["/a", "/a/b", "/c"].map {|p| "#{source_path}#{p}"} }
       let(:image_files) { [ '/a/1a.jpg', '/a/2a.jpg', '/a/b/1b.jpg', '/c/1c.JPG'].map {|p| "#{source_path}#{p}"} }
 
       before(:example) do
-        file_system.add({:dirs => image_directories, :files => image_files})
+        file_system.add(files: image_files)
       end
 
       it 'should list a file for each jpg in its path' do
@@ -124,13 +123,13 @@ describe 'integration for', :type => :locking_behavior do
   end # :mirrored_dirs
 
   describe :tagging_images do
-    let(:image_directories) { ["/a", "/a/b", "/c"].map {|p| "#{source_path}#{p}"} }
-    let(:image_files) { [ '/a/1a.jpg', '/a/2a.jpg', '/a/b/1b.jpg', '/c/1c.JPG', '/a/photo.jpg', '/c/photo.jpg'].map {|p| "#{source_path}#{p}"} }
+    let(:image_paths) { ['a/1a.jpg', 'a/2a.jpg', 'a/b/1b.jpg', 'c/1c.JPG', 'a/photo.jpg', 'c/photo.jpg'] }
+    let(:image_files) { image_paths.map { |p| "#{source_path}/#{p}" } }
 
     before(:example) do
-      create_images image_files
+      create_images image_paths
 
-      file_system.add({:dirs => image_directories, :files => image_files})
+      file_system.add(files: image_files)
 
       fuse.mkdir(context, '/t/good', 0)
     end
@@ -253,7 +252,7 @@ describe 'integration for', :type => :locking_behavior do
       end
 
       it 'the second image should include the payload hash' do
-        expect(fuse.readlink(context, '/t/good/photo-home-me-photos-c.jpg', 0)).to eq("#{source_path}/c/photo.jpg")
+        expect(fuse.readlink(context, '/t/good/photo-c.jpg', 0)).to eq("#{source_path}/c/photo.jpg")
       end
 
       context 'when the image with the base name is removed' do
@@ -268,7 +267,7 @@ describe 'integration for', :type => :locking_behavior do
 
       context 'when the image with the hash is removed' do
         before(:example) do
-          fuse.unlink(context, '/t/good/photo-home-me-photos-c.jpg')
+          fuse.unlink(context, '/t/good/photo-c.jpg')
         end
 
         it 'should result in the original image retaining the base name' do
@@ -279,12 +278,12 @@ describe 'integration for', :type => :locking_behavior do
   end # :tagging_images
 
   describe 'untagging images' do
-    let(:image_directories) { ["/a", "/a/b", "/c"].map {|p| "#{source_path}#{p}"} }
-    let(:image_files) { ['/a/1a.jpg', '/a/2a.jpg', '/c/1c.JPG'].map {|p| "#{source_path}#{p}"} }
+    let(:image_paths) { ['a/1a.jpg', 'a/2a.jpg', 'c/1c.JPG'] }
+    let(:image_files) { image_paths.map {|p| "#{source_path}/#{p}"} }
 
     before(:example) do
-      create_images image_files
-      file_system.add({:dirs => image_directories, :files => image_files})
+      create_images image_paths
+      file_system.add(files: image_files)
 
       fuse.mkdir(context, '/t/good', 0)
       fuse.rename(context, '/o/a/1a.jpg', '/o/a/tags/good/1a.jpg')
@@ -320,28 +319,29 @@ describe 'integration for', :type => :locking_behavior do
 
   describe 'persisting images' do
     context 'when an image is present in the source tree during initialization' do
-      let(:image_directories) { ['/a'].map {|p| "#{source_path}#{p}"} }
-      let(:image_files) { ['/a/1.jpg'].map {|p| "#{source_path}#{p}"} }
-      let(:file_system) { PhotoFS::FS::Test.new({ :dirs => [source_path, mountpoint] + image_directories, :files => image_files }) }
+      let(:image_paths) { ['a/1.jpg'] }
+      let(:image_files) { image_paths.map { |p| "#{source_path}/#{p}"} }
 
       before(:example) do
-        create_images image_files
+        create_images image_paths
+        file_system.add(files: image_files)
       end
 
       it 'should be persisted in the database' do
-        expect(PhotoFS::Data::Image.first.image_file.path).to eq(image_files.first)
+        expect(PhotoFS::Data::Image.first.image_file.path).to eq(image_paths.first)
       end
     end
   end # persisting images
 
   describe 'stats file' do
-    let(:image_files) { ['/a/1.jpg', '/a/2.jpg', '/a/3.jpg'].map {|path| "#{source_path}#{path}"} }
+    let(:image_paths) { ['a/1.jpg', 'a/2.jpg', 'a/3.jpg'] }
+    let(:image_files) { image_paths.map { |p| "#{source_path}/#{p}"} }
     let(:stats_file_path) { '/o/a/tags/stats' }
 
     before(:example) do
-      create_images image_files
+      create_images image_paths
 
-      file_system.add({:files => image_files})
+      file_system.add(files: image_files)
 
       fuse.mkdir(context, '/t/good', 0)
       fuse.mkdir(context, '/t/bad', 0)

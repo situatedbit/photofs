@@ -3,11 +3,12 @@ require 'photofs/fuse/file'
 require 'photofs/fs/test'
 
 describe PhotoFS::Fuse::MirroredDir do
-  let(:absolute_path) { '/tmp/garbage' }
-  let(:path) { 'garbage' }
-  let(:fs) { PhotoFS::FS::Test.new({ :dirs => [absolute_path], :files => [], :absolute_paths => {path => absolute_path} }) }
+  let(:images_path) { '/home/usr/photos' }
+  let(:path) { 'photos' }
+  let(:fs) { PhotoFS::FS::Test.new({ :dirs => [images_path], :files => [], :absolute_paths => {path => images_path} }) }
 
   before(:each) do
+    allow(PhotoFS::FS).to receive(:images_path).and_return(images_path)
     allow(PhotoFS::FS).to receive(:file_system).and_return(fs)
     allow(fs).to receive(:exist?).and_return(true)
   end
@@ -21,8 +22,8 @@ describe PhotoFS::Fuse::MirroredDir do
 
     before(:each) do
       allow(dir).to receive(:entries).and_return(entries)
-      allow(dir).to receive(:expand_path).with(path1).and_return(path1)
-      allow(dir).to receive(:expand_path).with(path2).and_return(path2)
+      allow(dir).to receive(:expand_path).with(path1).and_return("#{images_path}/#{path1}")
+      allow(dir).to receive(:expand_path).with(path2).and_return("#{images_path}/#{path2}")
 
       allow(images_domain).to receive(:find_by_path).with(path1).and_return(path1)
       allow(images_domain).to receive(:find_by_path).with(path2).and_return(nil)
@@ -39,7 +40,7 @@ describe PhotoFS::Fuse::MirroredDir do
     let(:default_options) { {:default => 'some-default'} }
 
     it "should take a directory target" do
-      expect((PhotoFS::Fuse::MirroredDir.new('test', path)).source_path).to eq(absolute_path)
+      expect((PhotoFS::Fuse::MirroredDir.new('test', path)).source_path).to eq(images_path)
     end
 
     it 'should merge optional arguments' do
@@ -158,7 +159,7 @@ describe PhotoFS::Fuse::MirroredDir do
       before(:each) do
         allow(fs).to receive(:entries).and_return(['.', '..', file_name])
         allow(fs).to receive(:directory?).and_return(false)
-        fs.add({:absolute_paths => { file_name => ::File.join(absolute_path, file_name)}})
+        fs.add({:images_paths => { file_name => ::File.join(images_path, file_name)}})
       end
 
       it "should be a file node representing that file" do
@@ -175,7 +176,7 @@ describe PhotoFS::Fuse::MirroredDir do
       before(:each) do
         allow(fs).to receive(:entries).and_return(['.', '..', file_name, dir_name])
         allow(fs).to receive(:directory?).and_return(false, true)
-        fs.add({:absolute_paths => { file_name => ::File.join(absolute_path, file_name), dir_name => ::File.join(absolute_path, dir_name)}})
+        fs.add({:images_paths => { file_name => ::File.join(images_path, file_name), dir_name => ::File.join(images_path, dir_name)}})
       end
 
       it "should be a mirrored dir for each dir and a file for each file" do
