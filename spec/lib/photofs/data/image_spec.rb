@@ -17,17 +17,17 @@ describe PhotoFS::Data::Image, type: :model do
   end
 
   describe :find_by_path_parent do
-    let(:i1) { create_image '/a/1.jpg' }
-    let(:i2) { create_image '/a/2.jpg' }
-    let(:i3) { create_image '/a-b/3.jpg' }
-    let!(:images) { create_images [i1, i2, i3] }
+    let(:i1) { create_image 'a/1.jpg' }
+    let(:i2) { create_image 'a/2.jpg' }
+    let(:i3) { create_image 'a-b/3.jpg' }
+    let!(:images) { [i1, i2, i3] }
 
-    it { expect(klass.find_by_path_parent('a')).to be_empty }
-    it { expect(klass.find_by_path_parent('1.jpg')).to be_empty }
+    it { expect(klass.find_by_path_parent '1.jpg').to be_empty }
 
-    it { expect(klass.find_by_path_parent('/a')).to contain_exactly(i1, i2) }
-    it { expect(klass.find_by_path_parent('/a/')).to contain_exactly(i1, i2) }
-    it { expect(klass.find_by_path_parent('/')).to contain_exactly(i1, i2, i3) }
+    it { expect(klass.find_by_path_parent '').to contain_exactly(*images) }
+    it { expect(klass.find_by_path_parent 'a').to contain_exactly(i1, i2) }
+    it { expect(klass.find_by_path_parent 'a/').to contain_exactly(i1, i2) }
+    it { expect(klass.find_by_path_parent '/').to be_empty }
   end
 
   describe 'class :new_from_image' do

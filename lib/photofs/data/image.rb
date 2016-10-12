@@ -18,10 +18,15 @@ module PhotoFS
       end
 
       def self.find_by_path_parent(path)
-        # must end with / to prevent selecting 2.jpg from '/some/path/1.jpg', '/some/path-to-file/2.jpg'
-        path = path.end_with?(::File::SEPARATOR) ? path : "#{path}#{::File::SEPARATOR}"
+        # if path isn't empty, must end with / to prevent selecting 2.jpg from 'some/path/1.jpg',
+        #   'some/path-to-file/2.jpg' with path='some/path'
+        path_filter = path.end_with?(::File::SEPARATOR) ? path : "#{path}#{::File::SEPARATOR}"
+        join_scope = Image.joins(:image_file)
 
-        Image.joins(:image_file).where('instr(files.path, (?)) == 1', path)
+        case path
+          when '' then join_scope
+          else join_scope.where('instr(files.path, (?)) == 1', path_filter)
+        end
       end
 
       def self.from_image(image)
