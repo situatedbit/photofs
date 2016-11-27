@@ -61,4 +61,17 @@ describe PhotoFS::Core::Image do
       expect(image.name).to eq('some-path-to-whatever')
     end
   end # :name
+
+  describe :sidecar? do
+    let(:image) { PhotoFS::Core::Image.new('a/b/1.jpg') }
+
+    it { expect(image.sidecar? PhotoFS::Core::Image.new('a/b/1.jpg')). to be false }
+    it { expect(image.sidecar? PhotoFS::Core::Image.new('a/b/1.JPG')). to be true }
+    it { expect(image.sidecar? PhotoFS::Core::Image.new('a/b/1.c2r')). to be true }
+    it { expect(image.sidecar? PhotoFS::Core::Image.new('a/1.c2r')). to be false }
+    it { expect(image.sidecar? PhotoFS::Core::Image.new('1.c2r')). to be false }
+    it { expect(image.sidecar? PhotoFS::Core::Image.new('a/b/1')). to be true }
+    it { expect(image.sidecar? PhotoFS::Core::Image.new('a/b/1.whatever')). to be true }
+    it { expect(image.sidecar? PhotoFS::Core::Image.new('a/b/1.whatever.nevermind')). to be false }
+  end
 end
