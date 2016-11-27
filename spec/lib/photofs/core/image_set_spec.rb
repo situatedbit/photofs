@@ -109,4 +109,52 @@ describe PhotoFS::Core::ImageSet do
       end
     end
   end # :find_by_path
+
+  describe :sidecars do
+    context 'when image set is empty' do
+      let(:images) { Set.new([double(PhotoFS::Core::Image)]) }
+
+      it { expect(set.sidecars images).to be_empty }
+    end
+
+    context 'when images parameter set is empty' do
+      let(:images) { Set.new }
+
+      before(:example) do
+        set.add double(PhotoFS::Core::Image)
+      end
+
+      it { expect(set.sidecars images).to be_empty }
+    end
+
+    context 'when there are images with sidecars' do
+      let(:i1) { double(PhotoFS::Core::Image, :sidecar? => false) }
+      let(:i2) { double(PhotoFS::Core::Image, :sidecar? => false) }
+      let(:sidecar1) { double(PhotoFS::Core::Image, :sidecar? => false) }
+      let(:sidecar2) { double(PhotoFS::Core::Image, :sidecar? => false) }
+
+      before(:example) do
+        allow(i1).to receive(:sidecar?).with(sidecar1).and_return(true)
+        allow(i2).to receive(:sidecar?).with(sidecar2).and_return(true)
+
+        [i1, i2, sidecar1, sidecar2].each { |i| set.add i }
+      end
+
+      context 'when set contains sidecar images of images' do
+        let(:images) { Set.new([i1, i2]) }
+
+        it 'should contain those new sidecar images' do
+          expect(set.sidecars images).to contain_exactly(sidecar1, sidecar2)
+        end
+      end
+
+      context 'when an image and its sidecar image are both in the images parameter set' do
+        let(:images) { Set.new([i1, i2, sidecar1]) }
+
+        it 'should not contain that sidecar image' do
+          expect(set.sidecars images).to contain_exactly(sidecar2)
+        end
+      end
+    end
+  end # :sidecars
 end

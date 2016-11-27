@@ -67,6 +67,16 @@ module PhotoFS
         set.include? image
       end
 
+      def sidecars(images)
+        sidecars = []
+
+        images.each do |image|
+          sidecars += select { |i| image.sidecar? i }
+        end
+
+        return ImageSet.new(set: (sidecars.to_set - images))
+      end
+
       def to_a
         set.to_a
       end
