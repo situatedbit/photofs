@@ -41,6 +41,10 @@ module PhotoFS::Fuse
       tags.all
     end
 
+    def sidecars_dir
+      {}
+    end
+
     def stats_file
       # only toplevel: StatsFile.new 'stats', :tags => tags
       StatsFile.new 'stats', :tags => tags.limit_to_images(images_domain)

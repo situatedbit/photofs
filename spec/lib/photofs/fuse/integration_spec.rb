@@ -333,6 +333,96 @@ describe 'integration for', :type => :locking_behavior do
     end
   end # persisting images
 
+  describe :sidecars do
+    before(:example) do
+      create_image "a/1.jpg"
+      file_system.add(files: ["#{source_path}/a/1.jpg"])
+
+      fuse.mkdir(context, '/t/good', 0)
+    end
+
+    it 'should not exist at tags root' do
+      expect{ fuse.getattr context, 't/sidecars' }.to raise_error(Errno::ENOENT)
+    end
+
+    context 'when there are no files tagged with good' do
+      let(:filler) { double('Filler') }
+
+      before(:each) do
+        allow(filler).to receive(:push)
+      end
+
+      it 'should still exist' do
+        expect(fuse.getattr context, '/t/good/sidecars').to be_a_directory
+      end
+
+      it 'should be an empty directory' do
+        expect(filler).to receive(:push).twice # with . and ..
+
+        fuse.readdir(context, '/t/good/sidecars', filler, 0, 0)
+      end
+    end
+
+    context 'when a non-raw file has been tagged' do
+      before(:example) do
+        fuse.rename(context, '/o/a/1.jpg', '/t/good/1.jpg')
+      end
+
+      context 'when a sidecar file does not exist in the database' do
+        it 'sidecars/ should still exist' do
+          expect(fuse.getattr context, '/t/good/sidecars').to be_a_directory
+        end
+
+        context 'when another tagged image has a sidecar file' do
+          before(:example) do
+            create_images ["a/2.jpg", "a/2.c2r"]
+            file_system.add(files: ["#{source_path}/a/2.jpg", "#{source_path}/a/2.c2r"])
+
+            fuse.rename(context, '/o/a/2.jpg', '/t/good/2.jpg')
+          end
+
+          it 'the sidecar for the second image should be in sidecars/' do
+            expect(fuse.readlink(context, '/t/good/sidecars/2.c2r', 0)).to eq("#{source_path}/a/2.c2r")
+          end
+        end
+      end
+
+      context 'when a sidecar file does exist in the database' do
+        before(:example) do
+          create_image "a/1.c2r"
+          file_system.add(files: ["#{source_path}/a/1.c2r"])
+        end
+
+        it 'should exist in the sidecars directory' do
+          expect(fuse.readlink(context, '/t/good/sidecars/1.c2r', 0)).to eq("#{source_path}/a/1.c2r")
+        end
+
+        context 'when the sidecar file is also in the tag' do
+          before(:example) do
+            fuse.rename(context, '/o/a/1.c2r', '/t/good/1.c2r')
+          end
+
+          it 'should not contain a corresponding sidecar' do
+            expect { fuse.getattr(context, '/t/good/sidecars/1.c2r') }.to raise_error(Errno::ENOENT)
+          end
+        end
+      end
+    end
+
+    context 'when a raw file has been tagged and a sidecar exists' do
+      before(:example) do
+        create_image "a/1.c2r"
+        file_system.add(files: ["#{source_path}/a/1.c2r"])
+
+        fuse.rename(context, '/o/a/1.c2r', '/t/good/1.c2r')
+      end
+
+      it 'should include the non-raw sidecar in sidecars/' do
+        expect(fuse.readlink(context, '/t/good/sidecars/1.jpg', 0)).to eq("#{source_path}/a/1.jpg")
+      end
+    end
+  end # :sidecars
+
   describe 'stats file' do
     let(:image_paths) { ['a/1.jpg', 'a/2.jpg', 'a/3.jpg'] }
     let(:image_files) { image_paths.map { |p| "#{source_path}/#{p}"} }

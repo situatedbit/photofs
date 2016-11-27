@@ -2,6 +2,7 @@ require 'photofs/core/image_set'
 require 'photofs/core/tag'
 require 'photofs/core/tag_set'
 require 'photofs/fuse/dir'
+require 'photofs/fuse/sidecars_dir'
 require 'photofs/fuse/stats_file'
 
 module PhotoFS
@@ -105,7 +106,13 @@ module PhotoFS
       end
 
       def node_hash
-        @node_hash ||= files.merge dirs
+        @node_hash ||= [files, dirs, sidecars_dir].reduce({}) { |hash, nodes| hash.merge nodes }
+      end
+
+      def sidecars_dir
+        name = 'sidecars'
+
+        { name => PhotoFS::Fuse::SidecarsDir.new(name, images_domain: images_domain, images: images, parent: self) }
       end
 
       private

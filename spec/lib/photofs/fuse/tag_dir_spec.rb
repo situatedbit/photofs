@@ -3,6 +3,7 @@ require 'photofs/fs'
 require 'photofs/fs/test'
 require 'photofs/fuse/file'
 require 'photofs/fuse/tag_dir'
+require 'photofs/fuse/sidecars_dir'
 require 'photofs/fuse/stat'
 
 describe PhotoFS::Fuse::TagDir do
@@ -259,15 +260,20 @@ describe PhotoFS::Fuse::TagDir do
 
   describe :node_hash do
     let(:tag_dir) { PhotoFS::Fuse::TagDir.new('nihonbashi', PhotoFS::Core::TagSet.new) }
+    let(:sidecars_dir) { { 'sidecars' => double('SidecarsDir')} }
+
+    before(:example) do
+      allow(tag_dir).to receive(:files).and_return(files)
+      allow(tag_dir).to receive(:dirs).and_return(dirs)
+      allow(tag_dir).to receive(:sidecars_dir).and_return(sidecars_dir)
+    end
 
     context 'when there are no files or dirs' do
-      before(:example) do
-        allow(tag_dir).to receive(:files).and_return({})
-        allow(tag_dir).to receive(:dirs).and_return({})
-      end
+      let(:files) { {} }
+      let(:dirs) { {} }
 
-      it 'should return an empty hash' do
-        expect(tag_dir.send :node_hash).to eq({})
+      it 'should return a hash without files or tag dirs' do
+        expect(tag_dir.send :node_hash).to eq(sidecars_dir)
       end
     end
 
@@ -276,18 +282,13 @@ describe PhotoFS::Fuse::TagDir do
       let(:files) { {'first' => node_class.new('first'), 'second' => node_class.new('second')} }
       let(:dirs) { {'third' => node_class.new('third'), 'fourth' => node_class.new('fourth')} }
 
-      let(:node_hash) { files.merge dirs }
-
-      before(:example) do
-        allow(tag_dir).to receive(:files).and_return(files)
-        allow(tag_dir).to receive(:dirs).and_return(dirs)
-      end
+      let(:node_hash) { (files.merge dirs).merge sidecars_dir }
 
       it 'should return a hash of their names as keys and selves as values' do
         expect(tag_dir.send :node_hash).to eq(node_hash)
       end
     end
-  end
+  end # :node_hash
 
   describe :dirs do
     let(:tag_dir) { PhotoFS::Fuse::TagDir.new('nihonbashi', PhotoFS::Core::TagSet.new) }
@@ -358,4 +359,12 @@ describe PhotoFS::Fuse::TagDir do
     end
   end # :files
 
+  describe :sidecars do
+    let(:tag_dir) { PhotoFS::Fuse::TagDir.new('日本橋', PhotoFS::Core::TagSet.new) }
+    let(:sidecars_path) { PhotoFS::FS::RelativePath.new 'sidecars' }
+
+    it 'should exist' do
+      expect(tag_dir.search(sidecars_path)).to be_an_instance_of(PhotoFS::Fuse::SidecarsDir)
+    end
+  end
 end
