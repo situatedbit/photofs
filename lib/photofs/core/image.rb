@@ -2,10 +2,14 @@ module PhotoFS
   module Core
     class Image
       # modifying path would break hashed storage based on path/name
-      attr_reader :path 
+      attr_reader :path
 
       def initialize(path)
         @path = path
+      end
+
+      def base_path
+        ::File.join [::File.dirname(path), ::File.basename(path, '.*')]
       end
 
       def hash
@@ -17,11 +21,7 @@ module PhotoFS
       end
 
       def sidecar?(image)
-        same_path = path == image.path
-        same_dir = ::File.dirname(path) == ::File.dirname(image.path)
-        same_basename = ::File.basename(path, '.*') == ::File.basename(image.path, '.*')
-
-        return !same_path && same_dir && same_basename
+        return (path != image.path) && (base_path == image.base_path)
       end
 
       def ==(other)
