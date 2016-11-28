@@ -21,6 +21,17 @@ module PhotoFS
       protected
 
       def node_hash
+        @node_hash ||= sidecar_files
+      end
+
+      private
+
+      def default_options
+        { images_domain: PhotoFS::Core::ImageSet.new,
+          images: PhotoFS::Core::ImageSet.new }
+      end
+
+      def sidecar_files
         hash = {}
 
         sidecar_images.each do |image|
@@ -30,13 +41,6 @@ module PhotoFS
         end
 
         hash
-      end
-
-      private
-
-      def default_options
-        { images_domain: PhotoFS::Core::ImageSet.new,
-          images: PhotoFS::Core::ImageSet.new }
       end
 
       def sidecar_images
