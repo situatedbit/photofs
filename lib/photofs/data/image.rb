@@ -10,18 +10,28 @@ module PhotoFS
 
       has_many :tag_bindings, dependent: :delete_all
 
+      scope :join_file, -> { joins(:image_file) }
+
       validates :image_file, presence: true
       validates :image_file_id, uniqueness: true
 
+      def self.find_by_paths_start(paths)
+        paths = [paths].flatten.map { |p| "#{p}%"} # normalize to array, add LIKE wildcard
+
+        where_clause = paths.map { "files.path LIKE ?" }.join(' or ')
+
+        Image.join_file.where(where_clause, *paths)
+      end
+
       def self.find_by_image_file_paths(paths)
-        Image.joins(:image_file).where('files.path in (?)', paths)
+        Image.join_file.where('files.path in (?)', paths)
       end
 
       def self.find_by_path_parent(path)
         # if path isn't empty, must end with / to prevent selecting 2.jpg from 'some/path/1.jpg',
         #   'some/path-to-file/2.jpg' with path='some/path'
         path_filter = path.end_with?(::File::SEPARATOR) ? path : "#{path}#{::File::SEPARATOR}"
-        join_scope = Image.joins(:image_file)
+        join_scope = Image.join_file
 
         case path
           when '' then join_scope
@@ -29,8 +39,14 @@ module PhotoFS
         end
       end
 
+      def self.find_by_sidecar_candidates(images)
+        base_paths = images.map { |i| i.base_path }
+
+        find_by_paths_start(base_paths)
+      end
+
       def self.from_image(image)
-        Image.joins(:image_file).where('files.path = ?', image.path).first
+        Image.join_file.where('files.path = ?', image.path).first
       end
 
       def self.from_images(images)

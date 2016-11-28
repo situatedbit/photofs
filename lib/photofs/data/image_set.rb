@@ -77,6 +77,17 @@ module PhotoFS
         save_record_object_map(@record_object_map)
       end
 
+      def sidecars(images)
+        # optimization: use core::ImageSet implementation, but narrow the
+        # domain from all images in the database down to candidates based
+        # on paths
+        domain = Image.find_by_sidecar_candidates(images).map do |record|
+          record_object_map_fetch(record)
+        end
+
+        PhotoFS::Core::ImageSet.new(set: domain.to_set).sidecars(images)
+      end
+
       def size
         Image.count
       end

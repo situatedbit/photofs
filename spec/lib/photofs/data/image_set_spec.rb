@@ -262,6 +262,64 @@ describe PhotoFS::Data::ImageSet do
     end
   end
 
+  describe :sidecars do
+    subject { image_set.sidecars(paths.map { |p| PhotoFS::Core::Image.new(p) }.to_set ) }
+
+    let(:results) { results_paths.map { |p| image_with_path(p) } }
+
+    before(:example) do
+      create_images images
+    end
+
+    context do
+      let(:images) { ['a/b/1.jpg', 'a/b/1.JPG', 'sentinel.jpg'] }
+      let(:paths) { ['a/b/1.jpg'] }
+      let(:results_paths) { ['a/b/1.JPG'] }
+
+      it { expect(subject).to contain_exactly(*results) }
+    end
+
+    context do
+      let(:images) { ['a/b/1.jpg', 'a/b/1.raw', 'sentinel.jpg'] }
+      let(:paths) { ['a/b/1.jpg'] }
+      let(:results_paths) { ['a/b/1.raw'] }
+
+      it { expect(subject).to contain_exactly(*results) }
+    end
+
+    context do
+      let(:images) { ['a/b/1.jpg', 'a/b/1-something.jpg', 'sentinel.jpg'] }
+      let(:paths) { ['a/b/1.jpg'] }
+      let(:results_paths) { [] }
+
+      it { expect(subject).to contain_exactly(*results) }
+    end
+
+    context do
+      let(:images) { ['a/b/1.jpg', 'a/b/1', 'sentinel.jpg'] }
+      let(:paths) { ['a/b/1.jpg'] }
+      let(:results_paths) { ['a/b/1'] }
+
+      it { expect(subject).to contain_exactly(*results) }
+    end
+
+    context 'when the basename matches a directory path' do
+      let(:images) { ['a/b/1/some-image.jpg'] }
+      let(:paths) { ['a/b/1.jpg'] }
+      let(:results_paths) { [] }
+
+      it { expect(subject).to contain_exactly(*results) }
+    end
+
+    context 'when there are multiple images in the param' do
+      let(:images) { ['a/b/1.jpg', 'a/b/2.jpg', 'a/b/1.raw', 'a/b/2.raw', 'a/b/sentinel'] }
+      let(:paths) { ['a/b/1.raw', 'a/b/2.raw'] }
+      let(:results_paths) { ['a/b/1.jpg', 'a/b/2.jpg'] }
+
+      it { expect(subject).to contain_exactly(*results) }
+    end
+  end
+
 # protected
   describe :set do
     context 'when there are items in database' do
