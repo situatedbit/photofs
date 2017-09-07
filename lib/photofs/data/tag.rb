@@ -38,20 +38,9 @@ module PhotoFS
       def update_from(tag_object)
         self.name = tag_object.name
 
-        self.images = Tag.image_records_from(tag_object.images)
+        self.images = Image.from_images tag_object.images
 
         self
-      end
-
-      private
-      def self.image_records_from(images)
-        images.map do |i|
-          record = Image.from_image(i)
-
-          raise InvalidImageError.new(i) unless record
-
-          record
-        end
       end
 
       public

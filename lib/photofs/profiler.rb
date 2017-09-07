@@ -1,5 +1,14 @@
 require 'benchmark'
 
+# Usage:
+# include Profile
+#
+# profile 'name-of-your-section' do
+#   ... code to profile ...
+# end
+#
+# on EXIT:
+# PhotoFS::Profiler.report
 module PhotoFS
   module Profiler
     @@metrics = {}
@@ -13,6 +22,7 @@ module PhotoFS
     end
 
     def self.report
+
       @@metrics.values.sort.each do |metric|
         metric.report
       end
@@ -46,7 +56,8 @@ module PhotoFS
       end
 
       def report
-        puts sprintf("#{@label}      #{@calls}     %#g     #{measurement_report}\n", average_real_time)
+        # Name                       Times Called, Average Time per, Call Total Time        
+        puts sprintf("#{@label}      #{@calls}     avg: %#g    sum: #{measurement_report}\n", average_real_time)
       end
 
       def to_s
@@ -75,9 +86,3 @@ module PhotoFS
 
   end
 end
-
-=begin
-  profile :method_name, 'optional-name'
-
-Name              Times Called        Total Time        Average Time per Call
-=end

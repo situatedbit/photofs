@@ -16,8 +16,7 @@ describe PhotoFS::Data::Tag, type: :model do
     let(:image_record_2) { build :image }
 
     before(:example) do
-      allow(PhotoFS::Data::Image).to receive(:from_image).with(tag.images[0]).and_return(image_record_1)
-      allow(PhotoFS::Data::Image).to receive(:from_image).with(tag.images[1]).and_return(image_record_2)
+      allow(PhotoFS::Data::Image).to receive(:from_images).with([tag.images[0], tag.images[1]]).and_return([image_record_1,image_record_2])
     end
 
     it 'should copy the name' do
@@ -30,19 +29,6 @@ describe PhotoFS::Data::Tag, type: :model do
 
     it 'should create a tag binding for each image in the tag' do
       expect(klass.new_from_tag(tag).images).to contain_exactly(image_record_1, image_record_2)
-    end
-
-    context 'when tag has an image not in the database' do
-      let(:rogue_image) { instance_double("PhotoFS::Core::Image", :path => '/foo/bar2.jpg') }
-
-      before(:example) do
-        allow(tag).to receive(:images).and_return(tag.images + [rogue_image])
-        allow(PhotoFS::Data::Image).to receive(:from_image).with(rogue_image).and_return(nil)
-      end
-
-      it 'should raise an error' do
-        expect { klass.new_from_tag tag }.to raise_error(PhotoFS::Data::Tag::InvalidImageError)
-      end
     end
   end # :new_from_tag
 
@@ -113,14 +99,11 @@ describe PhotoFS::Data::Tag, type: :model do
     before(:example) do
       tag_record.images << image_record_1
       tag_record.images << image_record_2
-
-      allow(PhotoFS::Data::Image).to receive(:from_image).with(image1).and_return(image_record_1)
-      allow(PhotoFS::Data::Image).to receive(:from_image).with(image2).and_return(image_record_2)
-      allow(PhotoFS::Data::Image).to receive(:from_image).with(image3).and_return(image_record_3)
     end
 
     context 'when there exists a new image in the tag' do
       before(:example) do
+        allow(PhotoFS::Data::Image).to receive(:from_images).with([image1, image2, image3]).and_return([image_record_1, image_record_2, image_record_3])
         allow(tag).to receive(:images).and_return(tag.images + [image3])
       end
 
@@ -131,22 +114,13 @@ describe PhotoFS::Data::Tag, type: :model do
 
     context 'when an image is missing' do
       before(:example) do
+        allow(PhotoFS::Data::Image).to receive(:from_images).with([image1, image2]).and_return([image_record_1, image_record_2])
+
         tag_record.images << image_record_3
       end
 
       it 'will remove the corresponding tag binding' do
         expect(tag_record.update_from(tag).images).to contain_exactly(image_record_1, image_record_2)
-      end
-    end
-
-    context 'when a new image is not in the database' do
-      before(:example) do
-        allow(tag).to receive(:images).and_return(tag.images + [image3])
-        allow(PhotoFS::Data::Image).to receive(:from_image).with(image3).and_return(nil)
-      end
-
-      it 'will raise an error' do
-        expect { tag_record.update_from tag }.to raise_error(PhotoFS::Data::Tag::InvalidImageError)
       end
     end
   end # :update_from
