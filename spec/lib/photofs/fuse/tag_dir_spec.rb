@@ -273,7 +273,7 @@ describe PhotoFS::Fuse::TagDir do
       let(:dirs) { {} }
 
       it 'should return a hash without files or tag dirs' do
-        expect(tag_dir.send :node_hash).to eq(sidecars_dir)
+        expect(tag_dir.send :node_hash).to be_empty
       end
     end
 
@@ -363,8 +363,24 @@ describe PhotoFS::Fuse::TagDir do
     let(:tag_dir) { PhotoFS::Fuse::TagDir.new('日本橋', PhotoFS::Core::TagSet.new) }
     let(:sidecars_path) { PhotoFS::FS::RelativePath.new 'sidecars' }
 
-    it 'should exist' do
-      expect(tag_dir.search(sidecars_path)).to be_an_instance_of(PhotoFS::Fuse::SidecarsDir)
+    context 'when there are files' do
+      before(:example) do
+        allow(tag_dir).to receive(:files).and_return({ :file => double('File')})
+      end
+
+      it 'should exist' do
+        expect(tag_dir.search(sidecars_path)).to be_an_instance_of(PhotoFS::Fuse::SidecarsDir)
+      end
+    end
+
+    context 'when there are not files' do
+      before(:example) do
+        allow(tag_dir).to receive(:files).and_return({})
+      end
+
+      it 'should not exist when there are not files' do
+        expect(tag_dir.search(sidecars_path)).to be_nil
+      end
     end
   end
 end

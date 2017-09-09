@@ -106,7 +106,11 @@ module PhotoFS
       end
 
       def node_hash
-        @node_hash ||= [files, dirs, sidecars_dir].reduce({}) { |hash, nodes| hash.merge nodes }
+        files_node = files
+
+        nodes = files_node.empty? ? [files_node, dirs] : [files_node, dirs, sidecars_dir]
+
+        @node_hash ||= nodes.reduce({}) { |hash, nodes| hash.merge nodes }
       end
 
       def sidecars_dir

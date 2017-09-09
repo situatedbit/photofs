@@ -352,14 +352,8 @@ describe 'integration for', :type => :locking_behavior do
         allow(filler).to receive(:push)
       end
 
-      it 'should still exist' do
-        expect(fuse.getattr context, '/t/good/sidecars').to be_a_directory
-      end
-
-      it 'should be an empty directory' do
-        expect(filler).to receive(:push).twice # with . and ..
-
-        fuse.readdir(context, '/t/good/sidecars', filler, 0, 0)
+      it 'should not exist' do
+        expect{ fuse.getattr context, '/t/good/sidecars' }.to raise_error(Errno::ENOENT)
       end
     end
 
