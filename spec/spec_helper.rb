@@ -41,21 +41,6 @@ RSpec.configure do |config|
     FactoryGirl.find_definitions
   end
 
-  # https://github.com/thoughtbot/shoulda-matchers
-  Shoulda::Matchers.configure do |config|
-    config.integrate do |with|
-      # Choose a test framework:
-      with.test_framework :rspec
-
-      # Choose one or more libraries:
-      with.library :active_record
-      with.library :active_model
-    end
-  end
-
-  config.include(Shoulda::Matchers::ActiveModel, type: :model)
-  config.include(Shoulda::Matchers::ActiveRecord, type: :model)
-
 # The settings below are suggested to provide a good initial experience
 # with RSpec, but feel free to customize to your heart's content.
 =begin
@@ -116,6 +101,4 @@ RSpec.configure do |config|
       @@_write_lock = nil
     end
   end
-
-  config.include FactoryHelpers
 end

@@ -20,7 +20,7 @@ group :development, :test do
   gem 'capybara', '~> 2.13'
   gem "factory_girl", "~> 4.0"
   gem 'rspec-rails', '~> 3.6'
-  gem 'shoulda-matchers', '~> 3.1', '>= 3.1.1'
+  gem 'shoulda-matchers', git: 'https://github.com/thoughtbot/shoulda-matchers.git', branch: 'rails-5'
   gem 'selenium-webdriver'
 end
 
