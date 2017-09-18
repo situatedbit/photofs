@@ -1,6 +1,3 @@
-require 'factory_girl'
-require 'shoulda-matchers'
-
 #
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 RSpec.configure do |config|
@@ -33,13 +30,6 @@ RSpec.configure do |config|
   # inherited by the metadata hash of host groups and examples, rather than
   # triggering implicit auto-inclusion in groups with matching metadata.
   config.shared_context_metadata_behavior = :apply_to_host_groups
-
-  # https://github.com/thoughtbot/factory_girl/blob/master/GETTING_STARTED.md
-  config.include FactoryGirl::Syntax::Methods
-
-  config.before(:suite) do
-    FactoryGirl.find_definitions
-  end
 
 # The settings below are suggested to provide a good initial experience
 # with RSpec, but feel free to customize to your heart's content.
@@ -90,15 +80,4 @@ RSpec.configure do |config|
   # as the one that triggered the failure.
   Kernel.srand config.seed
 =end
-  config.before(:example, :type => :locking_behavior) do
-    module PhotoFS::Data::Synchronize
-      @@_write_lock = TestLock.new
-    end
-  end
-
-  config.after(:example, :type => :locking_behavior) do
-    module PhotoFS::Data::Synchronize
-      @@_write_lock = nil
-    end
-  end
 end

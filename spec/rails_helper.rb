@@ -1,5 +1,8 @@
 # This file is copied to spec/ when you run 'rails generate rspec:install'
 require 'spec_helper'
+require 'factory_girl'
+require 'shoulda-matchers'
+
 ENV['RAILS_ENV'] ||= 'test'
 require File.expand_path('../../config/environment', __FILE__)
 # Prevent database truncation if the environment is production
@@ -29,6 +32,13 @@ ActiveRecord::Migration.maintain_test_schema!
 RSpec.configure do |config|
   # PhotoFS factory helpers
   config.include FactoryHelpers
+
+  # https://github.com/thoughtbot/factory_girl/blob/master/GETTING_STARTED.md
+  config.include FactoryGirl::Syntax::Methods
+
+  config.before(:suite) do
+    FactoryGirl.find_definitions
+  end
 
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_path = "#{::Rails.root}/spec/fixtures"
@@ -66,6 +76,18 @@ RSpec.configure do |config|
 
       # Choose one or more libraries:
       with.library :rails
+    end
+  end
+
+  config.before(:example, :type => :locking_behavior) do
+    module PhotoFS::Data::Synchronize
+      @@_write_lock = TestLock.new
+    end
+  end
+
+  config.after(:example, :type => :locking_behavior) do
+    module PhotoFS::Data::Synchronize
+      @@_write_lock = nil
     end
   end
 end
