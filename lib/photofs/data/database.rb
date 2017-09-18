@@ -1,4 +1,5 @@
 require 'active_record'
+require 'erb'
 require 'photofs/fs'
 
 module PhotoFS
@@ -38,7 +39,7 @@ module PhotoFS
         private
 
         def config_file
-          @config_file ||= YAML::load(IO.read(::File.join(PhotoFS::FS.db_config_path, 'config.yml')))
+          @config_file ||= YAML::load(ERB.new(IO.read(::File.join(PhotoFS::FS.config_path, 'database.yml'))).result)
         end
 
         def configure_db_tasks

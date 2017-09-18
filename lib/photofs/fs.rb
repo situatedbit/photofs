@@ -23,7 +23,11 @@ module PhotoFS
     end
 
     def self.db_config_path
-       ::File.join app_root, 'db'
+      ::File.join app_root, 'db'
+    end
+
+    def self.config_path
+      ::File.join app_root, 'config'
     end
 
     def self.expand_path(normalized_path)
