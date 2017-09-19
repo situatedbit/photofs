@@ -1,4 +1,3 @@
-# encoding: UTF-8
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
@@ -14,28 +13,27 @@
 ActiveRecord::Schema.define(version: 20160413012017) do
 
   create_table "files", force: :cascade do |t|
-    t.string   "path"
+    t.string "path"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["path"], name: "index_files_on_path"
   end
 
-  add_index "files", ["path"], name: "index_files_on_path"
-
   create_table "images", force: :cascade do |t|
-    t.datetime "created_at",    null: false
-    t.datetime "updated_at",    null: false
-    t.integer  "image_file_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "image_file_id"
   end
 
   create_table "tag_bindings", id: false, force: :cascade do |t|
-    t.integer  "tag_id",     null: false
-    t.integer  "image_id",   null: false
+    t.integer "tag_id", null: false
+    t.integer "image_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
   create_table "tags", force: :cascade do |t|
-    t.string   "name"
+    t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
