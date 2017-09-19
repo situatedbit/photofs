@@ -17,6 +17,9 @@
 #
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 
+$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
+require 'photofs'
+
 require 'active_record'
 require 'custom_matchers'
 require 'database_cleaner'
