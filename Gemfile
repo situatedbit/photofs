@@ -3,6 +3,7 @@ source 'https://rubygems.org'
 gem 'activerecord'
 gem 'standalone_migrations'
 gem 'sqlite3'
+gemspec
 
 group :development, :test do
   gem 'rspec', '~> 3.4'
