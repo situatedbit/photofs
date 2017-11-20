@@ -1,9 +1,10 @@
 *.gem
 *.rbc
+log/*.log
 /.config
 /coverage/
 /InstalledFiles
-/pkg/
+pkg/
 /spec/reports/
 /spec/examples.txt
 /test/tmp/
@@ -23,8 +24,6 @@ build/
 
 ## Environment normalization:
 /.bundle/
-/vendor/bundle
-/lib/bundler/man/
 
 # for a library or gem, you might want to ignore these files since the code is
 # intended to run in multiple environments; otherwise, check them in:
