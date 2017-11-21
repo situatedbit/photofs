@@ -5,7 +5,7 @@ require 'photofs/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "photofs"
-  spec.version       = Photofs::VERSION
+  spec.version       = PhotoFS::VERSION
   spec.authors       = ["Matt Schaefer"]
   spec.email         = ["matt@situatedbit.com"]
 
