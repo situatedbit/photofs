@@ -1,7 +1,7 @@
 require 'spec_helper'
 
-describe Photofs do
+describe PhotoFS do
   it 'has a version number' do
-    expect(Photofs::VERSION).not_to be nil
+    expect(PhotoFS::VERSION).not_to be nil
   end
 end
