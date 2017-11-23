@@ -21,11 +21,11 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'photofs'
 
 require 'active_record'
-require 'custom_matchers'
+require 'photofs/support/spec/matchers'
 require 'database_cleaner'
 require 'factory_girl'
 require 'shoulda-matchers'
-require 'factory_helpers'
+require 'photofs/support/spec/factory_helpers'
 require 'yaml'
 
 # normally rspec-rails or PhotoFS::Data::Database will do this for us
