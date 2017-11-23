@@ -29,10 +29,10 @@ require 'photofs/support/spec/factory_helpers'
 require 'yaml'
 
 # normally rspec-rails or PhotoFS::Data::Database will do this for us
-environment = 'test'
-configurations = YAML::load(File.open('db/config.yml'))
-ActiveRecord::Base.configurations = configurations
-ActiveRecord::Base.establish_connection(configurations[environment])
+require 'photofs/support/spec/database'
+
+include PhotoFS::Support::Spec::Database
+connect_database
 
 RSpec.configure do |config|
   # rspec-expectations config goes here. You can use an alternate
@@ -145,17 +145,6 @@ RSpec.configure do |config|
   # as the one that triggered the failure.
   Kernel.srand config.seed
 =end
-  config.before(:example, :type => :locking_behavior) do
-    module PhotoFS::Data::Synchronize
-      @@_write_lock = TestLock.new
-    end
-  end
-
-  config.after(:example, :type => :locking_behavior) do
-    module PhotoFS::Data::Synchronize
-      @@_write_lock = nil
-    end
-  end
 
   config.include PhotoFS::Support::Spec::FactoryHelpers
 end
