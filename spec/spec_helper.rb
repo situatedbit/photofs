@@ -157,5 +157,5 @@ RSpec.configure do |config|
     end
   end
 
-  config.include FactoryHelpers
+  config.include PhotoFS::Support::Spec::FactoryHelpers
 end
