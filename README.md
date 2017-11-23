@@ -1,3 +1,7 @@
+# PhotoFS
+
+This is the core gem for PhotoFS, a set of photo workflow tagging and organizing tools.
+
 # Usage
 
 ## Copying database migrations
