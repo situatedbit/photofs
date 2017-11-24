@@ -1,31 +1,31 @@
-# coding: utf-8
-lib = File.expand_path('../lib', __FILE__)
-$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+# -*- encoding: utf-8 -*-
+lib = File.expand_path('../lib/', __FILE__)
+$:.unshift lib unless $:.include?(lib)
+
 require 'photofs/version'
 
-Gem::Specification.new do |spec|
-  spec.name          = "photofs"
-  spec.version       = PhotoFS::VERSION
-  spec.authors       = ["Matt Schaefer"]
-  spec.email         = ["matt@situatedbit.com"]
+Gem::Specification.new do |s|
+  s.name          = "photofs"
+  s.version       = PhotoFS::VERSION
+  s.authors       = ["Matt Schaefer"]
+  s.email         = ["matt@situatedbit.com"]
 
-  spec.summary       = %q{Core library for PhotoFS, a photo workflow system.}
-  spec.homepage      = "https://github.com/situatedbit/photofs"
-  spec.license       = "GPL3"
+  s.summary       = %q{Core library for PhotoFS, a photo workflow system.}
+  s.homepage      = "https://github.com/situatedbit/photofs"
+  s.license       = "GPL3"
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
   # to allow pushing to a single host or delete this section to allow pushing to any host.
-  if spec.respond_to?(:metadata)
-    spec.metadata['allowed_push_host'] = "https://situatedbit.com"
+  if s.respond_to?(:metadata)
+    s.metadata['allowed_push_host'] = "https://situatedbit.com"
   else
     raise "RubyGems 2.0 or newer is required to protect against public gem pushes."
   end
 
-  spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
+  s.files         = Dir.glob("{db,lib}/**/*") + %w(LICENSE README.md)
+  s.executables   = []
+  s.require_paths = ["lib"]
 
-  spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
-  spec.require_paths = ["lib"]
-
-  spec.add_development_dependency "bundler", "~> 1.12"
-  spec.add_development_dependency "rake", "~> 12.1.0"
+  s.add_development_dependency "bundler", "~> 1.12"
+  s.add_development_dependency "rake", "~> 12.1.0"
 end
