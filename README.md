@@ -17,3 +17,13 @@ Run the following rake task:
 ```
 rake photofs:copy_migrations
 ```
+
+Contributors
+------------
+
+Matt Schaefer (matt@situatedbit.com)
+
+License
+-------
+
+PhotoFS is released under GNU General Public License version 3 (see LICENSE).
