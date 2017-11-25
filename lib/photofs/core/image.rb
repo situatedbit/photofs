@@ -9,7 +9,8 @@ module PhotoFS
       end
 
       def base_path
-        ::File.join [::File.dirname(path), ::File.basename(path, '.*')]
+        # strip all extensions
+        ::File.join [::File.dirname(path), ::File.basename(path).sub(/\..*$/, '')]
       end
 
       def hash
@@ -21,7 +22,7 @@ module PhotoFS
       end
 
       def sidecar?(image)
-        return (path != image.path) && (base_path_name_root == image.base_path_name_root)
+        return (path != image.path) && (base_path == image.base_path)
       end
 
       def ==(other)
@@ -29,14 +30,6 @@ module PhotoFS
       end
 
       alias_method :eql?, :==
-
-      protected
-
-      def base_path_name_root
-        base_name = ::File.basename(path)
-        root_name = base_name.sub(/\..*$/, '')
-        ::File.join [::File.dirname(path), root_name]
-      end
     end
   end
 end
