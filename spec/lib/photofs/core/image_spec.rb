@@ -72,6 +72,6 @@ describe PhotoFS::Core::Image do
     it { expect(image.sidecar? PhotoFS::Core::Image.new('1.c2r')). to be false }
     it { expect(image.sidecar? PhotoFS::Core::Image.new('a/b/1')). to be true }
     it { expect(image.sidecar? PhotoFS::Core::Image.new('a/b/1.whatever')). to be true }
-    it { expect(image.sidecar? PhotoFS::Core::Image.new('a/b/1.whatever.nevermind')). to be false }
+    it { expect(image.sidecar? PhotoFS::Core::Image.new('a/b/1.whatever.nevermind')). to be true }
   end
 end
