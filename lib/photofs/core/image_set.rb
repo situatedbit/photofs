@@ -1,11 +1,17 @@
 require 'forwardable'
 require 'set'
 
+require 'photofs/support/profiler'
+
+
 module PhotoFS
   module Core
     class ImageSet
       extend Forwardable
       include Enumerable
+
+      include PhotoFS::Support::Profiler
+
 
       def initialize(options={})
         @options = default_options.merge options
@@ -16,17 +22,19 @@ module PhotoFS
       # new image set from cumulative intersection between this set and image_sets
       # takes either image set or an array of image sets
       def &(image_sets)
-        image_sets = [image_sets].flatten #normalize to array
+        profile 'core/ImageSet#&' do
+          image_sets = [image_sets].flatten #normalize to array
 
-        return ImageSet.new if image_sets.empty?
+          return ImageSet.new if image_sets.empty?
 
-        first_set, remaining_sets = image_sets.first, image_sets[1..-1]
+          first_set, remaining_sets = image_sets.first, image_sets[1..-1]
 
-        intersection = remaining_sets.reduce(intersect first_set) do |memo, image_set|
-          memo & image_set.to_set
+          intersection = remaining_sets.reduce(intersect first_set) do |memo, image_set|
+            memo & image_set.to_set
+          end
+
+          ImageSet.new(:set => intersection)
         end
-
-        ImageSet.new(:set => intersection)
       end
 
       def add(image)

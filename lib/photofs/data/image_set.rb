@@ -2,10 +2,15 @@ require 'photofs/core/image_set'
 require 'photofs/data/image'
 require 'photofs/data/repository'
 
+require 'photofs/support/profiler'
+
+
 module PhotoFS
   module Data
     class ImageSet < PhotoFS::Core::ImageSet
       include Repository
+      include PhotoFS::Support::Profiler
+
 
       def initialize()
         @record_object_map = {} # maps Data::Image => Core::Image
@@ -101,7 +106,9 @@ module PhotoFS
       end
 
       def intersect(image_set)
-        Image.from_images(image_set.to_a).reduce(Set.new) { |set, i| set << i.to_simple }
+        profile 'data/ImageSet#intersect' do
+          Image.from_images(image_set.to_a).reduce(Set.new) { |set, i| set << i.to_simple }
+        end
       end
 
       private

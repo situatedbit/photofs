@@ -1,21 +1,28 @@
 require 'forwardable'
 require 'photofs/core/tag'
 
+require 'photofs/support/profiler'
+
+
 module PhotoFS
   module Core
     class TagSet
       extend Forwardable
+      extend PhotoFS::Support::Profiler
+
 
       # returns image set
       def self.intersection(tags)
-        tags = [tags].flatten # normalize to array
+        self.profile "core/TagSet:intersection" do
+          tags = [tags].flatten # normalize to array
 
-        if tags.nil? || tags.empty?
-          ImageSet.new
-        elsif tags.length == 1
-          ImageSet.new(:set => tags.first)
-        else
-          tags.first & tags[1..-1]
+          if tags.nil? || tags.empty?
+            ImageSet.new
+          elsif tags.length == 1
+            ImageSet.new(:set => tags.first)
+          else
+            tags.first & tags[1..-1]
+          end
         end
       end
 

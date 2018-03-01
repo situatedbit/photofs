@@ -1,7 +1,7 @@
 require 'benchmark'
 
 # Usage:
-# include Profile
+# include Profiler
 #
 # profile 'name-of-your-section' do
 #   ... code to profile ...
