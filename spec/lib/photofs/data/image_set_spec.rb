@@ -109,7 +109,7 @@ describe PhotoFS::Data::ImageSet do
     let(:path_3) { '/not/in/database.jpg' }
     let(:record_object_map) { image_set.instance_variable_get(:@record_object_map) }
 
-    it 'should be a hash of paths and simple images' do 
+    it 'should be a hash of paths and simple images' do
       expect(image_set.find_by_paths([path_1, path_2])[path_1]).to eq(image_record_1.to_simple)
       expect(image_set.find_by_paths([path_1, path_2])[path_2]).to eq(image_record_2.to_simple)
     end

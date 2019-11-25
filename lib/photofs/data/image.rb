@@ -30,6 +30,7 @@ module PhotoFS
       def self.find_by_path_parent(path)
         # if path isn't empty, must end with / to prevent selecting 2.jpg from 'some/path/1.jpg',
         #   'some/path-to-file/2.jpg' with path='some/path'
+        # Note: by design, this will return images in subdirectories under path as well.
         path_filter = path.end_with?(::File::SEPARATOR) ? path : "#{path}#{::File::SEPARATOR}"
         join_scope = Image.join_file
 
