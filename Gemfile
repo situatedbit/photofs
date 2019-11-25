@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
-gem 'activerecord'
-gem 'standalone_migrations'
+gem 'activerecord', '~> 5.1.4'
+gem 'standalone_migrations', '~> 5.2.7'
 gem 'sqlite3'
 gemspec
 
