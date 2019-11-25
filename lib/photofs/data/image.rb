@@ -40,10 +40,15 @@ module PhotoFS
         end
       end
 
+      # Returns images that _might_ be sidecars. There seems to be no to_simple
+      # query that can return a more narrow set of sidecars, given our rules
+      # for sidecars. Query greedily, then trim the set locally.
       def self.find_by_sidecar_candidates(images)
-        base_paths = images.map { |i| i.base_path }
+        # This is brittle. It assumes sidecars will be determined by the
+        # beginning of the name.
+        reference_paths = images.map { |i| i.reference_path }
 
-        find_by_paths_start(base_paths)
+        find_by_paths_start(reference_paths)
       end
 
       def self.from_image(image)
