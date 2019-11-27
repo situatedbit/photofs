@@ -62,28 +62,6 @@ describe PhotoFS::Core::Image do
     end
   end # :name
 
-  describe :reference_path do
-    let(:image) { PhotoFS::Core::Image }
-
-    # irregular names
-    it { expect(image.new('a/b/1234.jpg').reference_path).to eq('a/b/1234') }
-
-    it { expect(image.new('a/b/IMG_1234.jpg').reference_path).to eq('a/b/1234') }
-    it { expect(image.new('a/b/DSC1234.jpg').reference_path).to eq('a/b/1234') }
-    it { expect(image.new('a/b/IMG_1234.small.xcf.jpg').reference_path).to eq('a/b/1234') }
-
-    it { expect(image.new('a/b/some-name-blah.jpg').reference_path).to eq('a/b/some-name-blah') }
-
-    # for irregular names, do not recognize hyphenated notes
-    it { expect(image.new('a/b/IMG_1234-something.jpg').reference_path).to eq('a/b/IMG_1234-something') }
-
-    # normalized names
-    it { expect(image.new('a/b/1984-01-23-1.jpg').reference_path).to eq('a/b/1984-01-23-1') }
-    it { expect(image.new('a/b/1984-01-23-001.jpg').reference_path).to eq('a/b/1984-01-23-001') }
-    it { expect(image.new('a/b/1984-01-23abc-001.jpg').reference_path).to eq('a/b/1984-01-23abc-001') }
-    it { expect(image.new('a/b/1984-01-23-001-8x10-scan.xcf.jpg').reference_path).to eq('a/b/1984-01-23-001') }
-  end
-
   describe :sidecar? do
     let(:image) { PhotoFS::Core::Image }
     let(:irregular_name) { image.new('a/b/1.jpg') }

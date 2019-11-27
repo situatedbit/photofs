@@ -1,3 +1,5 @@
+require 'photofs/core/image_name'
+
 module PhotoFS
   module Core
     class Image
@@ -21,13 +23,7 @@ module PhotoFS
       # and   |a/b/1984-06-23/1984-06-23-04|  -small.xcf.jpg
       #             ^ this part
       def reference_path
-        #                        normalized name                 | irregular name
-        match = basename.match /(\d{4}-\d{1,2}-\d{1,2}[a-z]*-\d+)|(\d+)$/
-
-        # if no match, reference name is basename. If match, it's either normalized or irregular
-        reference_name = match.nil? ? basename : (match[1] || match[2])
-
-        ::File.join [::File.dirname(path), reference_name]
+          PhotoFS::Core::ImageName.reference_path path
       end
 
       def sidecar?(image)
@@ -39,17 +35,6 @@ module PhotoFS
       end
 
       alias_method :eql?, :==
-
-      private
-      def basename
-        ::File.basename(path, extensions)
-      end
-
-      def extensions
-        match = /^\.?[^.]+(\..+)/.match(path)
-
-        match ? match[1] : ''
-      end
     end
   end
 end
