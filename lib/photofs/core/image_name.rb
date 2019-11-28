@@ -60,13 +60,17 @@ module PhotoFS
         normalized_prefix basename(path)
       end
 
+      # The prefix and frame
+      # e.g., a/b/2019-12-12a-004-scan.jpg -> 2019-12-12a-004
+      def ImageName.reference_name(path)
+        # Only include prefix if it's in normalized form (i.e., prefix() returns non-empty string)
+        [prefix(path), frame(path)].reject { |c| c.empty? }.join('-')
+      end
+
       # the path of the image's parent directory combined with the prefix and frame
       # e.g., a/b/2019-12-12a-004-scan.jpg -> a/b/2019-12-12a-004
       def ImageName.reference_path(path)
-        # Only include prefix if it's in normalized form (i.e., prefix() returns non-empty string)
-        reference_name = [prefix(path), frame(path)].reject { |c| c.empty? }.join('-')
-
-        ::File.join [::File.dirname(path), reference_name]
+        ::File.join [::File.dirname(path), reference_name(path)]
       end
     end
   end
