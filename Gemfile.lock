@@ -37,7 +37,7 @@ GEM
     database_cleaner (1.7.0)
     diff-lcs (1.3)
     erubi (1.9.0)
-    factory_girl (4.9.0)
+    factory_bot (4.8.2)
       activesupport (>= 3.0.0)
     i18n (1.7.0)
       concurrent-ruby (~> 1.0)
@@ -96,7 +96,7 @@ DEPENDENCIES
   activerecord (~> 5.1.4)
   bundler (~> 1.12)
   database_cleaner
-  factory_girl (~> 4.0)
+  factory_bot (~> 4.8.2)
   photofs!
   rake (~> 12.1)
   rspec (~> 3.4)
@@ -105,4 +105,4 @@ DEPENDENCIES
   standalone_migrations (~> 5.2.7)
 
 BUNDLED WITH
-   1.12.5
+   1.17.3

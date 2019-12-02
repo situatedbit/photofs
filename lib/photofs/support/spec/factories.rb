@@ -1,11 +1,11 @@
-# https://github.com/thoughtbot/factory_girl/blob/master/GETTING_STARTED.md
+# https://github.com/thoughtbot/factory_bot/blob/master/GETTING_STARTED.md
 
 require 'photofs/data/file'
 require 'photofs/data/image'
 require 'photofs/data/tag'
 require 'photofs/data/tag_binding'
 
-FactoryGirl.define do
+FactoryBot.define do
   factory :file, class: PhotoFS::Data::File do
     sequence :path do |n|
       "/null/void/#{n}.jpg"

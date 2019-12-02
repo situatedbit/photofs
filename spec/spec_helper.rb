@@ -23,7 +23,7 @@ require 'photofs'
 require 'active_record'
 require 'photofs/support/spec/matchers'
 require 'database_cleaner'
-require 'factory_girl'
+require 'factory_bot'
 require 'shoulda-matchers'
 require 'photofs/support/spec/factory_helpers'
 require 'yaml'
@@ -70,11 +70,11 @@ RSpec.configure do |config|
     end
   end
 
-  # https://github.com/thoughtbot/factory_girl/blob/master/GETTING_STARTED.md
-  config.include FactoryGirl::Syntax::Methods
+  # https://github.com/thoughtbot/factory_bot/blob/master/GETTING_STARTED.md
+  config.include FactoryBot::Syntax::Methods
 
   config.before(:suite) do
-    FactoryGirl.find_definitions
+    FactoryBot.find_definitions
   end
 
   # https://github.com/thoughtbot/shoulda-matchers
