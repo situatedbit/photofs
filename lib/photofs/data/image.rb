@@ -9,6 +9,7 @@ module PhotoFS
       belongs_to :image_file, { :class_name => 'File', :autosave => true, :dependent => :destroy }
 
       has_many :tag_bindings, dependent: :delete_all
+      has_many :tags, through: :tag_bindings
 
       scope :join_file, -> { joins(:image_file) }
 
