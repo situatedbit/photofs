@@ -205,7 +205,7 @@ describe PhotoFS::Data::ImageSet do
       allow(PhotoFS::Data::Image).to receive(:exist_by_paths).with(paths).and_return([path_1])
     end
 
-    subject { image_set.import paths }
+    subject { image_set.import! paths }
 
     it { should contain_exactly(an_instance_of PhotoFS::Core::Image) }
 
@@ -214,13 +214,13 @@ describe PhotoFS::Data::ImageSet do
     it 'should add images for paths not in the database' do
       expect(image_set).to receive(:add).with(have_attributes :path => path_2)
 
-      image_set.import paths
+      image_set.import! paths
     end
 
     it 'should not add images for paths already in the database' do
       expect(image_set).not_to receive(:add).with(have_attributes(:path => path_1))
 
-      image_set.import paths
+      image_set.import! paths
     end
   end
 

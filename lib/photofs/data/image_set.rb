@@ -53,7 +53,7 @@ module PhotoFS
         !!Image.from_image(image)
       end
 
-      def import(paths)
+      def import!(paths)
         import_paths = paths - Image.exist_by_paths(paths)
 
         ActiveRecord::Base.transaction do
