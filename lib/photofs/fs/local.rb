@@ -72,6 +72,10 @@ module PhotoFS
         ::Dir.mkdir(path, mode)
       end
 
+      def pwd
+        ::Dir.pwd
+      end
+
       def read_file(path)
         ::File.open(path, 'r') { |file| file.read }
       end
@@ -95,6 +99,3 @@ module PhotoFS
     end
   end
 end
-
-
-

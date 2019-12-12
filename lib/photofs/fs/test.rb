@@ -70,6 +70,10 @@ module PhotoFS
         @dirs << path
       end
 
+      def pwd
+        ''
+      end
+
       def read_file(path)
         ''
       end
