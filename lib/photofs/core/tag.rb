@@ -32,6 +32,8 @@ module PhotoFS
       def to_s
         name
       end
+
+      def_delegator :name, :<=>, :<=>
     end
   end
 end

@@ -16,7 +16,8 @@ module PhotoFS
       end
 
       # Assumption: tag's images have already been created and are in the database
-      # If they aren't, we raise an exception.
+      # Any images not in the database will be omitted from the Data::Tag object
+      # created here.
       def self.new_from_tag(tag)
         Tag.new.update_from(tag)
       end

@@ -5,6 +5,7 @@ module PhotoFS
   module Core
     class TagSet
       extend Forwardable
+      include Enumerable
 
       # returns image set
       def self.intersection(tags)
@@ -38,6 +39,11 @@ module PhotoFS
 
       def delete(tag)
         tags.delete tag.name
+      end
+
+      # implement Enumerable
+      def each(&block)
+        tags.values.each &block
       end
 
       # returns array if tag_names is an array, a single tag otherwise
