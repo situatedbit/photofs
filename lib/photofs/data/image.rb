@@ -37,7 +37,7 @@ module PhotoFS
 
         case path
           when '' then join_scope
-          else join_scope.where('instr(files.path, (?)) == 1', path_filter)
+          else join_scope.where('instr(files.path, ?) = 1', path_filter)
         end
       end
 
