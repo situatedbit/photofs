@@ -2,7 +2,7 @@ source 'https://rubygems.org'
 
 gem 'activerecord', '~> 5.1.4'
 gem 'standalone_migrations', '~> 5.2.7'
-gem 'sqlite3'
+gem 'mysql2'
 gemspec
 
 group :development, :test do
