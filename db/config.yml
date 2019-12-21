@@ -1,17 +1,12 @@
-development:
-  adapter: sqlite3
-  database: db/development.sqlite3
-  pool: 5
-  timeout: 5000
+# development:
 
-test: &test
-  adapter: sqlite3
-  database: db/test.sqlite3
-  pool: 5
-  timeout: 5000
+test:
+  adapter: mysql2
+  encoding: utf8
+  database: photofs_test
+  username: photofs_test
+  password: test
+  host: 127.0.0.1
+  port: 3306
 
-production:
-  adapter: sqlite3
-  database:
-  pool: 5
-  timeout: 5000
+# production:

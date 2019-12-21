@@ -1,4 +1,5 @@
 require 'photofs/fs/local'
+require 'yaml'
 
 module PhotoFS
   module FS
@@ -14,6 +15,26 @@ module PhotoFS
       ::File.join ::File.dirname(__FILE__), '..', '..'
     end
 
+    # loads the database configuration structure from custom yaml file
+    def self.data_config
+      begin
+        YAML.load file_system.read_file(::File.join(data_path, 'database.yml'))
+      rescue Exception => e
+        puts "Unable to load .photofs/database.yml. Here is a sample:"
+        puts %{
+production:
+  adapter: mysql2
+  encoding: utf8
+  database:
+  username:
+  password:
+  host: 127.0.0.1
+  port: 3306
+}
+        raise e
+      end
+    end
+
     def self.data_path
       images_path ? ::File.join(images_path, DATA_DIR) : nil
     end
@@ -22,7 +43,9 @@ module PhotoFS
       ::File.join(data_path, *children)
     end
 
-    def self.db_config_path
+    # ActiveRecord/Rails-specific database configurations; migrations, schema,
+    # and default config file (at least for test environment)
+    def self.db_dir
        ::File.join app_root, 'db'
     end
 
@@ -57,7 +80,7 @@ module PhotoFS
     end
 
     def self.migration_paths
-      [::File.join(db_config_path, 'migrate')]
+      [::File.join(db_dir, 'migrate')]
     end
 
     def self.data_path_parent=(base_path)

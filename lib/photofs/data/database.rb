@@ -1,62 +1,81 @@
 require 'active_record'
-require 'photofs/fs'
 
+# Database::Connection: connect ActiveRecord to the production database
+# without having to refer to the standard Rails db/config.yml file.
+
+# Tests are likely to continue to rely on the Rails config file. This is currently
+# only designed for the non-test case.
 module PhotoFS
   module Data
     module Database
       class Connection
         include ActiveRecord::Tasks
 
-        def initialize(db_path = '')
-          @config = config_file
-          @env = 'production'
-          @config[@env]['database'] = ::File.join(db_path, 'photofs.sqlite3') unless db_path.empty?
-          @current_config = @config[@env]
+        attr_reader :env, :config, :db_dir, :app_root, :migration_paths
 
-          ActiveRecord::Base.configurations = @config
+        def initialize(options={})
+          @options = default_options.merge options
+
+          @app_root = @options[:app_root]
+          @config = @options[:config]
+          @db_dir = @options[:db_dir]
+          @env = @options[:env]
+          @migration_paths = @options[:migration_paths]
         end
 
-        def connect
-          ActiveRecord::Base.establish_connection @current_config
+        # Assumes the database has been created, but still requires the schema
+        def create_schema
+          configure_tasks
+
+          DatabaseTasks.load_schema_current(:ruby)
 
           self
         end
 
-        def ensure_schema
-          configure_db_tasks
+        def connect
+          ActiveRecord::Base.configurations = config
+          ActiveRecord::Base.establish_connection current_config
 
-          if fs.exist?(@current_config['database'])
-            DatabaseTasks.migrate
-          else
-            DatabaseTasks.create_current(@env)
-            DatabaseTasks.load_schema_current(:ruby)
-          end
+          self
+        end
+
+        def current_config
+          config[env.to_s]
+        end
+
+        # Assumes the schema has been loaded at some point. Runs any outstanding
+        # migrations on the database.
+        def ensure_schema
+          configure_tasks
+
+          # ActiveRecord::Migrator paths are used when we load the schema;
+          # DatabaseTasks migrations paths are used for the migrate method
+          DatabaseTasks.migrations_paths = migration_paths
+          ActiveRecord::Migrator.migrations_paths = migration_paths
+
+          DatabaseTasks.migrate
 
           self
         end
 
         private
 
-        def config_file
-          @config_file ||= YAML::load(IO.read(::File.join(PhotoFS::FS.db_config_path, 'config.yml')))
+        def configure_tasks
+          DatabaseTasks.database_configuration = current_config
+          DatabaseTasks.db_dir = db_dir
+          DatabaseTasks.env = env.to_s
+          DatabaseTasks.root = app_root
         end
 
-        def configure_db_tasks
-          DatabaseTasks.database_configuration = @current_config
-          DatabaseTasks.db_dir = PhotoFS::FS.db_config_path
-          DatabaseTasks.env = @env
-          DatabaseTasks.root = PhotoFS::FS.app_root
-
-          # ActiveRecord::Migrator paths are used when we load the schema;
-          # DatabaseTasks migrations paths are used for the migrate method (above)
-          DatabaseTasks.migrations_paths = PhotoFS::FS.migration_paths
-          ActiveRecord::Migrator.migrations_paths = PhotoFS::FS.migration_paths
+        def default_options
+          {
+            env: :production,
+            config: {},
+            db_dir: '',
+            app_root: '',
+            migration_paths: []
+          }
         end
-
-        def fs
-          PhotoFS::FS.file_system
-        end
-
       end
     end
   end
