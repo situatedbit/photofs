@@ -27,7 +27,7 @@ module PhotoFS
         def create_schema
           configure_tasks
 
-          DatabaseTasks.load_schema_current(:ruby)
+          DatabaseTasks.load_schema_current :ruby
 
           self
         end
@@ -48,11 +48,6 @@ module PhotoFS
         def ensure_schema
           configure_tasks
 
-          # ActiveRecord::Migrator paths are used when we load the schema;
-          # DatabaseTasks migrations paths are used for the migrate method
-          DatabaseTasks.migrations_paths = migration_paths
-          ActiveRecord::Migrator.migrations_paths = migration_paths
-
           DatabaseTasks.migrate
 
           self
@@ -65,6 +60,11 @@ module PhotoFS
           DatabaseTasks.db_dir = db_dir
           DatabaseTasks.env = env.to_s
           DatabaseTasks.root = app_root
+
+          # ActiveRecord::Migrator paths are used when we load the schema;
+          # DatabaseTasks migrations paths are used for the migrate method
+          DatabaseTasks.migrations_paths = migration_paths
+          ActiveRecord::Migrator.migrations_paths = migration_paths
         end
 
         def default_options
