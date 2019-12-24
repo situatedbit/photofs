@@ -6,8 +6,9 @@ module PhotoFS
           paths.map { |path| create_image path }
         end
 
+        # legacy; can be refactored out
         def create_image(path)
-          create(:image, :image_file => build(:file, :path => path))
+          create(:image, :path => path)
         end
       end
     end

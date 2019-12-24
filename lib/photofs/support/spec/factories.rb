@@ -1,19 +1,14 @@
 # https://github.com/thoughtbot/factory_bot/blob/master/GETTING_STARTED.md
 
-require 'photofs/data/file'
 require 'photofs/data/image'
 require 'photofs/data/tag'
 require 'photofs/data/tag_binding'
 
 FactoryBot.define do
-  factory :file, class: PhotoFS::Data::File do
+  factory :image, class: PhotoFS::Data::Image do
     sequence :path do |n|
       "/null/void/#{n}.jpg"
     end
-  end
-
-  factory :image, class: PhotoFS::Data::Image do
-    association :image_file, factory: :file, strategy: :build
   end
 
   factory :tag, class: PhotoFS::Data::Tag do
