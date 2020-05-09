@@ -23,12 +23,19 @@ module PhotoFS
       end
 
       def self.recently_applied(limit = 10)
-        # query, select unique joining tag_bindings; order descending, limit #{limit}
-        # is your answer here? https://stackoverflow.com/questions/18694094/select-only-rows-by-join-tables-max-value
+        return [] if limit < 1
+
+        tags = Tag.joins(:tag_bindings).group(:name).order('max(tag_bindings.created_at) desc').limit(limit)
+
+        tags.map { |tag| tag.to_simple }
       end
 
       def consistent_with?(object)
         name == object.name && PhotoFS::Data.consistent_arrays?(images, object.images)
+      end
+
+      def to_s
+        "#{data::Tag} name"
       end
 
       def to_simple

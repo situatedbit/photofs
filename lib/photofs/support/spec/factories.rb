@@ -7,7 +7,7 @@ require 'photofs/data/tag_binding'
 FactoryBot.define do
   factory :image, class: PhotoFS::Data::Image do
     sequence :path do |n|
-      "/null/void/#{n}.jpg"
+      "/a/b/#{n}.jpg"
     end
   end
 

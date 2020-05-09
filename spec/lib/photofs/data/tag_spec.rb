@@ -2,7 +2,7 @@ require 'photofs/core/tag'
 require 'photofs/data/tag'
 
 describe PhotoFS::Data::Tag, type: :model do
-  let(:klass) { PhotoFS::Data::Tag }
+  let(:tag_class) { PhotoFS::Data::Tag }
 
   it { should validate_presence_of(:name) }
   it { should validate_uniqueness_of(:name) }
@@ -20,15 +20,15 @@ describe PhotoFS::Data::Tag, type: :model do
     end
 
     it 'should copy the name' do
-      expect(klass.new_from_tag(tag).name).to eq(tag.name)
+      expect(tag_class.new_from_tag(tag).name).to eq(tag.name)
     end
 
     it 'should be a new record' do
-      expect(klass.new_from_tag(tag).new_record?).to be true
+      expect(tag_class.new_from_tag(tag).new_record?).to be true
     end
 
     it 'should create a tag binding for each image in the tag' do
-      expect(klass.new_from_tag(tag).images).to contain_exactly(image_record_1, image_record_2)
+      expect(tag_class.new_from_tag(tag).images).to contain_exactly(image_record_1, image_record_2)
     end
   end # :new_from_tag
 
@@ -69,6 +69,58 @@ describe PhotoFS::Data::Tag, type: :model do
     end
   end # :consistent_with?
 
+  describe :recently_applied do
+    context 'when limit is less than 0' do
+      before(:example) do
+        create :tag_with_image
+      end
+
+      it 'is empty' do
+        expect(tag_class.recently_applied(-1)).to be_empty
+      end
+    end
+
+    context 'when there are no tags' do
+      it { expect(tag_class.recently_applied).to be_empty }
+    end
+
+    context 'when there have been fewer tags applied than the limit' do
+      let!(:tags) do
+        (1..5).map { create(:tag_with_image).to_simple }
+      end
+
+      it 'is those tags' do
+        expect(tag_class.recently_applied(6)).to match_array(tags)
+      end
+    end
+
+    it 'ignores non-unique tag applications' do
+      tree = create :tag_with_image, name: 'tree'
+
+      shrub = create :tag_with_image, name: 'shrub'
+      create :tag_binding, tag: shrub
+
+      expect(tag_class.recently_applied(2)).to contain_exactly(shrub.to_simple, tree.to_simple)
+    end
+
+    it 'is the most recently applied tags' do
+      tree_tag = create :tag_with_image, name: 'tree'
+
+      # manually advance the tag created_at timestamp by seconds; by default
+      # the ActiveRecord created_at is too low fidelity for this test to
+      # pass.
+      latest_tag_bindings = Array(1..5).map do |i|
+        create :tag_binding, created_at: (tree_tag.created_at.advance(seconds: i))
+      end
+
+      latest_tags = latest_tag_bindings.map { |binding| binding.tag.to_simple }
+
+      expected = tag_class.recently_applied(5)
+
+      expect(expected).to match_array(latest_tags)
+    end
+  end
+
   describe :to_simple do
     let(:tag_record) { build :tag_with_image }
     let(:image_objects) { tag_record.images.map { |i| i.to_simple } }
@@ -80,7 +132,7 @@ describe PhotoFS::Data::Tag, type: :model do
     it 'should return a simple object with an image for each of the associated image records' do
       expect(tag_record.to_simple.images).to contain_exactly(*image_objects)
     end
-  
+
     it 'should return a simple object with the same name' do
       expect(tag_record.to_simple.name).to eq tag_record.name
     end
