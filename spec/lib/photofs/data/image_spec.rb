@@ -75,7 +75,7 @@ describe PhotoFS::Data::Image, type: :model do
     let(:record) { build :image }
 
     let(:different_path) { record.path + '/違う' }
-    let(:image) { instance_double('PhotoFS::Core::Image', :path => different_path) }
+    let(:image) { instance_double('PhotoFS::Core::Image', path: different_path) }
 
     it 'sets new file from path' do
       record.update_from image

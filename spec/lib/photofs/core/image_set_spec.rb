@@ -7,7 +7,7 @@ describe PhotoFS::Core::ImageSet do
 
   describe :initialize do
     let(:options) do
-      { :set => 'set' }
+      { set: 'set' }
     end
     let(:set) { PhotoFS::Core::ImageSet.new(options) }
 

@@ -23,7 +23,7 @@ describe PhotoFS::Data::Synchronize::Lock do
     end
 
     describe 'increment callback' do
-      let(:callback) { instance_double('Proc', :call => nil) }
+      let(:callback) { instance_double('Proc', call: nil) }
 
       before(:example) do
         lock.register_on_detect_count_increment callback

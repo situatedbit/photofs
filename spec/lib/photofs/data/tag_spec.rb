@@ -9,9 +9,9 @@ describe PhotoFS::Data::Tag, type: :model do
   it { should have_many(:images).through(:tag_bindings) }
 
   describe :new_from_tag do
-    let(:image1) { instance_double("PhotoFS::Core::Image", :path => '/foo/bar.jpg') }
-    let(:image2) { instance_double("PhotoFS::Core::Image", :path => '/foo/bar2.jpg') }
-    let(:tag) { instance_double("PhotoFS::Core::Tag", :name => 'せいかつ', :images => [image1, image2]) }
+    let(:image1) { instance_double("PhotoFS::Core::Image", path: '/foo/bar.jpg') }
+    let(:image2) { instance_double("PhotoFS::Core::Image", path: '/foo/bar2.jpg') }
+    let(:tag) { instance_double("PhotoFS::Core::Tag", name: 'せいかつ', images: [image1, image2]) }
     let(:image_record_1) { build :image }
     let(:image_record_2) { build :image }
 
@@ -35,7 +35,7 @@ describe PhotoFS::Data::Tag, type: :model do
   describe :consistent_with? do
     context 'when the name and tag bindings match' do
       let(:tag_record) { build :tag_with_image }
-      let(:tag_object) { instance_double("PhotoFS::Core::Tag", :name => tag_record.name, :images => []) }
+      let(:tag_object) { instance_double("PhotoFS::Core::Tag", name: tag_record.name, images: []) }
 
       before(:example) do
         allow(PhotoFS::Data).to receive(:consistent_arrays?).and_return(true)
@@ -48,7 +48,7 @@ describe PhotoFS::Data::Tag, type: :model do
 
     context 'when the name does not match' do
       let(:tag_record) { build :tag }
-      let(:tag_object) { instance_double("PhotoFS::Core::Tag", :name => tag_record.name * 2) }
+      let(:tag_object) { instance_double("PhotoFS::Core::Tag", name: tag_record.name * 2) }
 
       it 'should be false' do
         expect(tag_record.consistent_with? tag_object).to be false
@@ -57,7 +57,7 @@ describe PhotoFS::Data::Tag, type: :model do
 
     context 'when the tag bindings do not match' do
       let(:tag_record) { build :tag_with_image }
-      let(:tag_object) { instance_double("PhotoFS::Core::Tag", :name => tag_record.name, :images => []) }
+      let(:tag_object) { instance_double("PhotoFS::Core::Tag", name: tag_record.name, images: []) }
 
       before(:example) do
         allow(PhotoFS::Data).to receive(:consistent_arrays?).and_return(false)
@@ -139,10 +139,10 @@ describe PhotoFS::Data::Tag, type: :model do
   end
 
   describe :update_from do
-    let(:image1) { instance_double("PhotoFS::Core::Image", :path => '/foo/bar.jpg') }
-    let(:image2) { instance_double("PhotoFS::Core::Image", :path => '/foo/bar2.jpg') }
-    let(:image3) { instance_double("PhotoFS::Core::Image", :path => '/foo/bar3.jpg') }
-    let(:tag) { instance_double("PhotoFS::Core::Tag", :name => 'せいかつ', :images => [image1, image2]) }
+    let(:image1) { instance_double("PhotoFS::Core::Image", path: '/foo/bar.jpg') }
+    let(:image2) { instance_double("PhotoFS::Core::Image", path: '/foo/bar2.jpg') }
+    let(:image3) { instance_double("PhotoFS::Core::Image", path: '/foo/bar3.jpg') }
+    let(:tag) { instance_double("PhotoFS::Core::Tag", name: 'せいかつ', images: [image1, image2]) }
     let(:tag_record) { build :tag }
     let(:image_record_1) { build :image }
     let(:image_record_2) { build :image }

@@ -12,7 +12,7 @@ module PhotoFS
       validates :name, uniqueness: true
 
       def self.from_tag(tag)
-        Tag.find_by :name => tag.name
+        Tag.find_by name: tag.name
       end
 
       # Assumption: tag's images have already been created and are in the database

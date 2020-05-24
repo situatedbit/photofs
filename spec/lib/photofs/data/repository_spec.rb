@@ -54,8 +54,8 @@ describe PhotoFS::Data::Repository do
     let(:active_record_class) { double('record class') }
 
     context 'when there are records cached' do
-      let!(:record) { double('record', :id => 42, :path => 'some-path') }
-      let(:object) { double('object', :path => 'some-path') }
+      let!(:record) { double('record', id: 42, path: 'some-path') }
+      let(:object) { double('object', path: 'some-path') }
       let!(:uncached_record) { double('record') }
       let(:uncached_object) { double('object') }
       let(:record_object_map) { { record => object } }

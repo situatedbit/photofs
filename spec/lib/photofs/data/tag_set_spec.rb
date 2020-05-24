@@ -13,8 +13,8 @@ describe PhotoFS::Data::TagSet do
     end
 
     context 'the tag is not in the database' do
-      let(:new_tag) { instance_double('PhotoFS::Core::Tag', :name => '新しい') }
-      let(:new_tag_record) { build :tag, :name => new_tag.name }
+      let(:new_tag) { instance_double('PhotoFS::Core::Tag', name: '新しい') }
+      let(:new_tag_record) { build :tag, name: new_tag.name }
 
       before(:example) do
         allow(PhotoFS::Data::Tag).to receive(:new_from_tag).with(new_tag).and_return(new_tag_record)
@@ -54,7 +54,7 @@ describe PhotoFS::Data::TagSet do
 
   describe :delete do
     let(:tag_record) { create :tag }
-    let(:tag) { instance_double('PhotoFS::Core::Tag', :name => tag_record.name) }
+    let(:tag) { instance_double('PhotoFS::Core::Tag', name: tag_record.name) }
     let(:record_object_map) { { tag_record => tag } }
 
     before(:example) do

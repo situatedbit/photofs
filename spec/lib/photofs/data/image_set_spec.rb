@@ -13,7 +13,7 @@ describe PhotoFS::Data::ImageSet do
     context 'when the image set is empty' do
       before(:example) do
         allow(PhotoFS::Data::Image).to receive(:from_images).and_return([])
-        other_set.add instance_double('Image', :path => '/a/file.jpg')
+        other_set.add instance_double('Image', path: '/a/file.jpg')
       end
 
       it { should be_empty }
@@ -134,7 +134,7 @@ describe PhotoFS::Data::ImageSet do
     end
 
     context 'when an image is already in the cache' do
-      let(:cached_image) { instance_double('PhotoFS::Core::Image', :path => image_record_1.path) }
+      let(:cached_image) { instance_double('PhotoFS::Core::Image', path: image_record_1.path) }
       let(:an_image) { an_instance_of(PhotoFS::Core::Image) }
       let(:paths) { image_set.find_by_paths [path_1, path_2] }
 
@@ -209,16 +209,16 @@ describe PhotoFS::Data::ImageSet do
 
     it { should contain_exactly(an_instance_of PhotoFS::Core::Image) }
 
-    it { should contain_exactly(have_attributes(:path => path_2)) }
+    it { should contain_exactly(have_attributes(path: path_2)) }
 
     it 'should add images for paths not in the database' do
-      expect(image_set).to receive(:add).with(have_attributes :path => path_2)
+      expect(image_set).to receive(:add).with(have_attributes path: path_2)
 
       image_set.import! paths
     end
 
     it 'should not add images for paths already in the database' do
-      expect(image_set).not_to receive(:add).with(have_attributes(:path => path_1))
+      expect(image_set).not_to receive(:add).with(have_attributes(path: path_1))
 
       image_set.import! paths
     end
@@ -232,7 +232,7 @@ describe PhotoFS::Data::ImageSet do
     it { expect(subject).to be nil }
 
     context 'when image is in the set' do
-      let(:image_record) { double('Image', :destroy => nil) }
+      let(:image_record) { double('Image', destroy: nil) }
 
       before(:each) do
         allow(PhotoFS::Data::Image).to receive(:from_image).with(image).and_return(image_record)

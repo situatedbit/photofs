@@ -13,11 +13,11 @@ namespace :photofs do
 
     migrations_dest_path = File.join(File.expand_path(Dir.pwd), 'db', 'migrate')
 
-    FileUtils.mkdir_p(migrations_dest_path, :verbose => true)
+    FileUtils.mkdir_p(migrations_dest_path, verbose: true)
 
     migrations.each do |migration|
       puts ""
-      FileUtils.cp(migration, migrations_dest_path, :verbose => true)
+      FileUtils.cp(migration, migrations_dest_path, verbose: true)
     end
   end
 end

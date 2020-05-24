@@ -26,7 +26,7 @@ module PhotoFS
           memo & image_set.to_set
         end
 
-        ImageSet.new(:set => intersection)
+        ImageSet.new(set: intersection)
       end
 
       def add(image)
@@ -103,7 +103,7 @@ module PhotoFS
       private
 
       def default_options
-        { :set => Set.new }
+        { set: Set.new }
       end
 
       def_delegator :set, :include?, :include?

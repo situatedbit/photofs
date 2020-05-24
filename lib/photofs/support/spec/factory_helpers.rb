@@ -8,7 +8,7 @@ module PhotoFS
 
         # legacy; can be refactored out
         def create_image(path)
-          create(:image, :path => path)
+          create(:image, path: path)
         end
       end
     end

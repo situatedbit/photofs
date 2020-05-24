@@ -88,7 +88,7 @@ describe PhotoFS::Core::TagSet do
   end
 
   describe :find_by_images do
-    let(:image_set) { PhotoFS::Core::ImageSet.new :set => [image].to_set }
+    let(:image_set) { PhotoFS::Core::ImageSet.new set: [image].to_set }
     let(:image) { PhotoFS::Core::Image.new 'ちよだ' }
     let(:tag) { PhotoFS::Core::Tag.new 'タグ' }
 
@@ -119,7 +119,7 @@ describe PhotoFS::Core::TagSet do
     end
 
     context "when there are multiple images" do
-      let(:image_set) { PhotoFS::Core::ImageSet.new :set => [image, image2].to_set }
+      let(:image_set) { PhotoFS::Core::ImageSet.new set: [image, image2].to_set }
 
       let(:image2) { PhotoFS::Core::Image.new '二.jpg' }
       let(:tag2) { PhotoFS::Core::Tag.new '三' }
@@ -145,7 +145,7 @@ describe PhotoFS::Core::TagSet do
     let(:first_images) { [1, 2, 3].map { |i| PhotoFS::Core::Image.new(i.to_s) } }
     let(:second_images) { [3, 4, 5].map { |i| PhotoFS::Core::Image.new(i.to_s) } }
 
-    before(:each) do    
+    before(:each) do
       first_images.each { |i| first.add(i) }
       second_images.each { |i| second.add(i) }
     end
@@ -180,14 +180,14 @@ describe PhotoFS::Core::TagSet do
   describe :limit_to_images do
     subject { tag_set.limit_to_images image_set }
 
-    let(:image1) { instance_double('Image', :name => '1.jpg') }
-    let(:image2) { instance_double('Image', :name => '2.jpg') }
-    let(:image3) { instance_double('Image', :name => '3.jpg') }
-    let(:image4) { instance_double('Image', :name => '4.jpg') }
-    let(:image_set) { PhotoFS::Core::ImageSet.new(:set => [image1, image2, image3].to_set) }
+    let(:image1) { instance_double('Image', name: '1.jpg') }
+    let(:image2) { instance_double('Image', name: '2.jpg') }
+    let(:image3) { instance_double('Image', name: '3.jpg') }
+    let(:image4) { instance_double('Image', name: '4.jpg') }
+    let(:image_set) { PhotoFS::Core::ImageSet.new(set: [image1, image2, image3].to_set) }
 
-    let(:tag1) { PhotoFS::Core::Tag.new 'good', :set => [image1, image2, image4].to_set }
-    let(:tag2) { PhotoFS::Core::Tag.new 'bad', :set => [image1].to_set }
+    let(:tag1) { PhotoFS::Core::Tag.new 'good', set: [image1, image2, image4].to_set }
+    let(:tag2) { PhotoFS::Core::Tag.new 'bad', set: [image1].to_set }
     let(:tag3) { PhotoFS::Core::Tag.new 'ugly' }
 
     before(:each) do
@@ -195,7 +195,7 @@ describe PhotoFS::Core::TagSet do
     end
 
     it 'should only contain tags that had images from the site' do
-      expect(subject.all).to include(have_attributes(:name => 'good'), have_attributes(:name => 'bad'))
+      expect(subject.all).to include(have_attributes(name: 'good'), have_attributes(name: 'bad'))
     end
 
     it 'should add previously tagged images to each tag' do
@@ -215,8 +215,8 @@ describe PhotoFS::Core::TagSet do
 
   describe :rename do
     let(:old_tag_images) { [instance_double('Image'), instance_double('Image')] }
-    let(:old_tag) { instance_double('Tag', :name => 'old tag') }
-    let(:new_tag) { instance_double('Tag', :name => 'new tag') }
+    let(:old_tag) { instance_double('Tag', name: 'old tag') }
+    let(:new_tag) { instance_double('Tag', name: 'new tag') }
 
     after(:example) do
       allow(new_tag).to receive(:add)

@@ -14,7 +14,7 @@ module PhotoFS
         if tags.nil? || tags.empty?
           ImageSet.new
         elsif tags.length == 1
-          ImageSet.new(:set => tags.first)
+          ImageSet.new(set: tags.first)
         else
           tags.first & tags[1..-1]
         end
@@ -77,7 +77,7 @@ module PhotoFS
       # a new tag set limited only to tags and images from image_set
       def limit_to_images(image_set)
         find_by_images(image_set).reduce(TagSet.new) do |new_set, tag|
-          new_set.add?(Tag.new tag.name, :set => (image_set & tag))
+          new_set.add?(Tag.new tag.name, { set: (image_set & tag) })
         end
       end
 

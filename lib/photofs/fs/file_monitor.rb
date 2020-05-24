@@ -15,7 +15,7 @@ module PhotoFS
         glob.map do |path|
           real_path = @fs.join(@search_path, path)
 
-          PhotoFS::FS::NormalizedPath.new(:root => @images_root_path, :real => real_path).to_s
+          PhotoFS::FS::NormalizedPath.new(root: @images_root_path, real: real_path).to_s
         end
       end
 

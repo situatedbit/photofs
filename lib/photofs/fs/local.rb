@@ -51,7 +51,7 @@ module PhotoFS
       end
 
       def fnm(option)
-        {:casefold => ::File::FNM_CASEFOLD}[option]
+        { casefold: ::File::FNM_CASEFOLD }[option]
       end
 
       def glob(pattern, flags=0)

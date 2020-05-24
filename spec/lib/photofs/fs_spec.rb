@@ -5,7 +5,7 @@ describe PhotoFS::FS do
   let(:klass) { PhotoFS::FS }
 
   describe :find_data_parent_path do
-    let(:file_system) { PhotoFS::FS::Test.new({ :dirs => ['/a/b/c/.photofs'], :files => ['/a/b/c/d/image.jpg', '/1/2/3/image.jpg'] }) }
+    let(:file_system) { PhotoFS::FS::Test.new({ dirs: ['/a/b/c/.photofs'], files: ['/a/b/c/d/image.jpg', '/1/2/3/image.jpg'] }) }
 
     before(:example) do
       allow(PhotoFS::FS).to receive(:file_system).and_return(file_system)
@@ -21,7 +21,7 @@ describe PhotoFS::FS do
   end # :find_data_parent_path
 
   describe :nearest_dir do
-    let(:file_system) { PhotoFS::FS::Test.new({ :files => ['/a/1.jpg', '/1.jpg'] }) }
+    let(:file_system) { PhotoFS::FS::Test.new({ files: ['/a/1.jpg', '/1.jpg'] }) }
 
     before(:example) do
       allow(PhotoFS::FS).to receive(:file_system).and_return(file_system)
