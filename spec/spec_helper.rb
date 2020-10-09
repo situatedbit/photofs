@@ -22,6 +22,7 @@ require 'photofs'
 
 require 'active_record'
 require 'photofs/support/spec/matchers'
+require 'photofs/fuse/support/spec/matchers'
 require 'database_cleaner'
 require 'factory_bot'
 require 'shoulda-matchers'
