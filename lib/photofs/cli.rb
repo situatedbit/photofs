@@ -1,0 +1,1 @@
+require 'photofs/cli/cli'
