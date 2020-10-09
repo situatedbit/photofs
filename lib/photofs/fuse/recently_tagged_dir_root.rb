@@ -24,7 +24,7 @@ module PhotoFS::Fuse
     private
 
     def tag_nodes
-      PhotoFS::Data::Tag.recently_applied(10).reduce({}) do |name_map, tag|
+      PhotoFS::Data::Tag.recently_applied(15).reduce({}) do |name_map, tag|
         options = { query_tag_names: [tag.name], parent: self, images: @images_domain }
         dir = PhotoFS::Fuse::TagDir.new(tag.name, @tags, options)
 
