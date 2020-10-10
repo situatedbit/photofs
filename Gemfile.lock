@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    photofs (0.4.3)
+    photofs (0.5.0)
 
 GEM
   remote: https://rubygems.org/
