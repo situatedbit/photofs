@@ -126,7 +126,7 @@ The directories under ``tags/`` will contain all images in the parent directory 
 
 The tag directories compound, allowing you to browse images in this path that have been tagged with multiple tags. For example, when both ``cat`` and ``tree`` have been applied to ``image.jpg``, the image file will exist under this path as well: ``o/photos/tags/cat/tree/image.jpg``, along with any other image in the parent path that had been tagged with *both* ``cat`` and ``tree``.
 
-Deleting ``tags/cat/tree/image.jpg`` will remove *both* tags from ``image.jpg``.
+Deleting ``tags/cat/tree/image.jpg`` will remove only the last tag in the directory list from ``image.jpg``, in this case, `tree`.
 
 `MOUNTPOINT/t/`
 

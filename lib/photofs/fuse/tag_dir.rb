@@ -48,9 +48,7 @@ module PhotoFS
 
         image = child.payload
 
-        query_tags.each do |tag|
-          tag.remove image
-        end
+        this_tag.remove image
       end
 
       def rmdir(tag_name)
@@ -163,7 +161,11 @@ module PhotoFS
       end
 
       def query_tags
-        @tags.find_by_name(@query_tag_names)
+        @query_tags ||= @tags.find_by_name(@query_tag_names)
+      end
+
+      def this_tag
+        @this_tag ||= @tags.find_by_name name
       end
 
       def unique_image_name(image)

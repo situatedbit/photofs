@@ -110,36 +110,20 @@ describe PhotoFS::Fuse::TagDir do
 
     context 'when the child exists and' do
       let(:child_name) { 'the-image' }
-      let(:tag_a) { instance_double('PhotoFS::Core::Tag', name: 'good') }
+      let(:this_tag) { instance_double('PhotoFS::Core::Tag', name: 'good') }
       let(:image) { instance_double('PhotoFS::Core::Image') }
       let(:child_node) { instance_double('PhotoFS::File', name: child_name, payload: image, :directory? => false) }
       let(:node_hash) { {child_node.name => child_node} }
 
       before(:example) do
-        allow(dir).to receive(:query_tags).and_return(query_tags)
+        allow(dir).to receive(:this_tag).and_return(this_tag)
         allow(dir).to receive(:node_hash).and_return(node_hash)
       end
 
-      context 'the tag one level deep' do
-        let(:query_tags) { [tag_a] }
+      it 'should untag image' do
+        expect(this_tag).to receive(:remove).with(image)
 
-        it 'should untag image' do
-          expect(tag_a).to receive(:remove).with(image)
-
-          dir.remove(child_name)
-        end
-      end
-
-      context 'when tag is nested' do
-        let(:tag_b) { instance_double('PhotoFS::Core::Tag', name: 'bad') }
-        let(:query_tags) { [tag_a, tag_b] }
-
-        it 'should untag image with each tag in nesting' do
-          expect(tag_a).to receive(:remove).with(image)
-          expect(tag_b).to receive(:remove).with(image)
-
-          dir.remove(child_name)
-        end
+        dir.remove(child_name)
       end
     end
   end # :remove

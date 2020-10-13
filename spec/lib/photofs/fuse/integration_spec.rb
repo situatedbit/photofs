@@ -362,16 +362,21 @@ describe 'integration for', :type => :locking_behavior do
       before(:example) do
         fuse.mkdir(context, '/t/bad', 0)
         fuse.rename(context, '/o/a/1a.jpg', '/o/a/tags/bad/1a.jpg')
+
+        fuse.mkdir(context, '/t/ugly', 0)
+        fuse.rename(context, '/o/a/1a.jpg', '/o/a/tags/ugly/1a.jpg')
       end
 
-      it 'should not be listed under either tag' do
-        expect(fuse.getattr(context, '/o/a/tags/bad/1a.jpg')).to be_a_link
+      it 'should be untagged from the last tag in the tree, but not those preceding it' do
         expect(fuse.getattr(context, '/o/a/tags/good/1a.jpg')).to be_a_link
+        expect(fuse.getattr(context, '/o/a/tags/bad/1a.jpg')).to be_a_link
+        expect(fuse.getattr(context, '/o/a/tags/ugly/1a.jpg')).to be_a_link
 
-        fuse.unlink(context, '/t/good/bad/1a.jpg')
+        fuse.unlink(context, '/t/good/bad/ugly/1a.jpg')
 
-        expect{ fuse.getattr(context, '/o/a/tags/bad/1a.jpg') }.to raise_error(Errno::ENOENT)
-        expect{ fuse.getattr(context, '/o/a/tags/good/1a.jpg') }.to raise_error(Errno::ENOENT)
+        expect(fuse.getattr(context, '/o/a/tags/good/1a.jpg')).to be_a_link
+        expect(fuse.getattr(context, '/o/a/tags/bad/1a.jpg')).to be_a_link
+        expect{ fuse.getattr(context, '/o/a/tags/ugly/1a.jpg') }.to raise_error(Errno::ENOENT)
       end
     end
   end # untagging images
