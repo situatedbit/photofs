@@ -50,7 +50,7 @@ GEM
     mysql2 (0.5.3)
     nokogiri (1.10.10)
       mini_portile2 (~> 2.4.0)
-    rack (2.0.9)
+    rack (2.2.3)
     rack-test (1.1.0)
       rack (>= 1.0, < 3)
     rails-dom-testing (2.0.3)
@@ -102,7 +102,7 @@ DEPENDENCIES
   factory_bot (~> 4.8.2)
   mysql2
   photofs!
-  rack (~> 2.0.8)
+  rack (~> 2.2.3)
   rake (~> 12.1)
   rfusefs (~> 1.0, >= 1.0.3)
   rspec (~> 3.4)

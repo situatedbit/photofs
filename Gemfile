@@ -3,7 +3,7 @@ source 'https://rubygems.org'
 gem 'activerecord', '~> 5.1.4'
 gem 'standalone_migrations', '~> 5.2.7'
 gem 'mysql2'
-gem "rack", "~> 2.0.8"
+gem "rack", "~> 2.2.3"
 gem 'rfusefs', '~> 1.0', '>= 1.0.3'
 gemspec
 
