@@ -106,11 +106,14 @@ module PhotoFS
       end
 
       def node_hash
+        # computing node_hash is expensive and creates noticeable lag; do it once
+        return @node_hash unless @node_hash.nil?
+
         files_node = files
 
         nodes = files_node.empty? ? [files_node, dirs] : [files_node, dirs, sidecars_dir]
 
-        @node_hash ||= nodes.reduce({}) { |hash, nodes| hash.merge nodes }
+        @node_hash = nodes.reduce({}) { |hash, nodes| hash.merge nodes }
       end
 
       def sidecars_dir
