@@ -49,11 +49,20 @@ module PhotoFS
         match ? match[0] : ''
       end
 
-      # Extracts the hyphenated notes portion of a normalized path
+      # Extracts the hyphenated notes portion of normalized and irregular paths
       def ImageName.notes(path)
-          match = basename(path).match /^(?:^\d{4}-\d{1,2}-\d{1,2}[a-z]*-\d+)((?:-[\w]+)+)/
+          name = basename(path)
+          normalized_name_matcher = /(?:^\d{4}-\d{1,2}-\d{1,2}[a-z]*-\d+)((?:-[\w]+)+)?/
+          irregular_name_matcher = /(?:\d+)((?:-[\w]+)+)/
 
-          match.nil? ? '' : match[1]
+          normalized_match = name.match normalized_name_matcher
+
+          if normalized_match
+            normalized_match[1] || ''
+          else
+            irregular_match = name.match irregular_name_matcher
+            irregular_match.nil? ? '' : irregular_match[1]
+          end
       end
 
       def ImageName.prefix(path)

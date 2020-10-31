@@ -64,11 +64,12 @@ describe :ImageName do
   end
 
   describe :notes do
-    # notes not supported in irregular names
+    # irregular names
     it { expect(subject.notes 'a/b/IMG_1234.jpg').to eq('') }
-    it { expect(subject.notes 'a/b/IMG_1234-note.jpg').to eq('') }
+    it { expect(subject.notes 'a/b/IMG_1234-cropped-mono.jpg').to eq('-cropped-mono') }
 
     # normalized names
+    it { expect(subject.notes 'a/b/1986-05-23a-04.xcf').to eq('') }
     it { expect(subject.notes 'a/b/1986-05-23a-04-small-square.xcf').to eq('-small-square') }
     it { expect(subject.notes 'a/b/1982-08-22-001-p234-8x10-1200dpi.tiff.jpg').to eq('-p234-8x10-1200dpi') }
   end
