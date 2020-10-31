@@ -24,7 +24,8 @@ module PhotoFS
         puts %{
 production:
   adapter: mysql2
-  encoding: utf8
+  encoding: utf8mb4
+  collation: utf8mb4_bin
   database:
   username:
   password:
