@@ -23,8 +23,8 @@ describe :ImageName do
 
     it { expect(subject.frame 'a/b/some-name-blah.jpg').to eq('some-name-blah') }
 
-    # for irregular names, do not recognize hyphenated notes
-    it { expect(subject.frame 'a/b/IMG_1234-something.jpg').to eq('IMG_1234-something') }
+    # for irregular names, recognize hyphenated notes
+    it { expect(subject.frame 'a/b/IMG_1234-something.jpg').to eq('1234') }
 
     # normalized names
     it { expect(subject.frame 'a/b/1984-01-23-1.jpg').to eq('1') }
@@ -104,8 +104,8 @@ describe :ImageName do
 
     it { expect(subject.reference_name 'a/b/some-name-blah.jpg').to eq('some-name-blah') }
 
-    # for irregular names, do not recognize hyphenated notes
-    it { expect(subject.reference_name 'a/b/IMG_1234-something.jpg').to eq('IMG_1234-something') }
+    # for irregular names, recognize hyphenated notes
+    it { expect(subject.reference_name 'a/b/IMG_1234-something.jpg').to eq('1234') }
 
     # normalized names
     it { expect(subject.reference_name 'a/b/1984-01-23-1.jpg').to eq('1984-01-23-1') }
@@ -124,8 +124,8 @@ describe :ImageName do
 
     it { expect(subject.reference_path 'a/b/some-name-blah.jpg').to eq('a/b/some-name-blah') }
 
-    # for irregular names, do not recognize hyphenated notes
-    it { expect(subject.reference_path 'a/b/IMG_1234-something.jpg').to eq('a/b/IMG_1234-something') }
+    # for irregular names, recognize hyphenated notes
+    it { expect(subject.reference_path 'a/b/IMG_1234-something.jpg').to eq('a/b/1234') }
 
     # normalized names
     it { expect(subject.reference_path 'a/b/1984-01-23-1.jpg').to eq('a/b/1984-01-23-1') }

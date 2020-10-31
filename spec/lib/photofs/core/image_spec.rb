@@ -78,11 +78,10 @@ describe PhotoFS::Core::Image do
     it { expect(irregular_name.sidecar? image.new('a/b/1.whatever')).to be true }
     it { expect(irregular_name.sidecar? image.new('a/b/1.whatever.nevermind')).to be true }
 
-    # hyphen-delineated notes are unrecognized for irregular names
-    it { expect(irregular_name.sidecar? image.new('a/b/1-small.xcf.jpg')).to be false }
-    it { expect(irregular_name.sidecar? image.new('a/b/1-p123-1200dpi.tif')).to be false }
+    # hyphen-delineated notes are honored for regular and irregular names
+    it { expect(irregular_name.sidecar? image.new('a/b/1-small.xcf.jpg')).to be true }
+    it { expect(irregular_name.sidecar? image.new('a/b/1-p123-1200dpi.tif')).to be true }
 
-    # hyphen-delineated notes _are_ recognized with regular names
     it { expect(normalized_name.sidecar? image.new('a/b/2019-12-12-035-small.jpg')).to be true }
     it { expect(normalized_name.sidecar? image.new('a/b/2019-12-12-035-8x10-1200dpi.xcf.jpg')).to be true }
   end

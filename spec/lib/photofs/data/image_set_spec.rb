@@ -289,7 +289,7 @@ describe PhotoFS::Data::ImageSet do
 
     context do
       let(:images) { ['a/b/1.jpg', 'a/b/1-something.jpg', 'sentinel.jpg'] }
-      let(:paths) { ['a/b/1.jpg'] }
+      let(:paths) { ['a/b/1.jpg', 'a/b/1-something.jpg'] }
       let(:results_paths) { [] }
 
       it { expect(subject).to contain_exactly(*results) }

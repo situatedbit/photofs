@@ -34,7 +34,7 @@ module PhotoFS
       def ImageName.frame(path)
         name = basename(path)
         #                        normalized name                  | irregular name
-        match = name.match /(?:^\d{4}-\d{1,2}-\d{1,2}[a-z]*-(\d+))|(\d+)$/
+        match = name.match /(?:^\d{4}-\d{1,2}-\d{1,2}[a-z]*-(\d+))|(\d+)/
 
         # if no match, reference id is basename. If match, it's either normalized or irregular
         match.nil? ? name : (match[1] || match[2])
