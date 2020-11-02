@@ -3,36 +3,6 @@ require 'photofs/core/image_name'
 describe :ImageName do
   subject { PhotoFS::Core::ImageName }
 
-  describe :extensions do
-    it { expect(subject.extensions 'a.jpg').to eq('.jpg') }
-    it { expect(subject.extensions '1/2/a.jpg').to eq('.jpg') }
-    it { expect(subject.extensions '1/2/a').to eq('') }
-    it { expect(subject.extensions '1/2/.git').to eq('') }
-    it { expect(subject.extensions '1/2/.git.old').to eq('.old') }
-    it { expect(subject.extensions '1/2/a.').to eq('') }
-    it { expect(subject.extensions '1/2/a.jpg.tif').to eq('.jpg.tif') }
-  end
-
-  describe :frame do
-    # irregular names
-    it { expect(subject.frame 'a/b/1234.jpg').to eq('1234') }
-
-    it { expect(subject.frame 'a/b/IMG_1234.jpg').to eq('1234') }
-    it { expect(subject.frame 'a/b/DSC1234.jpg').to eq('1234') }
-    it { expect(subject.frame 'a/b/IMG_1234.small.xcf.jpg').to eq('1234') }
-
-    it { expect(subject.frame 'a/b/some-name-blah.jpg').to eq('some-name-blah') }
-
-    # for irregular names, recognize hyphenated notes
-    it { expect(subject.frame 'a/b/IMG_1234-something.jpg').to eq('1234') }
-
-    # normalized names
-    it { expect(subject.frame 'a/b/1984-01-23-1.jpg').to eq('1') }
-    it { expect(subject.frame 'a/b/1984-01-23-001.jpg').to eq('001') }
-    it { expect(subject.frame 'a/b/1984-01-23abc-001.jpg').to eq('001') }
-    it { expect(subject.frame 'a/b/1984-01-23-001-8x10-scan.xcf.jpg').to eq('001') }
-  end
-
   describe :normalized_prefix do
     it 'respects single digit months' do
       expect(subject.normalized_prefix '2017-9-04').to eq('2017-9-04')
@@ -63,74 +33,155 @@ describe :ImageName do
     end
   end
 
-  describe :notes do
-    # irregular names
-    it { expect(subject.notes 'a/b/IMG_1234.jpg').to eq('') }
-    it { expect(subject.notes 'a/b/IMG_1234-cropped-mono.jpg').to eq('-cropped-mono') }
-
-    # normalized names
-    it { expect(subject.notes 'a/b/1986-05-23a-04.xcf').to eq('') }
-    it { expect(subject.notes 'a/b/1986-05-23a-04-small-square.xcf').to eq('-small-square') }
-    it { expect(subject.notes 'a/b/1982-08-22-001-p234-8x10-1200dpi.tiff.jpg').to eq('-p234-8x10-1200dpi') }
+  describe :extensions do
+    it { expect(subject.extensions('a.jpg')).to eq('.jpg') }
+    it { expect(subject.extensions('1/2/a.jpg')).to eq('.jpg') }
+    it { expect(subject.extensions('1/2/a')).to eq('') }
+    it { expect(subject.extensions('1/2/.git')).to eq('') }
+    it { expect(subject.extensions('1/2/.git.old')).to eq('.old') }
+    it { expect(subject.extensions('1/2/a.')).to eq('') }
+    it { expect(subject.extensions('1/2/a.jpg.tif')).to eq('.jpg.tif') }
   end
 
-  describe :prefix do
-    # irregular names
-    it { expect(subject.prefix 'a/b/1234.jpg').to eq('') }
+  describe :normalized_names do
+    describe :frame do
+      it { expect(subject.parse('a/b/1984-01-23-1.jpg').frame).to eq('1') }
+      it { expect(subject.parse('a/b/1984-01-23-001.jpg').frame).to eq('001') }
+      it { expect(subject.parse('a/b/1984-01-23abc-001.jpg').frame).to eq('001') }
+      it { expect(subject.parse('a/b/1984-01-23-001-8x10-scan.xcf.jpg').frame).to eq('001') }
+    end
 
-    it { expect(subject.prefix 'a/b/IMG_1234.jpg').to eq('') }
-    it { expect(subject.prefix 'a/b/DSC1234.jpg').to eq('') }
-    it { expect(subject.prefix 'a/b/IMG_1234.small.xcf.jpg').to eq('') }
+    describe :notes do
+      it { expect(subject.parse('a/b/1986-05-23a-04.xcf').notes).to eq('') }
+      it { expect(subject.parse('a/b/1986-05-23a-04-small-square.xcf').notes).to eq('-small-square') }
+      it { expect(subject.parse('a/b/1982-08-22-001-p234-8x10-1200dpi.tiff.jpg').notes).to eq('-p234-8x10-1200dpi') }
+    end
 
-    it { expect(subject.prefix 'a/b/some-name-blah.jpg').to eq('') }
+    describe :prefix do
+      it { expect(subject.parse('a/b/1984-01-23-1.jpg').prefix).to eq('1984-01-23') }
+      it { expect(subject.parse('a/b/1984-01-23-001.jpg').prefix).to eq('1984-01-23') }
+      it { expect(subject.parse('a/b/1984-01-23abc-001.jpg').prefix).to eq('1984-01-23abc') }
+      it { expect(subject.parse('a/b/1984-01-23-001-8x10-scan.xcf.jpg').prefix).to eq('1984-01-23') }
+    end
 
-    # for irregular names, do not recognize hyphenated notes
-    it { expect(subject.prefix 'a/b/IMG_1234-something.jpg').to eq('') }
+    describe :reference_name do
+      it { expect(subject.parse('a/b/1984-01-23-1.jpg').reference_name).to eq('1984-01-23-1') }
+      it { expect(subject.parse('a/b/1984-01-23-001.jpg').reference_name).to eq('1984-01-23-001') }
+      it { expect(subject.parse('a/b/1984-01-23abc-001.jpg').reference_name).to eq('1984-01-23abc-001') }
+      it { expect(subject.parse('a/b/1984-01-23-001-8x10-scan.xcf.jpg').reference_name).to eq('1984-01-23-001') }
+    end
 
-    # normalized names
-    it { expect(subject.prefix 'a/b/1984-01-23-1.jpg').to eq('1984-01-23') }
-    it { expect(subject.prefix 'a/b/1984-01-23-001.jpg').to eq('1984-01-23') }
-    it { expect(subject.prefix 'a/b/1984-01-23abc-001.jpg').to eq('1984-01-23abc') }
-    it { expect(subject.prefix 'a/b/1984-01-23-001-8x10-scan.xcf.jpg').to eq('1984-01-23') }
+    describe :reference_path do
+      it { expect(subject.parse('a/b/1984-01-23-1.jpg').reference_path).to eq('a/b/1984-01-23-1') }
+      it { expect(subject.parse('a/b/1984-01-23-001.jpg').reference_path).to eq('a/b/1984-01-23-001') }
+      it { expect(subject.parse('a/b/1984-01-23abc-001.jpg').reference_path).to eq('a/b/1984-01-23abc-001') }
+      it { expect(subject.parse('a/b/1984-01-23-001-8x10-scan.xcf.jpg').reference_path).to eq('a/b/1984-01-23-001') }
+    end
   end
 
-  describe :reference_name do
-    # irregular names
-    it { expect(subject.reference_name 'a/b/1234.jpg').to eq('1234') }
+  describe :indexed_names do
+    describe :frame do
+      it { expect(subject.parse('a/b/IMG_1234.jpg').frame).to eq('1234') }
+      it { expect(subject.parse('a/b/DSC1234.jpg').frame).to eq('1234') }
+      it { expect(subject.parse('a/b/IMG_1234.small.xcf.jpg').frame).to eq('1234') }
+      it { expect(subject.parse('a/b/IMG_1234-something.jpg').frame).to eq('1234') }
 
-    it { expect(subject.reference_name 'a/b/IMG_1234.jpg').to eq('1234') }
-    it { expect(subject.reference_name 'a/b/DSC1234.jpg').to eq('1234') }
-    it { expect(subject.reference_name 'a/b/IMG_1234.small.xcf.jpg').to eq('1234') }
+      it { expect(subject.parse('a/b/IMG_20200131_123456.JPG').frame).to eq('20200131123456') }
+      it { expect(subject.parse('a/b/IMG_20200131_123456-mono.JPG').frame).to eq('20200131123456') }
+      it { expect(subject.parse('a/b/IMG_20200131_123456_1.JPG').frame).to eq('202001311234561') }
+      it { expect(subject.parse('a/b/IMG_20200131_123456_1-mono.JPG').frame).to eq('202001311234561') }
 
-    it { expect(subject.reference_name 'a/b/some-name-blah.jpg').to eq('some-name-blah') }
+      it { expect(subject.parse('a/b/signal-2010-03-23-098234.jpg').frame).to eq('20100323098234') }
+      it { expect(subject.parse('a/b/signal-2010-03-23-098234-mono.jpg').frame).to eq('20100323098234') }
+      it { expect(subject.parse('a/b/signal-2010-03-23-098234-1.jpg').frame).to eq('201003230982341') }
+      it { expect(subject.parse('a/b/signal-2010-03-23-098234-1-mono-cropped.jpg').frame).to eq('201003230982341') }
 
-    # for irregular names, recognize hyphenated notes
-    it { expect(subject.reference_name 'a/b/IMG_1234-something.jpg').to eq('1234') }
+        it { expect(subject.parse('a/b/1234.jpg').frame).to eq('1234') }
+        it { expect(subject.parse('a/b/1234-mono.jpg').frame).to eq('1234') }
+    end
 
-    # normalized names
-    it { expect(subject.reference_name 'a/b/1984-01-23-1.jpg').to eq('1984-01-23-1') }
-    it { expect(subject.reference_name 'a/b/1984-01-23-001.jpg').to eq('1984-01-23-001') }
-    it { expect(subject.reference_name 'a/b/1984-01-23abc-001.jpg').to eq('1984-01-23abc-001') }
-    it { expect(subject.reference_name 'a/b/1984-01-23-001-8x10-scan.xcf.jpg').to eq('1984-01-23-001') }
+    describe :notes do
+      it { expect(subject.parse('a/b/IMG_1234.jpg').notes).to eq('') }
+      it { expect(subject.parse('a/b/IMG_1234-cropped-mono.jpg').notes).to eq('-cropped-mono') }
+      it { expect(subject.parse('a/b/IMG_1234-2400dpi.tiff').notes).to eq('-2400dpi') }
+
+      it { expect(subject.parse('a/b/IMG_20200131_123456.JPG').notes).to eq('') }
+      it { expect(subject.parse('a/b/IMG_20200131_123456-mono.JPG').notes).to eq('-mono') }
+      it { expect(subject.parse('a/b/IMG_20200131_123456_1.JPG').notes).to eq('') }
+      it { expect(subject.parse('a/b/IMG_20200131_123456_1-mono.JPG').notes).to eq('-mono') }
+
+      it { expect(subject.parse('a/b/signal-2010-03-23-098234.jpg').notes).to eq('') }
+      it { expect(subject.parse('a/b/signal-2010-03-23-098234-mono.jpg').notes).to eq('-mono') }
+      it { expect(subject.parse('a/b/signal-2010-03-23-098234-1.jpg').notes).to eq('') }
+      it { expect(subject.parse('a/b/signal-2010-03-23-098234-1-mono-cropped.jpg').notes).to eq('-mono-cropped') }
+
+      it { expect(subject.parse('a/b/1234.jpg').notes).to eq('') }
+      it { expect(subject.parse('a/b/1234-mono.jpg').notes).to eq('-mono') }
+    end
+
+    describe :prefix do
+      it { expect(subject.parse('a/b/1234.jpg').prefix).to eq('') }
+
+      it { expect(subject.parse('a/b/IMG_1234.jpg').prefix).to eq('') }
+      it { expect(subject.parse('a/b/DSC1234.jpg').prefix).to eq('') }
+      it { expect(subject.parse('a/b/IMG_1234.small.xcf.jpg').prefix).to eq('') }
+
+      it { expect(subject.parse('a/b/IMG_20200131_123456.JPG').prefix).to eq('') }
+
+      it { expect(subject.parse('a/b/signal-2010-03-23-098234-1.jpg').prefix).to eq('') }
+
+      it { expect(subject.parse('a/b/1234.jpg').prefix).to eq('') }
+    end
+
+    describe :reference_name do
+      it { expect(subject.parse('a/b/IMG_1234.jpg').reference_name).to eq('1234') }
+      it { expect(subject.parse('a/b/DSC1234.jpg').reference_name).to eq('1234') }
+      it { expect(subject.parse('a/b/IMG_1234.small.xcf.jpg').reference_name).to eq('1234') }
+
+      it { expect(subject.parse('a/b/IMG_1234-something.jpg').reference_name).to eq('1234') }
+
+      it { expect(subject.parse('a/b/IMG_20200131_123456_1.JPG').reference_name).to eq('202001311234561') }
+      it { expect(subject.parse('a/b/IMG_20200131_123456-mono.JPG').reference_name).to eq('20200131123456') }
+
+      it { expect(subject.parse('a/b/signal-2010-03-23-098234.jpg').reference_name).to eq('20100323098234') }
+      it { expect(subject.parse('a/b/signal-2010-03-23-098234-1-mono-cropped.jpg').reference_name).to eq('201003230982341') }
+
+      it { expect(subject.parse('a/b/1234.jpg').reference_name).to eq('1234') }
+    end
+
+    describe :reference_path do
+      it { expect(subject.parse('a/b/IMG_1234.jpg').reference_path).to eq('a/b/1234') }
+      it { expect(subject.parse('a/b/DSC1234.jpg').reference_path).to eq('a/b/1234') }
+      it { expect(subject.parse('a/b/IMG_1234.small.xcf.jpg').reference_path).to eq('a/b/1234') }
+
+      it { expect(subject.parse('a/b/IMG_1234-something.jpg').reference_path).to eq('a/b/1234') }
+
+      it { expect(subject.parse('a/b/IMG_20200131_123456.JPG').reference_path).to eq('a/b/20200131123456') }
+      it { expect(subject.parse('a/b/signal-2010-03-23-098234.jpg').reference_path).to eq('a/b/20100323098234') }
+
+      it { expect(subject.parse('a/b/1234.jpg').reference_path).to eq('a/b/1234') }
+    end
   end
 
-  describe :reference_path do
-    # irregular names
-    it { expect(subject.reference_path 'a/b/1234.jpg').to eq('a/b/1234') }
+  describe :irregular_names do
+    describe :frame do
+      it { expect(subject.parse('a/b/some-name-blah.jpg').frame).to eq('some-name-blah') }
+    end
 
-    it { expect(subject.reference_path 'a/b/IMG_1234.jpg').to eq('a/b/1234') }
-    it { expect(subject.reference_path 'a/b/DSC1234.jpg').to eq('a/b/1234') }
-    it { expect(subject.reference_path 'a/b/IMG_1234.small.xcf.jpg').to eq('a/b/1234') }
+    describe :notes do
+      it { expect(subject.parse('a/b/some-name-blah.jpg').notes).to eq('') }
+    end
 
-    it { expect(subject.reference_path 'a/b/some-name-blah.jpg').to eq('a/b/some-name-blah') }
+    describe :prefix do
+      it { expect(subject.parse('a/b/some-name-blah.jpg').prefix).to eq('') }
+    end
 
-    # for irregular names, recognize hyphenated notes
-    it { expect(subject.reference_path 'a/b/IMG_1234-something.jpg').to eq('a/b/1234') }
+    describe :reference_name do
+      it { expect(subject.parse('a/b/some-name-blah.jpg').reference_name).to eq('some-name-blah') }
+    end
 
-    # normalized names
-    it { expect(subject.reference_path 'a/b/1984-01-23-1.jpg').to eq('a/b/1984-01-23-1') }
-    it { expect(subject.reference_path 'a/b/1984-01-23-001.jpg').to eq('a/b/1984-01-23-001') }
-    it { expect(subject.reference_path 'a/b/1984-01-23abc-001.jpg').to eq('a/b/1984-01-23abc-001') }
-    it { expect(subject.reference_path 'a/b/1984-01-23-001-8x10-scan.xcf.jpg').to eq('a/b/1984-01-23-001') }
+    describe :reference_path do
+      it { expect(subject.parse('a/b/some-name-blah.jpg').reference_path).to eq('a/b/some-name-blah') }
+    end
   end
 end

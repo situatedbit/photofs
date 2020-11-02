@@ -1,9 +1,9 @@
 module PhotoFS
   module Core
     module ImageName
-      # There are two types of names: irregular and normalized.
-      # Normalized names take the form of a roll/collection date prefix, an
-      # frame number, optional notes, and file extensions:
+      # Ideally filenames are normalized. Normalized names take the form of a
+      # roll/collection date prefix, an frame number, optional notes, and
+      # file extensions:
       #
       # 2019-07-04a-001-scan-2400dpi.tiff.jpg
       #
@@ -12,17 +12,45 @@ module PhotoFS
       # notes: -scan-2400dpi
       # extensions: .tiff.jpg
       #
-      # Irregular file names are everything else. Their frame number is the
-      # last digits in the part of the name before the extension (or the entire
-      # name before the extension if it does not end in digits), and extensions.
-      # Hyphenated notes are not supported in this name format. For example:
+      # For other well-known forms of names, we can extract a frame from the
+      # digits in the file name, while still supporting notes:
       #
-      # IMG_1234.color.xcf
-      # frame: 1234
-      # extensions: .color.xcf
+      # Fuji        DSC2349-mono-cropped.JPG
+      # Canon       IMG_2343.JPG
+      # open camera IMG_20201019_124528.JPG
+      # signal      signal-2010-03-23-098234.jpg
+      #
+      # For names that start with indexes we can interpret as frame numbers:
+      #
+      # 01.tiff
+      # 02-mono.tiff
+      #
+      # For all others, the frame is the entire basename:
+      #
+      # diane-arbus-03-medium.webp
+      #
+      # With a normalized prefix and frame, we can establish a reference name
+      # for each image that allows us to group them with derivitive images:
+      #
+      # reference name: a/b/2019-12-12a-004-scan.jpg -> 2019-12-12a-004
+      #
+      # Names that lack normalized prefixes will only include the frame
+      # in the reference name. This can lead to collisions, since
+      # IMG_1234 and DSC1234 would have the same reference name.
 
+      # Given a possible prefix, will return the leading portion that
+      # matches the normalized prefix form. Will return empty string if
+      # beginning of possible prefix does not match the normalized form.
+      def ImageName.normalized_prefix(possible_prefix)
+        match = possible_prefix.match(/\A\d{4}-\d{1,2}-\d{1,2}[a-z]*/)
+
+        match ? match[0] : ''
+      end
+
+      # Returns 0 or more file extensions seperated by dots. Assumes names
+      # with leading dots are hidden files.
       def ImageName.extensions(path)
-        match = /^\.?[^.]+(\..+)/.match(::File.basename(path))
+        match = /\A\.?[^.]+(\..+)/.match(::File.basename(path))
 
         match ? match[1] : ''
       end
@@ -31,56 +59,124 @@ module PhotoFS
         ::File.basename(path, extensions(path))
       end
 
-      def ImageName.frame(path)
-        name = basename(path)
-        #                        normalized name                  | irregular name
-        match = name.match /(?:^\d{4}-\d{1,2}-\d{1,2}[a-z]*-(\d+))|(\d+)/
-
-        # if no match, reference id is basename. If match, it's either normalized or irregular
-        match.nil? ? name : (match[1] || match[2])
+      module Common
+        # path of the image's parent directory combined with the reference name
+        def reference_path
+          ::File.join [::File.dirname(@path), reference_name]
+        end
       end
 
-      # Given a possible prefix, will return the leading portion that
-      # matches the normalized prefix form. Will return empty string if
-      # beginning of possible prefix does not match the normalized form.
-      def ImageName.normalized_prefix(possible_prefix)
-        match = possible_prefix.match(/^\d{4}-\d{1,2}-\d{1,2}[a-z]*/)
-
-        match ? match[0] : ''
+      # Factory method. Match the path to the most appropriate kind of supported
+      # name, and return an instance of the parsed name object.
+      def ImageName.parse(path)
+        # IrregularName is returned by default, since it's match function is true.
+        [NormalizedName, IndexedName, IrregularName].select { |name| name.matches(path) }.first.new(path)
       end
 
-      # Extracts the hyphenated notes portion of normalized and irregular paths
-      def ImageName.notes(path)
-          name = basename(path)
-          normalized_name_matcher = /(?:^\d{4}-\d{1,2}-\d{1,2}[a-z]*-\d+)((?:-[\w]+)+)?/
-          irregular_name_matcher = /(?:\d+)((?:-[\w]+)+)/
+      class NormalizedName
+        include Common
 
-          normalized_match = name.match normalized_name_matcher
+        def self.expression
+          /(?<prefix>^\d{4}-\d{1,2}-\d{1,2}[a-z]*)-(?<frame>\d+)(?<notes>(?:-+\w+)*)?/
+        end
 
-          if normalized_match
-            normalized_match[1] || ''
-          else
-            irregular_match = name.match irregular_name_matcher
-            irregular_match.nil? ? '' : irregular_match[1]
-          end
+        def self.matches(path)
+          ImageName.basename(path).match(self.expression)
+        end
+
+        def initialize(path)
+          @path = path
+          @match = ImageName.basename(path).match(NormalizedName.expression)
+        end
+
+        def frame
+          @match['frame']
+        end
+
+        def notes
+          @match['notes'] || ''
+        end
+
+        def prefix
+          @match['prefix']
+        end
+
+        def reference_name
+          "#{prefix}-#{frame}"
+        end
       end
 
-      def ImageName.prefix(path)
-        normalized_prefix basename(path)
+      class IndexedName
+        # Fuji        DSC1234
+        # Canon       IMG_1234
+        # open camera IMG_20201019_124528
+        # open camera IMG_20201019_124528_1 (second image taken at 12:45:28 on 2020-10-19)
+        # signal      signal-2010-03-23-098234
+        # signal      signal-2010-03-23-098234-1
+        # indexed     03.tiff or 03-mono.tiff
+
+        include Common
+
+        def self.expression
+          /\A[a-z]*(?<frame>(?:[-_]?\d+)+\b)(?<notes>(?:-+\w+)*)?/i
+        end
+
+        def self.matches(path)
+          ImageName.basename(path).match(self.expression)
+        end
+
+        def initialize(path)
+          @path = path
+          @match = ImageName.basename(path).match(IndexedName.expression)
+        end
+
+        def frame
+          @match['frame'].gsub(/[-_]/, '')
+        end
+
+        def notes
+          @match['notes'] || ''
+        end
+
+        def prefix
+          ''
+        end
+
+        def reference_name
+          frame
+        end
       end
 
-      # The prefix and frame
-      # e.g., a/b/2019-12-12a-004-scan.jpg -> 2019-12-12a-004
-      def ImageName.reference_name(path)
-        # Only include prefix if it's in normalized form (i.e., prefix() returns non-empty string)
-        [prefix(path), frame(path)].reject { |c| c.empty? }.join('-')
+      class IrregularName
+        # Catch-all for everything else. Treat the entire basename as the frame.
+
+        include Common
+
+        def self.matches(path)
+          true
+        end
+
+        def initialize(path)
+          @path = path
+        end
+
+        def frame
+          ImageName.basename @path
+        end
+
+        def notes
+          ''
+        end
+
+        def prefix
+          ''
+        end
+
+        def reference_name
+          frame
+        end
       end
 
-      # the path of the image's parent directory combined with the prefix and frame
-      # e.g., a/b/2019-12-12a-004-scan.jpg -> a/b/2019-12-12a-004
-      def ImageName.reference_path(path)
-        ::File.join [::File.dirname(path), reference_name(path)]
-      end
     end
   end
 end

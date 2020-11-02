@@ -22,8 +22,10 @@ module PhotoFS
       # e.g., |a/b/1984-06-23/1984-06-23-04|  .jpg
       # and   |a/b/1984-06-23/1984-06-23-04|  -small.xcf.jpg
       #             ^ this part
+      # for non-normalized names, it might omit parts of the filename:
+      # e.g., a/b/1922-12-12/IMG_1234-some-note.jpg => a/b/1922-12-12/1234
       def reference_path
-          PhotoFS::Core::ImageName.reference_path path
+          PhotoFS::Core::ImageName.parse(path).reference_path
       end
 
       def sidecar?(image)
