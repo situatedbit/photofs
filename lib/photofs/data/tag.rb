@@ -25,7 +25,7 @@ module PhotoFS
       def self.recently_applied(limit = 10)
         return [] if limit < 1
 
-        tags = Tag.joins(:tag_bindings).group(:name).order('max(tag_bindings.created_at) desc').limit(limit)
+        tags = Tag.joins(:tag_bindings).group(:name).order(Arel.sql('max(tag_bindings.created_at) desc')).limit(limit)
 
         tags.map { |tag| tag.to_simple }
       end
