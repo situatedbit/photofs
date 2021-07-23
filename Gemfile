@@ -8,11 +8,11 @@ gem 'rfusefs', '~> 1.0', '>= 1.0.3'
 gemspec
 
 group :development, :test do
-  gem 'rspec', '~> 3.4'
+  gem 'rspec', '~> 3.10'
   gem 'database_cleaner'
 end
 
 group :test do
-  gem "factory_bot", "~> 4.8.2"
+  gem "factory_bot", "~> 5.0.0"
   gem 'shoulda-matchers', '~> 3.1', '>= 3.1.1'
 end

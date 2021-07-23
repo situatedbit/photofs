@@ -18,7 +18,7 @@ FactoryBot.define do
 
     factory :tag_with_image do
       transient do
-        images_count 1
+        images_count { 1 }
       end
 
       after(:create) do |tag, evaluator|
