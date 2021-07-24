@@ -13,6 +13,6 @@ group :development, :test do
 end
 
 group :test do
-  gem "factory_bot", "~> 6.0.0"
+  gem "factory_bot", "~> 6.2.0"
   gem 'shoulda-matchers', '~> 3.1', '>= 3.1.1'
 end
