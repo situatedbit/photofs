@@ -54,7 +54,7 @@ GEM
     nokogiri (1.11.7-x86_64-linux)
       racc (~> 1.4)
     racc (1.5.2)
-    rack (2.0.9)
+    rack (2.2.3)
     rack-test (1.1.0)
       rack (>= 1.0, < 3)
     rails-dom-testing (2.0.3)
@@ -107,7 +107,7 @@ DEPENDENCIES
   factory_bot (~> 6.2.0)
   mysql2
   photofs!
-  rack (~> 2.0.8)
+  rack (~> 2.2.3)
   rake (~> 12.3)
   rfusefs (~> 1.1.3)
   rspec (~> 3.10)
