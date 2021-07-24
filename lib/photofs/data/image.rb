@@ -9,7 +9,7 @@ module PhotoFS
       has_many :tags, through: :tag_bindings
 
       validates :path, presence: true
-      validates :path, uniqueness: true
+      validates_uniqueness_of :path, case_sensitive: true
 
       def self.find_by_paths_start(paths)
         paths = [paths].flatten.map { |p| "#{p}%"} # normalize to array, add LIKE wildcard

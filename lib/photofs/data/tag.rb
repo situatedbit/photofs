@@ -9,7 +9,7 @@ module PhotoFS
       has_many :images, through: :tag_bindings
 
       validates :name, presence: true
-      validates :name, uniqueness: true
+      validates_uniqueness_of :name, case_sensitive: true
 
       def self.from_tag(tag)
         Tag.find_by name: tag.name
