@@ -30,7 +30,7 @@ module PhotoFS
       if command
         command.new args
       else
-        BadCommand.new @PhotoFS::CLI::Command.command_usages, args
+        BadCommand.new PhotoFS::CLI::Command.command_usages, args
       end
     end
   end
