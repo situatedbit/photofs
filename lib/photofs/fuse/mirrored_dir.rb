@@ -53,7 +53,7 @@ module PhotoFS
       protected
 
       def node_hash
-        @node_hash ||= mirrored_nodes.merge tags_node
+        @node_hash ||= mirrored_nodes.merge(tags_node, tags_applied_node)
       end
 
       private
@@ -65,6 +65,18 @@ module PhotoFS
 
       def dir_entries
         entries.select { |entry| fs.directory? expand_path(entry) }
+      end
+
+      # image set of images within this directory
+      def dir_images
+        return @_dir_images if defined? @_dir_images
+
+        paths = file_entries.map { |e| normalized_path(expand_path e) }
+
+        # given mapping from path to image, return images that are not nil
+        images = @images_domain.find_by_paths(paths).values.select { |image| image }
+
+        @_dir_images = PhotoFS::Core::ImageSet.new(set: images.to_set)
       end
 
       def dir_node(entry, path)
@@ -89,12 +101,6 @@ module PhotoFS
 
       def fs
         PhotoFS::FS.file_system
-      end
-
-      def images
-        paths = entries.map { |e| normalized_path(expand_path e) }
-
-        @images_domain.find_by_paths(paths).values.select { |image| image }
       end
 
       def mirrored_dir_nodes
@@ -122,12 +128,20 @@ module PhotoFS
         PhotoFS::FS::NormalizedPath.new(real: real_path, root: PhotoFS::FS.images_path).to_s
       end
 
+      def tags_applied_node
+        return {} if @tags.nil? || dir_images.empty?
+
+        applied_tags =  @tags.limit_to_images(dir_images)
+
+        return {} if applied_tags.empty?
+
+        { 'tags-applied' => TagDirRoot.new('tags-applied', applied_tags, { parent: self, images: dir_images }) }
+      end
+
       def tags_node
-        tag_dir_image_set = PhotoFS::Core::ImageSet.new(set: Set.new(images))
+        return {} if @tags.nil? || dir_images.empty?
 
-        return {} if @tags.nil? || tag_dir_image_set.empty?
-
-        {'tags' => TagDirRoot.new('tags', @tags, {parent: self, images: tag_dir_image_set} )}
+        { 'tags' => TagDirRoot.new('tags', @tags, { parent: self, images: dir_images } ) }
       end
 
     end
