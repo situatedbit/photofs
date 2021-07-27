@@ -13,7 +13,7 @@ describe PhotoFS::Fuse::MirroredDir do
     allow(fs).to receive(:exist?).and_return(true)
   end
 
-  describe :images do
+  describe :dir_images do
     let(:dir) { PhotoFS::Fuse::MirroredDir.new('test', path) }
     let(:path1) { 'path-1' }
     let(:path2) { 'path-2' }
@@ -31,7 +31,7 @@ describe PhotoFS::Fuse::MirroredDir do
     end
 
     it 'should only include images with paths in the images domain' do
-      expect(dir.send :images).to contain_exactly(path1)
+      expect(dir.send :dir_images).to contain_exactly(path1)
     end
   end
 
@@ -204,7 +204,7 @@ describe PhotoFS::Fuse::MirroredDir do
 
       before(:example) do
         dir.instance_variable_set(:@tags, tags)
-        allow(dir).to receive(:images).and_return([])
+        allow(dir).to receive(:dir_images).and_return(Set.new)
       end
 
       it 'should not exist' do
@@ -215,13 +215,13 @@ describe PhotoFS::Fuse::MirroredDir do
     context 'when there is a tags set and images in the dir' do
       let(:tags) { instance_double('PhotoFS::Core::TagSet') }
       let(:tag_dir) { instance_double('PhotoFS::Fuse::TagDir', name: 'tags') }
-      let(:images) { [instance_double('PhotoFS::Core::Image')] }
+      let(:dir_images) { PhotoFS::Core::ImageSet.new(set: [instance_double('PhotoFS::Core::Image')].to_set) }
 
       before(:example) do
         dir.instance_variable_set(:@tags, tags)
 
         allow(PhotoFS::Fuse::TagDir).to receive(:new).and_return(tag_dir)
-        allow(dir).to receive(:images).and_return(images)
+        allow(dir).to receive(:dir_images).and_return(dir_images)
       end
 
       it 'should contain a new tag dir' do
@@ -235,7 +235,7 @@ describe PhotoFS::Fuse::MirroredDir do
       end
 
       it 'should set an image set' do
-        expect(PhotoFS::Fuse::TagDir).to receive(:new).with('tags', tags, hash_including(:images))
+        expect(PhotoFS::Fuse::TagDir).to receive(:new).with('tags', tags, hash_including(images: dir_images))
 
         dir.send :tags_node
       end
@@ -248,7 +248,7 @@ describe PhotoFS::Fuse::MirroredDir do
     context 'when there are no images in the dir' do
       before(:example) do
         dir.instance_variable_set(:@tags, instance_double('PhotoFS::Core::TagSet'))
-        allow(dir).to receive(:images).and_return([])
+        allow(dir).to receive(:dir_images).and_return(Set.new)
       end
 
       it 'should not exist' do
@@ -257,7 +257,7 @@ describe PhotoFS::Fuse::MirroredDir do
     end
 
     context 'when there are no applied tags to the images in the dir' do
-      let(:images) { [instance_double('PhotoFS::Core::Image')] }
+      let(:dir_images) { PhotoFS::Core::ImageSet.new(set: [instance_double('PhotoFS::Core::Image')].to_set) }
 
       before(:example) do
         dir.instance_variable_set(:@tags, nil)
@@ -272,14 +272,15 @@ describe PhotoFS::Fuse::MirroredDir do
       let(:tags_applied) { instance_double('PhotoFS::Core::TagSet') }
       let(:tags) { instance_double('PhotoFS::Core::TagSet') }
       let(:tags_applied_dir) { instance_double('PhotoFS::Fuse::TagDir', name: 'tags-applied') }
-      let(:images) { [instance_double('PhotoFS::Core::Image')] }
+      let(:dir_images) { PhotoFS::Core::ImageSet.new(set: [instance_double('PhotoFS::Core::Image')].to_set) }
 
       before(:example) do
         dir.instance_variable_set(:@tags, tags)
 
         allow(PhotoFS::Fuse::TagDir).to receive(:new).and_return(tags_applied_dir)
         allow(tags).to receive(:limit_to_images).and_return(tags_applied)
-        allow(dir).to receive(:images).and_return(images)
+        allow(tags_applied).to receive(:empty?).and_return(false)
+        allow(dir).to receive(:dir_images).and_return(dir_images)
       end
 
       it 'should exist' do
@@ -296,11 +297,11 @@ describe PhotoFS::Fuse::MirroredDir do
         dir.send :tags_node
       end
 
-      # it 'should set an image set' do
-      #   expect(PhotoFS::Fuse::TagDir).to receive(:new).with(anything, anything, hash_including(images: images))
-      #
-      #   dir.send :tags_node
-      # end
+      it 'should set an image set' do
+        expect(PhotoFS::Fuse::TagDir).to receive(:new).with(anything, anything, hash_including(images: dir_images))
+
+        dir.send :tags_node
+      end
     end
   end
 end
