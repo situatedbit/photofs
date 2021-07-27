@@ -53,7 +53,7 @@ module PhotoFS
       protected
 
       def node_hash
-        @node_hash ||= mirrored_nodes.merge tags_node
+        @node_hash ||= mirrored_nodes.merge(tags_node, tags_applied_node)
       end
 
       private
@@ -120,6 +120,18 @@ module PhotoFS
 
       def normalized_path(real_path)
         PhotoFS::FS::NormalizedPath.new(real: real_path, root: PhotoFS::FS.images_path).to_s
+      end
+
+      def tags_applied_node
+        return {} if @tags.nil? || images.empty?
+
+        {
+          'tags-applied' => TagDirRoot.new(
+            'tags-applied',
+            @tags.limit_to_images(PhotoFS::Core::ImageSet.new(set: Set.new(images))),
+            { parent: self, images: PhotoFS::Core::ImageSet.new(set: Set.new(images)) }
+          )
+        }
       end
 
       def tags_node

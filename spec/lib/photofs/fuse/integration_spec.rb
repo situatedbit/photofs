@@ -99,26 +99,42 @@ describe 'integration for', :type => :locking_behavior do
   end # :tags
 
   describe :mirrored_dirs do
-    describe 'initialization' do
-      let(:image_files) { [ '/a/1a.jpg', '/a/2a.jpg', '/a/b/1b.jpg', '/c/1c.JPG'].map {|p| "#{source_path}#{p}"} }
+    let(:image_paths) { [ 'a/1a.jpg', 'a/2a.jpg', 'a/b/1b.jpg', 'c/1c.JPG'] }
+    let(:image_files) { image_paths.map {|p| "#{source_path}/#{p}"} }
 
+    before(:example) do
+      create_images image_paths
+
+      file_system.add(files: image_files)
+    end
+
+    it 'should list a file for each jpg in its path' do
+      expect(fuse.getattr(context, '/o/a/1a.jpg')).to be_a_link
+      expect(fuse.getattr(context, '/o/a/2a.jpg')).to be_a_link
+      expect(fuse.getattr(context, '/o/a/b/1b.jpg')).to be_a_link
+      expect(fuse.getattr(context, '/o/c/1c.JPG')).to be_a_link
+      expect{ fuse.getattr(context, '/o/a/not-exist.jpg') }.to raise_error(Errno::ENOENT)
+    end
+
+    it 'should list a directory for each sub directory in the path' do
+      expect(fuse.getattr(context, '/o/a')).to be_a_directory
+      expect(fuse.getattr(context, '/o/a/b')).to be_a_directory
+      expect(fuse.getattr(context, '/o/c')).to be_a_directory
+      expect{ fuse.getattr(context, '/o/a/not-exist') }.to raise_error(Errno::ENOENT)
+    end
+
+    context 'when there are tags' do
       before(:example) do
-        file_system.add(files: image_files)
+        fuse.mkdir(context, '/t/tree', 0)
+        fuse.rename(context, '/o/a/1a.jpg', '/t/tree/1a.jpg')
       end
 
-      it 'should list a file for each jpg in its path' do
-        expect(fuse.getattr(context, '/o/a/1a.jpg')).to be_a_link
-        expect(fuse.getattr(context, '/o/a/2a.jpg')).to be_a_link
-        expect(fuse.getattr(context, '/o/a/b/1b.jpg')).to be_a_link
-        expect(fuse.getattr(context, '/o/c/1c.JPG')).to be_a_link
-        expect{ fuse.getattr(context, '/o/a/not-exist.jpg') }.to raise_error(Errno::ENOENT)
+      it 'should contain tags directory' do
+        expect(fuse.getattr(context, '/o/a/tags')).to be_a_directory
       end
 
-      it 'should list a directory for each sub directory in the path' do
-        expect(fuse.getattr(context, '/o/a')).to be_a_directory
-        expect(fuse.getattr(context, '/o/a/b')).to be_a_directory
-        expect(fuse.getattr(context, '/o/c')).to be_a_directory
-        expect{ fuse.getattr(context, '/o/a/not-exist') }.to raise_error(Errno::ENOENT)
+      it 'should contain tags-applied directory' do
+        expect(fuse.getattr(context, '/o/a/tags-applied')).to be_a_directory
       end
     end
   end # :mirrored_dirs
