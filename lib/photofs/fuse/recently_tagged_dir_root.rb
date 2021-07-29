@@ -7,6 +7,7 @@ module PhotoFS::Fuse
     def initialize(name, tags, images_domain, options = {})
       @tags = tags
       @images_domain = images_domain
+      @config = options[:config] || {}
 
       super(name, options)
     end
@@ -23,8 +24,13 @@ module PhotoFS::Fuse
 
     private
 
+    def tag_count
+      # even if falsy via 0, default to 15
+      @config.dig('fs', 'recently-applied-tags-count') || 15
+    end
+
     def tag_nodes
-      PhotoFS::Data::Tag.recently_applied(15).reduce({}) do |name_map, tag|
+      PhotoFS::Data::Tag.recently_applied(tag_count).reduce({}) do |name_map, tag|
         options = { query_tag_names: [tag.name], parent: self, images: @images_domain }
         dir = PhotoFS::Fuse::TagDir.new(tag.name, @tags, options)
 

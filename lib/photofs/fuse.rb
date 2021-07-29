@@ -6,7 +6,7 @@ module PhotoFS
     OPTION_USAGE = " -o source=path/to/photos/"
 
     # Usage: #{$0} mountpoint [mount_options] -o source=/path/to/photos
-    def self.mount
+    def self.mount(config = {})
       RFuse.main(ARGV, MY_OPTIONS, OPTION_USAGE, nil, $0) do |options|
         raise RuntimeError.new('Missing required source option') unless options.has_key?(:source)
 
@@ -19,7 +19,7 @@ module PhotoFS
 
         Process.daemon if options[:daemon]
 
-        PhotoFS::Fuse::Fuse.new options
+        PhotoFS::Fuse::Fuse.new options, config
       end
     end
 

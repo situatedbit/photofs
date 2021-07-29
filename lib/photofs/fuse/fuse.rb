@@ -22,13 +22,14 @@ module PhotoFS
         PhotoFS::FS.file_system
       end
 
-      def initialize(options)
+      def initialize(options, config = {})
         raise RFuse::Error, "Missing source option (-o source=path)" unless options[:source]
 
         @option_log = options.has_key?(:log)
         @source_path = options[:source]
         @mountpoint = options[:mountpoint]
         @environment = options[:env] || 'production'
+        @config = config
 
         @images = PhotoFS::Data::ImageSet.new() # global image set
         @tags = PhotoFS::Data::TagSet.new
@@ -49,8 +50,9 @@ module PhotoFS
         @root.add MirroredDir.new('o', @source_path, {tags: @tags, images: @images})
         @root.add TagDirTopLevel.new('t', @tags, {images: @images})
         @root.add File.new('.photofs', PhotoFS::FS.data_path)
-        @root.add RecentlyTaggedDirRoot.new('recent', @tags, @images)
+        @root.add RecentlyTaggedDirRoot.new('recent', @tags, @images, { config: @config })
 
+        log "Config: #{@config}"
         log "Mounted at #{@source_path}"
       end
 

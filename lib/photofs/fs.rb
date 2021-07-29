@@ -10,6 +10,8 @@ module PhotoFS
     end
 
     DATA_DIR = '.photofs'
+    CONFIG_DIR = '~/.photo-flow'
+    CONFIG_PATH = ::File.join(CONFIG_DIR, 'config.yaml')
 
     def self.app_root
       ::File.join ::File.dirname(__FILE__), '..', '..'
