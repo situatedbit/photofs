@@ -12,15 +12,15 @@ module PhotoFS
       include CommandValidators
 
       def self.matcher
-        @@_matcher ||= Parser.new [Parser::Pattern.new(['import', 'images', {path: match_path}])]
+        @@_matcher ||= Parser.new [Parser::Pattern.new(['import', 'images', {paths: match_path}], expand_tail: true)]
       end
 
       def self.usage
-        ['import images DIR_PATH']
+        ['import images DIR_PATH...']
       end
 
       def after_initialize(args)
-        @path = parsed_args[:path]
+        @paths = parsed_args[:paths]
 
         @images = PhotoFS::Data::ImageSet.new
       end
@@ -30,21 +30,27 @@ module PhotoFS
       end
 
       def modify_datastore
-        @output << "Importing images from \"#{@path}\"..."
+        paths_imported_count = 0
 
-        file_monitor = PhotoFS::FS::FileMonitor.new({ images_root_path: PhotoFS::FS.images_path,
-                                                      search_path: @path,
-                                                      file_system: PhotoFS::FS.file_system })
+        @paths.each do |path|
+          @output << "Importing images from \"#{path}\"..."
 
-        paths_imported = @images.import! file_monitor.paths
+          file_monitor = PhotoFS::FS::FileMonitor.new({ images_root_path: PhotoFS::FS.images_path,
+                                                        search_path: path,
+                                                        file_system: PhotoFS::FS.file_system })
 
-        @output += paths_imported.map { |image| image.path }
+          paths_imported = @images.import! file_monitor.paths
 
-        !paths_imported.empty?
+          @output << paths_imported.map { |image| image.path }
+
+          paths_imported_count += paths_imported.size
+        end
+
+        paths_imported_count > 0
       end
 
       def validate
-        @path = valid_path @path
+        @paths = @paths.map { |path| valid_path path }
       end
 
       Command.register_command self

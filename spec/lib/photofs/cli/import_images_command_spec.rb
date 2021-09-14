@@ -36,6 +36,7 @@ describe PhotoFS::CLI::ImportImagesCommand do
     it { expect(command.match? ['import', 'images', './some/file']).to be true }
     it { expect(command.match? ['import', 'images', 'some/file']).to be true }
     it { expect(command.match? ['import', 'images', '../some/file']).to be true }
+    it { expect(command.match? ['import', 'images', '../some/file', 'another/dir']).to be true }
     it { expect(command.match? ['import', 'images', '../some/file\ spaces']).to be true }
 
     it { expect(command.match? ['import']).to be false }
@@ -86,6 +87,6 @@ describe PhotoFS::CLI::ImportImagesCommand do
 
     subject { command.validate }
 
-    it { should eq(valid_path) }
+    it { should eq([valid_path]) }
   end
 end

@@ -54,7 +54,7 @@ module PhotoFS
       end
 
       def import!(paths)
-        import_paths = paths.each_slice(50).reduce([]) do |paths_to_import, paths_to_check|
+        import_paths = paths.each_slice(1000).reduce([]) do |paths_to_import, paths_to_check|
           paths_to_import.append *(paths_to_check - Image.exist_by_paths(paths_to_check))
         end
 
