@@ -44,6 +44,11 @@ module PhotoFS
           @output << paths_imported.map { |image| image.path }
 
           paths_imported_count += paths_imported.size
+
+          # Collect what we can in the case of really large imports. Referenced
+          # names will presumably be available for collection in the next
+          # iteration of the loop.
+          GC.start
         end
 
         paths_imported_count > 0
