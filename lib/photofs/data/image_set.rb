@@ -54,7 +54,9 @@ module PhotoFS
       end
 
       def import!(paths)
-        import_paths = paths - Image.exist_by_paths(paths)
+        import_paths = paths.each_slice(50).reduce([]) do |paths_to_import, paths_to_check|
+          paths_to_import.append *(paths_to_check - Image.exist_by_paths(paths_to_check))
+        end
 
         ActiveRecord::Base.transaction do
           return import_paths.map { |path| add PhotoFS::Core::Image.new(path) }
