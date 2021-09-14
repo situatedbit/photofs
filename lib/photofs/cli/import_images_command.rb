@@ -21,8 +21,6 @@ module PhotoFS
 
       def after_initialize(args)
         @paths = parsed_args[:paths]
-
-        @images = PhotoFS::Data::ImageSet.new
       end
 
       def datastore_start_path
@@ -39,7 +37,9 @@ module PhotoFS
                                                         search_path: path,
                                                         file_system: PhotoFS::FS.file_system })
 
-          paths_imported = @images.import! file_monitor.paths
+          # new up image set each time to drop references to previous
+          # paths between #each loops and free resources.
+          paths_imported = PhotoFS::Data::ImageSet.new.import! file_monitor.paths
 
           @output << paths_imported.map { |image| image.path }
 
