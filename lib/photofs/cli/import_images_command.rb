@@ -28,30 +28,41 @@ module PhotoFS
       end
 
       def modify_datastore
-        paths_imported_count = 0
+        total_import_count = 0
 
         @paths.each do |path|
-          @output << "Importing images from \"#{path}\"..."
+          count = 0
+          imports_since_gc = 0
 
-          file_monitor = PhotoFS::FS::FileMonitor.new({ images_root_path: PhotoFS::FS.images_path,
-                                                        search_path: path,
-                                                        file_system: PhotoFS::FS.file_system })
-
-          # new up image set each time to drop references to previous
-          # paths between #each loops and free resources.
-          paths_imported = PhotoFS::Data::ImageSet.new.import! file_monitor.paths
-
-          @output << paths_imported.map { |image| image.path }
-
-          paths_imported_count += paths_imported.size
-
-          # Collect what we can in the case of really large imports. Referenced
-          # names will presumably be available for collection in the next
-          # iteration of the loop.
           GC.start
+
+          file_monitor = PhotoFS::FS::FileMonitor.new(
+            images_root_path: PhotoFS::FS.images_path,
+            search_path: path,
+            file_system: PhotoFS::FS.file_system
+          )
+
+          # To mitigate resource use for potentially massive initial imports,
+          # divide the list of import paths into smaller chunks, new up an image
+          # set for each chunk, and explicitly call the garbage collector to
+          # free up memory every few import chunks.
+          paths_buffer_size = 4096
+          file_monitor.paths.each_slice(paths_buffer_size) do |file_monitor_paths|
+            count += (PhotoFS::Data::ImageSet.new.import! file_monitor_paths).size
+            imports_since_gc += 1
+
+            if imports_since_gc > 3
+              GC.start
+              imports_since_gc = 0
+            end
+          end
+
+          @output << "#{path}: #{count} image#{count == 1 ? '' : 's'} imported"
+
+          total_import_count += count
         end
 
-        paths_imported_count > 0
+        total_import_count > 0
       end
 
       def validate

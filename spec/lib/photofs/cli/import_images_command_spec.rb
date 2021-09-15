@@ -8,7 +8,7 @@ describe PhotoFS::CLI::ImportImagesCommand do
   let(:valid_path) { '/a/b/c' }
   let(:command) { PhotoFS::CLI::ImportImagesCommand.new(['import', 'images', path]) }
   let(:file_system) { PhotoFS::FS::Test.new( { files:  [] } )}
-  let(:file_monitor) { instance_double('FileMonitor', paths:  []) }
+  let(:file_monitor) { instance_double('FileMonitor', paths:  ['/a/b/c']) }
   let(:images) { instance_double 'ImageSet' }
 
   before(:example) do
