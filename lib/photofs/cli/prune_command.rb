@@ -32,7 +32,9 @@ module PhotoFS
       def modify_datastore
         images = @images.find_by_path_parent PhotoFS::FS::NormalizedPath.new(root: PhotoFS::FS.images_path, real: @prune_path).to_s
 
-        missing_images = images - existing_images(images)
+        missing_images = images.select do |image|
+          !file_system.exist?([PhotoFS::FS.images_path, image.path].join(file_system.separator))
+        end
 
         missing_images.each do |image|
           @images.remove image
@@ -48,12 +50,6 @@ module PhotoFS
       end
 
       private
-
-      def existing_images(images_to_verify)
-        images_to_verify.select do |image|
-          file_system.exist? [PhotoFS::FS.images_path, image.path].join(file_system.separator)
-        end
-      end
 
       Command.register_command self
     end
