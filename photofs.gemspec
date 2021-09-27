@@ -10,9 +10,9 @@ Gem::Specification.new do |s|
   s.authors       = ["Matt Schaefer"]
   s.email         = ["matt@situatedbit.com"]
 
-  s.summary       = %q{Core library for PhotoFS, a photo workflow system.}
+  s.summary       = %q{A photo workflow system.}
   s.homepage      = "https://github.com/situatedbit/photofs"
-  s.license       = "GPL3"
+  s.license       = "GPL-3.0-or-later"
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
   # to allow pushing to a single host or delete this section to allow pushing to any host.
