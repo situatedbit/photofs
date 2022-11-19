@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'activerecord', '~> 6.0.0'
+gem 'activerecord', '~> 6.0.6'
 gem 'standalone_migrations', '~> 6.0.0'
 gem 'mysql2'
 gem "rack", "~> 2.2.3"
