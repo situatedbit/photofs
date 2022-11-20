@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    photofs (0.5.8)
+    photofs (0.5.9)
 
 GEM
   remote: https://rubygems.org/
@@ -115,4 +115,4 @@ DEPENDENCIES
   standalone_migrations (~> 6.0.0)
 
 BUNDLED WITH
-   2.2.26
+   2.3.26
