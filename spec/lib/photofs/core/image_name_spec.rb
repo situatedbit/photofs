@@ -82,6 +82,7 @@ describe :ImageName do
   describe :indexed_names do
     describe :frame do
       it { expect(subject.parse('a/b/IMG_1234.jpg').frame).to eq('1234') }
+      it { expect(subject.parse('a/b/IMG_1234(1).jpg').frame).to eq('1234') }
       it { expect(subject.parse('a/b/DSC1234.jpg').frame).to eq('1234') }
       it { expect(subject.parse('a/b/IMG_1234.small.xcf.jpg').frame).to eq('1234') }
       it { expect(subject.parse('a/b/IMG_1234-something.jpg').frame).to eq('1234') }
@@ -96,12 +97,13 @@ describe :ImageName do
       it { expect(subject.parse('a/b/signal-2010-03-23-098234-1.jpg').frame).to eq('201003230982341') }
       it { expect(subject.parse('a/b/signal-2010-03-23-098234-1-mono-cropped.jpg').frame).to eq('201003230982341') }
 
-        it { expect(subject.parse('a/b/1234.jpg').frame).to eq('1234') }
-        it { expect(subject.parse('a/b/1234-mono.jpg').frame).to eq('1234') }
+      it { expect(subject.parse('a/b/1234.jpg').frame).to eq('1234') }
+      it { expect(subject.parse('a/b/1234-mono.jpg').frame).to eq('1234') }
     end
 
     describe :notes do
       it { expect(subject.parse('a/b/IMG_1234.jpg').notes).to eq('') }
+      it { expect(subject.parse('a/b/IMG_1234(1).jpg').notes).to eq('(1)') }
       it { expect(subject.parse('a/b/IMG_1234-cropped-mono.jpg').notes).to eq('-cropped-mono') }
       it { expect(subject.parse('a/b/IMG_1234-2400dpi.tiff').notes).to eq('-2400dpi') }
 

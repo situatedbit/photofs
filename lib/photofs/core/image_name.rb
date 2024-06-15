@@ -107,18 +107,19 @@ module PhotoFS
       end
 
       class IndexedName
-        # Fuji        DSC1234
-        # Canon       IMG_1234
-        # open camera IMG_20201019_124528
-        # open camera IMG_20201019_124528_1 (second image taken at 12:45:28 on 2020-10-19)
-        # signal      signal-2010-03-23-098234
-        # signal      signal-2010-03-23-098234-1
-        # indexed     03.tiff or 03-mono.tiff
+        # Fuji             DSC1234
+        # Canon            IMG_1234
+        # iPhone with edit IMG_1234(1)
+        # open camera      IMG_20201019_124528
+        # open camera      IMG_20201019_124528_1 (second image taken at 12:45:28 on 2020-10-19)
+        # signal           signal-2010-03-23-098234
+        # signal           signal-2010-03-23-098234-1
+        # indexed          03.tiff or 03-mono.tiff
 
         include Common
 
         def self.expression
-          /\A[a-z]*(?<frame>(?:[-_]?\d+)+\b)(?<notes>(?:-+\w+)*)?/i
+          /\A[a-z]*(?<frame>(?:[-_]?\d+)+\b)(?<notes>(?:(-+\w+|\(\d+\)))*)?/i
         end
 
         def self.matches(path)
