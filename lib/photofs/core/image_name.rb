@@ -108,7 +108,7 @@ module PhotoFS
 
       class IndexedName
         # Fuji             DSC1234
-        # Canon            IMG_1234
+        # Canon, iPhone    IMG_1234
         # iPhone with edit IMG_1234(1)
         # open camera      IMG_20201019_124528
         # open camera      IMG_20201019_124528_1 (second image taken at 12:45:28 on 2020-10-19)
@@ -136,7 +136,13 @@ module PhotoFS
         end
 
         def notes
-          @match['notes'] || ''
+          match = @match['notes']
+
+          if match.nil? or match.empty?
+            ''
+          else
+            match.start_with?('-') ? match : "-#{match}"
+          end
         end
 
         def prefix

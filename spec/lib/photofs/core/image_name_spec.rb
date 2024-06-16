@@ -103,7 +103,7 @@ describe :ImageName do
 
     describe :notes do
       it { expect(subject.parse('a/b/IMG_1234.jpg').notes).to eq('') }
-      it { expect(subject.parse('a/b/IMG_1234(1).jpg').notes).to eq('(1)') }
+      it { expect(subject.parse('a/b/IMG_1234(1).jpg').notes).to eq('-(1)') }
       it { expect(subject.parse('a/b/IMG_1234-cropped-mono.jpg').notes).to eq('-cropped-mono') }
       it { expect(subject.parse('a/b/IMG_1234-2400dpi.tiff').notes).to eq('-2400dpi') }
 
